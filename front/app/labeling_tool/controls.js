@@ -128,6 +128,11 @@ const guiRef = {
       else if (v > 180) { v -= 360; }
       return v;
     },
+    get objectID() {
+      let bbox = guiRef.pcd.getBBox();
+      if (bbox == null) { return 0; }
+      return bbox.box.object_id;
+    },
     // setters
     set posX(v) {
       let bbox = guiRef.pcd.getBBox();
@@ -175,6 +180,13 @@ const guiRef = {
       let bbox = guiRef.pcd.getBBox();
       if (bbox == null) { return 0; }
       bbox.box.yaw = v*Math.PI/180;
+      bbox.updateCube();
+      PCDLabelTool.redrawRequest();
+    },
+    set objectID(v) {
+      let bbox = guiRef.pcd.getBBox();
+      if (bbox == null) { return 0; }
+      bbox.box.object_id = v;
       bbox.updateCube();
       PCDLabelTool.redrawRequest();
     },
@@ -228,6 +240,9 @@ const initGUIPCD = function(gui, targetLabel) {
   const frotate = folder.addFolder('Rotation');
   frotate.open();
   frotate.add(guiRef.pcd, 'yaw').name('yaw').max(180).min(-180).step(1).listen();
+  const fmeta = folder.addFolder('Meta');
+  fmeta.open();
+  fmeta.add(guiRef.pcd, 'objectID').name('ID').max(999).min(0).step(1).listen();
 };
 // Add tool 
 let toolFolder = null;
