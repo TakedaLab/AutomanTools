@@ -82,6 +82,7 @@ export default class PCDLabelTool{
     // use preloaded pcd mesh
     if (this._pointMeshes[frame] != null) {
       this._pointMeshes[frame].visible =true;
+      this._redrawFlag = true;
       this._loaded = true;
       return Promise.resolve();
     }
