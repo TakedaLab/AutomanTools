@@ -15,6 +15,7 @@ export default class PCDLabelTool{
   _scene = null;
   _renderer = null;
   _camera = null;
+  _camera_scale = 50;
   _controls = null;
   //cameraExMat = new THREE.Matrix4();
   // PCD objects
@@ -106,6 +107,25 @@ export default class PCDLabelTool{
       camera.updateProjectionMatrix();
       renderer.setSize( window.innerWidth, window.innerHeight );
       */
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+
+      // fix camera aspect
+      if (this._camera.inPerspectiveMode) {
+        this._camera.aspect = width / height;
+      } else {
+        this._camera.left = -width / this._camera_scale;
+        this._camera.right = width / this._camera_scale;
+        this._camera.top = height / this._camera_scale;
+        this._camera.bottom = -height / this._camera_scale;
+      }
+      this._camera.updateProjectionMatrix();
+
+      // re-set render size
+      this._renderer.setPixelRatio(window.devicePixelRatio);
+      this._renderer.setSize(width, height);
+
+      this._redrawFlag = true;
     },
     keydown: (e) => {
       if (e.keyCode === 16) { // shift
@@ -203,11 +223,23 @@ export default class PCDLabelTool{
     // TODO: read YAML and set camera?
     let camera;
     if(this._isBirdView){
-      camera = new THREE.OrthographicCamera (-40,40,20,-20, 10, 2000);
-      camera.position.set (0,0,450);
-      camera.lookAt (new THREE.Vector3(0,0,0));
-    }else{
-      camera = new THREE.PerspectiveCamera( 90, window.innerWidth / window.innerHeight, 0.01, 10000 );
+      camera = new THREE.OrthographicCamera(
+        -window.innerWidth / this._camera_scale,
+        window.innerWidth / this._camera_scale,
+        window.innerHeight / this._camera_scale,
+        -window.innerHeight / this._camera_scale,
+        10,
+        2000
+      );
+      camera.position.set(0, 0, 450);
+      camera.lookAt(new THREE.Vector3(0, 0, 0));
+    } else {
+      camera = new THREE.PerspectiveCamera(
+        90,
+        window.innerWidth / window.innerHeight,
+        0.01,
+        10000
+      );
       camera.position.set(0,0,0.5);
     }
     camera.up.set (0,0,1);
