@@ -525,7 +525,9 @@ const initializeBase = function() {
 const initializeEvent = function() {
   $(window)
     .keydown(function(e) {
-      if (e.keyCode == 8 || e.keyCode == 46) {
+      if (LabelTool.getTool().name === 'PCD') {
+        LabelTool.getTool().handles.keydown(e);
+      }else if (e.keyCode == 8 || e.keyCode == 46) {
         // Backspace or Delete
         const label = LabelTool.getTargetLabel();
         if (label != null) {

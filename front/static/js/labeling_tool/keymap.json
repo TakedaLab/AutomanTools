@@ -1,0 +1,118 @@
+[
+    {
+    "command": "setCameraBirdView",
+    "key": "0"
+  },
+  {
+    "command": "setCameraHorizon",
+    "key": "9"
+  },
+  {
+    "command": "deleteBbox",
+    "key": "d"
+  },
+  {
+    "command": "selectMode",
+    "key": "m",
+    "args": {"target": "move"}
+  },
+  {
+    "command": "selectMode",
+    "key": "s",
+    "args": {"target": "resize"}
+  },
+  {
+    "command": "selectMode",
+    "key": "r",
+    "args": {"target": "rotate"}
+  },
+  {
+    "command": "temporarySelectMode",
+    "key": "Shift",
+    "args": {"target": "view"}
+  },
+  {
+    "command": "temporarySelectMode",
+    "key": "Control",
+    "args": {"target": "create"}
+  },
+  {
+    "command": "toggleMode",
+    "key": " ",
+    "args": {"candidates": ["move", "resize", "rotate"]}
+  },
+  {
+    "command": "keyboardCommand",
+    "mode": "move",
+    "key": "ArrowLeft",
+    "args": {"action": "move", "direction": "left", "step": 0.1}
+  },
+  {
+    "command": "keyboardCommand",
+    "mode": "move",
+    "key": "ArrowRight",
+    "args": {"action": "move", "direction": "right", "step": 0.1}
+  },
+  {
+    "command": "keyboardCommand",
+    "mode": "move",
+    "key": "ArrowUp",
+    "args": {"action": "move", "direction": "up", "step": 0.1}
+  },
+  {
+    "command": "keyboardCommand",
+    "mode": "move",
+    "key": "ArrowDown",
+    "args": {"action": "move", "direction": "down", "step": 0.1}
+  },
+
+  {
+    "command": "keyboardCommand",
+    "mode": "resize",
+    "key": "ArrowLeft",
+    "args": {"action": "size", "direction": "left", "step": 0.1}
+  },
+  {
+    "command": "keyboardCommand",
+    "mode": "resize",
+    "key": "ArrowRight",
+    "args": {"action": "size", "direction": "right", "step": 0.1}
+  },
+  {
+    "command": "keyboardCommand",
+    "mode": "resize",
+    "key": "ArrowUp",
+    "args": {"action": "size", "direction": "up", "step": 0.1}
+  },
+  {
+    "command": "keyboardCommand",
+    "mode": "resize",
+    "key": "ArrowDown",
+    "args": {"action": "size", "direction": "down", "step": 0.1}
+  },
+  
+  {
+    "command": "keyboardCommand",
+    "mode": "rotate",
+    "key": "ArrowLeft",
+    "args": {"action": "rotate", "direction": "left", "step": 0.1}
+  },
+  {
+    "command": "keyboardCommand",
+    "mode": "rotate",
+    "key": "ArrowRight",
+    "args": {"action": "rotate", "direction": "right", "step": 0.1}
+  },
+  {
+    "command": "keyboardCommand",
+    "mode": "rotate",
+    "key": "ArrowUp",
+    "args": {"action": "rotate", "direction": "up", "step": 0.1}
+  },
+  {
+    "command": "keyboardCommand",
+    "mode": "rotate",
+    "key": "ArrowDown",
+    "args": {"action": "rotate", "direction": "down", "step": 0.1}
+  }
+]
