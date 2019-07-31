@@ -1,3 +1,4 @@
+import LabelTool from "./base_label_tool";
 
 const toolStatus = {
 };
@@ -26,10 +27,12 @@ export default class PCDLabelTool{
   // control mode
   _modeMethods = createModeMethods(this);
   _modeStatus = {
-    mode: 'create',
+    mode: 'move',
     busy: false,
-    nextMode: null
+    nextMode: null,
+    previousMode: 'move',
   };
+  _globalKeyMethods = createGlobalKeyMethods(this);
   _redrawFlag = true;
   _isBirdView = true;
   // to mode 'move'
@@ -43,6 +46,14 @@ export default class PCDLabelTool{
     endPos: null,
     box: null
   };
+  _updatingBBox = {
+    startPos: null,
+    endPos: null,
+    pcdBox: null,
+    originalPCDBox: null,
+  };
+  _keymap_arr = [];
+  _car_template_arr = [];
 
   // public
   name = 'PCD';
@@ -71,6 +82,7 @@ export default class PCDLabelTool{
     this._initEvent();
     this._initArrow();
     this._initFacePlane();
+    this._initKeyMap();
 
     this._animate();
   }
@@ -129,35 +141,11 @@ export default class PCDLabelTool{
       this._redrawFlag = true;
     },
     keydown: (e) => {
-      if (e.keyCode === 16) { // shift
-        this.modeChangeRequest('view');
-      } else if (e.keyCode === 17) { // ctrl
-        this.modeChangeRequest('move');
-      } else if (e.keyCode === 83) { // 'S'
-        this.modeChangeRequest('resize');
-      } else if (e.keyCode === 82) { // 'R'
-        this.modeChangeRequest('rotate');
-      }
+      this.handleMappedKey(e, 'keydown');
     },
     keyup: (e) => {
-      if (e.keyCode === 16) { // shift
-        if (this._modeStatus.mode === 'view') {
-          this.modeChangeRequest('create');
-        }
-      } else if (e.keyCode === 17) { // ctrl
-        if (this._modeStatus.mode === 'move') {
-          this.modeChangeRequest('create');
-        }
-      } else if (e.keyCode === 83) { // 'S'
-        if (this._modeStatus.mode === 'resize') {
-          this.modeChangeRequest('create');
-        }
-      } else if (e.keyCode === 82) { // 'R'
-        if (this._modeStatus.mode === 'rotate') {
-          this.modeChangeRequest('create');
-        }
-      }
-    }
+      this.handleMappedKey(e, 'keyup');
+    },
   };
   setActive(isActive) {
     if ( isActive ) {
@@ -199,7 +187,7 @@ export default class PCDLabelTool{
     let idx = modeNames.indexOf(this._modeStatus.mode); 
     if (idx < 0) { return; }
     idx = (idx + 1) % modeNames.length;
-    this.modeChange(modeNames[idx]);
+    this.modeChangeRequest(modeNames[idx]);
     return modeNames[idx];
   }
   _initThree() {
@@ -247,6 +235,11 @@ export default class PCDLabelTool{
     this._scene.add( camera );
 
     const controls = new THREE.OrbitControls(camera, this._renderer.domElement);
+    // controls.mouseButtons = {
+    //   ORBIT: THREE.MOUSE.RIGHT,
+    //   ZOOM: THREE.MOUSE.MIDDLE,
+    //   PAN: THREE.MOUSE.LEFT,
+    // };
     controls.rotateSpeed = 2.0;
     controls.zoomSpeed = 0.3;
     controls.panSpeed = 0.2;
@@ -337,6 +330,28 @@ export default class PCDLabelTool{
     this._editArrowGroup = group;
     this._scene.add(group);
   }
+  _initKeyMap() {
+    var promises = [];
+    promises.push(
+      new Promise((resolve, reject) => {
+        $.getJSON("/static/js/labeling_tool/keymap.json", function (data) {
+          resolve(data);
+        });
+      }).then((data)=>{
+        this._keymap_arr = data;
+      })
+    );
+    promises.push(
+      new Promise((resolve, reject) => {
+        $.getJSON("/static/js/labeling_tool/const/car_template.json", function (data) {
+          resolve(data);
+        });
+      }).then((data)=>{
+        this._car_template_arr = data;
+      })
+    );
+    return promises;
+  }
   _animate() {
     const id = window.requestAnimationFrame(()=>{this._animate()});
     this.getModeMethod().animate();
@@ -383,11 +398,13 @@ export default class PCDLabelTool{
       // TODO: show internal error
       throw 'Mode error';
     }
+    this._modeStatus.previousMode = this._modeStatus.mode;
     this._modeMethods[mode].changeFrom();
     nextMethod.changeTo();
     this._modeStatus.mode = nextMode;
     // TODO: maybe change
     //Controls.GUI.update();
+    this._labelTool.controls.update();
   }
 
   // 3d geo methods
@@ -430,7 +447,7 @@ export default class PCDLabelTool{
           cy = (sp.y + ep.y) / 2,
           w = sp.x - ep.x,
           h = sp.y - ep.y;
-    const phi = this._camera.rotation.z,
+    const phi = this._camera.rotation.z + (Math.PI / 2.0),
           rx = Math.cos(phi),
           ry = Math.sin(phi);
     data.box.position.set(cx, cy, -0.5);
@@ -440,6 +457,32 @@ export default class PCDLabelTool{
         Math.abs(w*ry - h*rx),
         1.0);
     data.box.object_id = 0;
+  }
+
+  handleMappedKey(e, type) {
+    //----------------------------------------------------------------------------
+    // Keyboard Shortcuts
+    //----------------------------------------------------------------------------
+    this._keymap_arr.filter(function(keymap_val) {
+      return e.key === keymap_val.key;
+    }).forEach(function(keymap_val){
+      if (keymap_val["mode"]) {
+        // Execute mode specific key method
+        if (keymap_val["mode"] === this._modeStatus.mode) {
+          if ((keymap_val.command in this.getModeMethod()) &&
+            (type in this.getModeMethod()[keymap_val.command])) {
+            this.getModeMethod()[keymap_val.command][type](keymap_val.args);
+          }
+        }
+      }else {
+        // Execute global key method
+        if ((keymap_val.command in this._globalKeyMethods) &&
+          (type in this._globalKeyMethods[keymap_val.command])) {
+          this._globalKeyMethods[keymap_val.command][type](keymap_val.args);
+        }
+      }
+
+    }, this);
   }
 
 };
@@ -461,7 +504,7 @@ const BBoxParams = {
 
 };
 class PCDBBox {
-  constructor(pcdTool, content) {
+  constructor(pcdTool, content, addToTool=true) {
     this.pcdTool = pcdTool;
     this.label = null;
     this.selected = false;
@@ -482,9 +525,11 @@ class PCDBBox {
       this.box.yaw    = +content['rotation_y'];
       this.box.object_id = +content['object_id'];
     }
-    this.initCube();
-    this.pcdTool.pcdBBoxes.add(this);
-    this._redrawFlag = true;
+    if (addToTool) {
+      this.initCube();
+      this.pcdTool.pcdBBoxes.add(this);
+      this._redrawFlag = true;
+    }
   }
   setLabel(label) {
     if (this.label != null) {
@@ -542,6 +587,11 @@ class PCDBBox {
       this.pcdTool.setArrow(this);
     }
   }
+  clone(addToTool=false) {
+    const content = {};
+    this.toContent(content);
+    return new PCDBBox(this.pcdTool, content, addToTool);
+  }
 }
 
 
@@ -551,6 +601,46 @@ const modeNames = [
   ];
 // TODO: move select methods to one place
 function createModeMethods(pcdTool) {
+  const transformSelectedBox = function({dpx=0, dpy=0, dpz=0, dsx=0, dsy=0, dsz=0, drx=0, dry=0, drz=0} = {}) {
+    const label = pcdTool._labelTool.getTargetLabel();
+    if (label == null) { return; } // TODO: this is error
+    const move = new THREE.Vector3(dpx, dpy, dpz);
+    const resize = new THREE.Vector3(dsx, dsy, dsz);
+    const rotate = drz;
+    const bbox = label.bbox[pcdTool.candidateId];
+    bbox.box.pos.add(move);
+    bbox.box.size.add(resize);
+    bbox.box.yaw += rotate;
+    bbox.updateCube(true);
+    pcdTool._redrawFlag = true;
+  };
+
+  const getUpdatingBBox = function() {
+    return pcdTool._updatingBBox;
+  };
+
+  const setUpdatingBBox = function(e) {
+    const label = pcdTool._labelTool.getTargetLabel();
+    if (label == null) { return; }
+    const pcdBox = label.bbox[pcdTool.candidateId];
+
+    pcdTool._updatingBBox.startPos = pcdTool.getIntersectPos(e);
+    pcdTool._updatingBBox.pcdBox = pcdBox;
+    pcdTool._updatingBBox.originalPCDBox = pcdBox.clone(false);
+  };
+
+  const resetUpdatingBBox = function() {
+    const bbox = pcdTool._updatingBBox;
+    bbox.startPos = null;
+    bbox.startPos = null;
+    bbox.pcdBox = null;
+    bbox.originalPCDBox = null;
+  };
+
+  const storeUpdateHistory = function() {
+    // TODO: store histroy based on _updatingBBox.pcdBox and originalPCDBox
+  };
+
   const modeMethods = {
     'resize': {
       prevHover: null,
@@ -569,6 +659,9 @@ function createModeMethods(pcdTool) {
         } else {
           pcdTool._labelTool.selectLabel(null);
         }
+
+        setUpdatingBBox(e);
+        pcdTool._modeStatus.busy = true;
       },
       resetHover: function() {
         if (this.prevHover != null) {
@@ -618,20 +711,48 @@ function createModeMethods(pcdTool) {
       mouseMove: function(e) {
         const ray = pcdTool.getRay(e);
         const label = pcdTool._labelTool.getTargetLabel();
-        if (this.selectFace != null) {
-          if (label == null) { return; } // TODO: this is error
-          // TODO: 3d controlable
-          const mouse = pcdTool.getMousePos(e);
-          const dx = (mouse.x - this.mouse.x) * 100;
+        const bbox = getUpdatingBBox();
+        if (bbox.pcdBox != null) {
           const normal = this.selectFace.normal.clone();
-          normal.multiply(normal);
-          const move = (new THREE.Vector3(dx, dx, dx))
-                        .multiply(normal);
-          const bbox = label.bbox[pcdTool.candidateId];
-          bbox.box.size.add(move);
-          bbox.updateCube(dx != 0); // TODO: float zero check
-          this.setHoverPlane(bbox, this.selectFace);
-          this.mouse = mouse;
+          if (normal.z === 1 || normal.z === -1) {
+            // TODO: determine the distance to move based on the intersection point of mouse and vertical plane
+            const pos = pcdTool.getMousePos(e);
+            const diff = ((pos.x - this.mouse.x) + (pos.y - this.mouse.y)) * 20;
+            bbox.pcdBox.box.size.z += diff;
+            this.mouse = pos;
+          }else {
+            const pos = pcdTool.getIntersectPos(e);
+            if (pos != null) {
+              bbox.endPos = pos;
+              const dist = bbox.endPos.distanceTo(bbox.startPos);
+              if (dist > 0.01) {
+                if (this.selectFace != null) {
+                  const move = (new THREE.Vector3(
+                    (bbox.endPos.x - bbox.startPos.x) * 2.0,
+                    (bbox.endPos.y - bbox.startPos.y) * 2.0,
+                    0
+                  ).multiply(normal));
+                  bbox.pcdBox.box.size = bbox.originalPCDBox.box.size.clone();
+                  bbox.pcdBox.box.size.add(move);
+                } else {
+                  bbox.pcdBox.box.size.x = bbox.originalPCDBox.box.size.x + ((bbox.endPos.x - bbox.startPos.x) * 2.0);
+                  bbox.pcdBox.box.size.y = bbox.originalPCDBox.box.size.y + ((bbox.endPos.y - bbox.startPos.y) * 2.0);
+                }
+              }
+            }else {
+              // TODO: determine the distance to move based on the intersection point of mouse and vertical plane
+              const pos = pcdTool.getMousePos(e);
+              const diff = ((pos.x - this.mouse.x) + (pos.y - this.mouse.y)) * 20;
+              const move = (new THREE.Vector3(
+                diff * 2.0,
+                diff * 2.0,
+                0
+              ).multiply(normal));
+              bbox.pcdBox.box.size.add(move);
+              this.mouse = pos;
+            }
+          }
+          bbox.pcdBox.updateCube(true);
           pcdTool._redrawFlag = true;
         } else {
           // select face
@@ -672,6 +793,10 @@ function createModeMethods(pcdTool) {
         if (this.selectFace != null) {
           this.selectFace = null;
         }
+
+        storeUpdateHistory();
+        resetUpdatingBBox();
+        pcdTool._modeStatus.busy = false;
       },
       changeFrom: function() {
         this.resetHover();
@@ -682,7 +807,37 @@ function createModeMethods(pcdTool) {
         pcdTool._redrawFlag = true;
       },
       changeTo: function() {
-        pcdTool._wrapper.css('cursor', 'default');
+        pcdTool._wrapper.css('cursor', 'nwse-resize');
+      },
+      keyboardCommand: {
+        keydown: function(args) {
+          if (!args) {
+            console.log("`args` is undefined.");
+            return false;
+          }
+          if (args["direction"] && args["action"] && args["step"]) {
+            let direction = JSON.parse(JSON.stringify(args["direction"]));
+            let step = JSON.parse(JSON.stringify(args["step"]));
+            var dx, dy;
+            switch (direction) {
+              case "left":
+                dy = -1 * step;
+                break;
+              case "right":
+                dy = 1 * step;
+                break;
+              case "up":
+                dx = 1 * step;
+                break;
+              case "down":
+                dx = -1 * step;
+                break;
+              default:
+                break;
+            }
+            transformSelectedBox({dsx: dx, dsy: dy});
+          }
+        }
       },
     },
     'rotate': {
@@ -695,25 +850,31 @@ function createModeMethods(pcdTool) {
           this.mouse = pcdTool.getMousePos(e);
           pcdTool._modeStatus.busy = true;
         }
+
+        setUpdatingBBox(e);
+        pcdTool._modeStatus.busy = true;
       },
       mouseMove: function(e) {
         if (this.mouse != null) {
-          const label = pcdTool._labelTool.getTargetLabel();
-          if (label == null) { return; } // TODO: this is error
-          // TODO: 3d controlable
-          const mouse = pcdTool.getMousePos(e);
-          const dx = (mouse.x - this.mouse.x) * Math.PI * 5;
-          const bbox = label.bbox[pcdTool.candidateId];
-          bbox.box.yaw += dx;
-          bbox.updateCube(dx != 0); // TODO: float zero check
-          this.mouse = mouse;
-          pcdTool._redrawFlag = true;
+          const bbox = getUpdatingBBox();
+          if (bbox.pcdBox != null) {
+            const mouse = pcdTool.getMousePos(e);
+            const diff = ((mouse.x - this.mouse.x) + (mouse.y - this.mouse.y)) * Math.PI * 1;
+            bbox.pcdBox.box.yaw += diff;
+            bbox.pcdBox.updateCube(diff != 0);
+            this.mouse = mouse;
+            pcdTool._redrawFlag = true;
+          }
         }
       },
       mouseUp: function(e) {
         if (this.mouse != null) {
           this.mouse = null;
         }
+
+        storeUpdateHistory();
+        resetUpdatingBBox();
+        pcdTool._modeStatus.busy = false;
       },
       changeFrom: function() {
         this.mouse = null;
@@ -721,6 +882,36 @@ function createModeMethods(pcdTool) {
       },
       changeTo: function() {
         pcdTool._wrapper.css('cursor', 'default');
+      },
+      keyboardCommand: {
+        keydown: function(args) {
+          if (!args) {
+            console.log("`args` is undefined.");
+            return false;
+          }
+          if (args["direction"] && args["action"] && args["step"]) {
+            let direction = JSON.parse(JSON.stringify(args["direction"]));
+            let step = JSON.parse(JSON.stringify(args["step"]));
+            var dz;
+            switch (direction) {
+              case "left":
+                dz = 1 * step;
+                break;
+              case "right":
+                dz = -1 * step;
+                break;
+              case "up":
+                dz = -1 * step;
+                break;
+              case "down":
+                dz = 1 * step;
+                break;
+              default:
+                break;
+            }
+            transformSelectedBox({drz: dz});
+          }
+        }
       },
     },
     'move': {
@@ -731,11 +922,10 @@ function createModeMethods(pcdTool) {
       },
       mouseDown: function(e) {
         // pcdTool._modeStatus.busy = true;
-        if (this.arrowHover != -1) {
-          const pos = pcdTool.getMousePos(e); // TODO: need 3d mouse pos
+        if (this.arrowHover !== -1) {
           this.arrowMoving = {
             arrow: this.arrowHover,
-            mouse: pos
+            mouse: pcdTool.getMousePos(e)
           };
           pcdTool._modeStatus.busy = true;
         } else if (this.prevHover != null) {
@@ -743,6 +933,9 @@ function createModeMethods(pcdTool) {
         } else {
           pcdTool._labelTool.selectLabel(null);
         }
+
+        setUpdatingBBox(e);
+        pcdTool._modeStatus.busy = true;
       },
       resetHover: function() {
         if (this.prevHover != null) {
@@ -756,29 +949,57 @@ function createModeMethods(pcdTool) {
         }
       },
       mouseMove: function(e) {
-        if (this.arrowMoving != null) {
-          const label = pcdTool._labelTool.getTargetLabel();
-          if (label == null) { return; } // TODO: this is error
-          // TODO: support Z axis
-          const pos = pcdTool.getMousePos(e); // TODO: need 3d mouse pos
-          const dx = (pos.x - this.arrowMoving.mouse.x) * 100;
-          const move = (new THREE.Vector3(dx, dx, dx)).multiply(AXES[this.arrowMoving.arrow]);
-          const bbox = label.bbox[pcdTool.candidateId];
-          bbox.box.pos.add(move);
-          bbox.updateCube(dx != 0); // TODO: float zero check
-          this.arrowMoving.mouse = pos;
+        const bbox = getUpdatingBBox();
+        if (bbox.pcdBox != null) {
+          if (this.arrowMoving == null) {
+            // When none of the arrows are selected
+            const pos = pcdTool.getIntersectPos(e);
+            if (pos != null) {
+              bbox.endPos = pos;
+              const dist = bbox.endPos.distanceTo(bbox.startPos);
+              if (dist > 0.01) {
+                bbox.pcdBox.box.pos.x = bbox.originalPCDBox.box.pos.x + (bbox.endPos.x - bbox.startPos.x);
+                bbox.pcdBox.box.pos.y = bbox.originalPCDBox.box.pos.y + (bbox.endPos.y - bbox.startPos.y);
+              }
+            }
+          }else if (this.arrowMoving.arrow === 2) {
+            // When the arrow of Z-axis is selected
+            // TODO: determine the distance to move based on the intersection point of mouse and vertical plane
+            const pos = pcdTool.getMousePos(e);
+            const diff = ((pos.x - this.arrowMoving.mouse.x) + (pos.y - this.arrowMoving.mouse.y)) * 20;
+            bbox.pcdBox.box.pos.z += diff;
+            this.arrowMoving.mouse = pos;
+          }else {
+            // When the arrow of X-axis or Y-axis is selected
+            const pos = pcdTool.getIntersectPos(e);
+            if (pos != null) {
+              bbox.endPos = pos;
+              const dist = bbox.endPos.distanceTo(bbox.startPos);
+              if (dist > 0.01) {
+                if (this.arrowMoving.arrow === 0) {
+                  bbox.pcdBox.box.pos.x = bbox.originalPCDBox.box.pos.x + (bbox.endPos.x - bbox.startPos.x);
+                } else if (this.arrowMoving.arrow === 1) {
+                  bbox.pcdBox.box.pos.y = bbox.originalPCDBox.box.pos.y + (bbox.endPos.y - bbox.startPos.y);
+                } else {
+                  console.error("unknown arrow")
+                }
+              }
+            }else {
+              // TODO: determine the distance to move based on the intersection point of mouse and vertical plane
+              const pos = pcdTool.getMousePos(e);
+              const diff = ((pos.x - this.arrowMoving.mouse.x) + (pos.y - this.arrowMoving.mouse.y)) * 20;
+              if (this.arrowMoving.arrow === 0) {
+                bbox.pcdBox.box.pos.x -= diff;
+              }else if (this.arrowMoving.arrow === 1) {
+                bbox.pcdBox.box.pos.y -= diff;
+              }
+              this.arrowMoving.mouse = pos;
+            }
+          }
+          bbox.pcdBox.updateCube(true);
           pcdTool._redrawFlag = true;
-          /*
-          const move = pos.clone().sub(this.arrowMoving.mouse).multiply(AXES[this.arrowMoving.arrow]);
-          const label = pcdTool._labelTool.getTargetLabel();
-          if (label == null) { return; } // TODO: this is error
-          const bbox = label.bbox[pcdTool.candidateId];
-          bbox.box.pos.add(move);
-          bbox.updateCube(move.length() != 0); // TODO: float zero check
-          this.arrowMoving.mouse = pos;
-          pcdTool._redrawFlag = true;
-          */
         }
+
         const ray = pcdTool.getRay(e);
 
         // arrow edit
@@ -824,6 +1045,10 @@ function createModeMethods(pcdTool) {
         if (this.arrowMoving != null) {
           this.arrowMoving = null;
         }
+
+        storeUpdateHistory();
+        resetUpdatingBBox();
+        pcdTool._modeStatus.busy = false;
       },
       changeFrom: function() {
         this.resetHover();
@@ -839,7 +1064,37 @@ function createModeMethods(pcdTool) {
       },
       changeTo: function() {
         this.prevHover = null;
-        pcdTool._wrapper.css('cursor', 'default');
+        pcdTool._wrapper.css('cursor', 'move');
+      },
+      keyboardCommand: {
+        keydown: function(args) {
+          if (!args) {
+            console.log("`args` is undefined.");
+            return false;
+          }
+          if (args["direction"] && args["action"] && args["step"]) {
+            let direction = JSON.parse(JSON.stringify(args["direction"]));
+            let step = JSON.parse(JSON.stringify(args["step"]));
+            var dx, dy;
+            switch (direction) {
+              case "left":
+                dy = 1 * step;
+                break;
+              case "right":
+                dy = -1 * step;
+                break;
+              case "up":
+                dx = 1 * step;
+                break;
+              case "down":
+                dx = -1 * step;
+                break;
+              default:
+                break;
+            }
+            transformSelectedBox({dpx: dx, dpy: dy});
+          }
+        }
       },
     },
     'create': {
@@ -930,7 +1185,7 @@ function createModeMethods(pcdTool) {
       },
       changeTo: function() {
         pcdTool._controls.enabled = true;
-        pcdTool._wrapper.css('cursor', 'all-scroll');
+        pcdTool._wrapper.css('cursor', 'default');
       },
     },
   };
@@ -938,3 +1193,90 @@ function createModeMethods(pcdTool) {
 }
 
 
+function createGlobalKeyMethods(pcdTool) {
+  const methods = {
+    //----------------------------------------------------------------------------
+    // mode
+    selectMode: {
+      keydown: function(args) {
+        if (args['target'] && (modeNames.indexOf(args['target']) >= 0)) {
+          if (args['target'] !== pcdTool.getMode()) {
+            pcdTool.modeChangeRequest(args['target']);
+          }
+        }
+      },
+    },
+    temporarySelectMode: {
+      keydown: function(args) {
+        if (args['target'] && (modeNames.indexOf(args['target']) >= 0)) {
+          if (args['target'] !== pcdTool.getMode()) {
+            pcdTool.modeChangeRequest(args['target']);
+          }
+        }
+      },
+      keyup: function(args) {
+        pcdTool.modeChangeRequest(pcdTool._modeStatus.previousMode);
+      },
+    },
+    toggleMode: {
+      keydown: function(args) {
+        let candidates = args['candidates'] ? args['candidates'] : modeNames;
+        let currentMode = pcdTool.getMode();
+        let currentModeIndex = candidates.indexOf(currentMode);
+        if (currentModeIndex >= 0) {
+          if (currentModeIndex >= (candidates.length - 1)) {
+            pcdTool.modeChangeRequest(candidates[0]);
+          } else {
+            pcdTool.modeChangeRequest(candidates[currentModeIndex + 1]);
+          }
+        } else {
+          pcdTool.modeChangeRequest(candidates[0]);
+        }
+      },
+      keyup: function(args) {
+        // do nothing
+      },
+    },
+    setCameraBirdView: {
+      keydown: function(args) {
+        pcdTool._initCamera();
+        pcdTool.redrawRequest();
+      },
+    },
+    setCameraHorizon: {
+      keydown: function(args) {
+        let camera = pcdTool._camera;
+        let p1 = new THREE.Vector3(-29, 0, 0);
+        let p2 = new THREE.Vector3(0, 29, 0);
+        let p3 = new THREE.Vector3(29, 0, 0);
+        let p4 = new THREE.Vector3(0, -29, 0);
+        var targetAngle = null;
+        if (camera.position.distanceTo(p1) < 1) {
+          targetAngle = p2;
+        }else if (camera.position.distanceTo(p2) < 1) {
+          targetAngle = p3;
+        }else if (camera.position.distanceTo(p3) < 1) {
+          targetAngle = p4;
+        }else {
+          targetAngle = p1;
+        }
+        pcdTool._initCamera();
+        let newCamera = pcdTool._camera;
+        newCamera.position.set(targetAngle.x, targetAngle.y, targetAngle.z);
+        pcdTool._controls.update();
+        pcdTool.redrawRequest();
+      },
+    },
+    deleteBbox: {
+      keydown: function(args) {
+        let labelTool = pcdTool._labelTool;
+        let label = labelTool.getTargetLabel();
+        if (label != null) {
+          labelTool.removeLabel(label);
+        }
+      }
+    }
+  };
+
+  return methods
+}
