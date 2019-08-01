@@ -127,6 +127,7 @@ const LabelTool = {
         .then(
           () => {
             // all loaded
+            annotation.takeSnapshot();
             controls.update();
             innerStatus.loaded = true;
             resolve();
@@ -379,7 +380,16 @@ const LabelTool = {
         controls.error(text);
     }
     return ret;
-  }
+  },
+  undo() {
+    annotation.undo();
+  },
+  redo() {
+    annotation.redo();
+  },
+  takeSnapshot() {
+    annotation.takeSnapshot();
+  },
 };
 
 // base-labeltool internal functions

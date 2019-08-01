@@ -10,6 +10,9 @@ export default class Annotation {
   _loaded = true;
   _nextId = -1;
   _labelTool = null;
+  // History
+  _frameNumber = null;
+  _history = {snapshots: [], index: -1};
 
   constructor(labelTool) {
     this._labelTool = labelTool;
@@ -26,6 +29,9 @@ export default class Annotation {
   }
   load(frameNumber) {
     this._removeAll();
+    if (this._frameNumber !== frameNumber) {
+      this._history = {snapshots: [], index: -1};
+    }
     this._nextId = -1;
     return new Promise((resolve, reject) => {
       this._labels = new Map();
@@ -54,6 +60,7 @@ export default class Annotation {
       );
 
       resolve();
+      this._frameNumber = frameNumber;
       this._loaded = true;
     });
   }
@@ -103,6 +110,80 @@ export default class Annotation {
       );
     });
   }
+
+  takeSnapshot() {
+    if (this.isChanged()) {
+      const labels = [];
+      this._labels.forEach(label => {
+        labels.push(label.toObject());
+      });
+
+      if (this._history.index < (this._history.snapshots.length - 1)) {
+        this._history.snapshots = this._history.snapshots.slice(0, this._history.index + 1);
+      }
+      this._history.snapshots.push(labels);
+      this._history.index += 1;
+
+      console.log(this._history);
+    }
+    //
+    // // assertion
+    // if (this._history.index !== (this._history.snapshots.length - 1)) {
+    //   console.error('Assertion error (wrong history length)');
+    //   return;
+    // }
+
+    // limit history
+    let limit = 20;
+    if (this._history.snapshots.length > limit) {
+      this._history.snapshots = this._history.snapshots.slice(
+        this._history.snapshots.length - limit, this._history.snapshots.length
+      );
+      this._history.index = limit - 1;
+    }
+  }
+
+  restoreFromSnapshot(snapshot) {
+    this._removeAll();
+    this._loaded = false;
+    this._nextId = -1;
+    this._labels = new Map();
+    this._deleted = [];
+
+    snapshot.forEach(obj => {
+      let klass = this._labelTool.getKlass(obj.name);
+      let bboxes = {};
+      this._labelTool.getTools().forEach(tool => {
+        const id = tool.candidateId;
+        if (obj.content[id] != null) {
+          bboxes[id] = tool.createBBox(obj.content[id]);
+          tool._redrawFlag = true;
+        }
+      });
+      let label = new Label(this, obj.object_id, klass, bboxes);
+    });
+
+    this._loaded = true;
+  }
+
+  undo() {
+    if (this._history.index > 0) {
+      let previousIndex = this._history.index - 1;
+      let snapshot = this._history.snapshots[previousIndex];
+      this.restoreFromSnapshot(snapshot);
+      this._history.index = previousIndex;
+    }
+  }
+
+  redo() {
+    if (this._history.index < (this._history.snapshots.length - 1)) {
+      let nextIndex = this._history.index + 1;
+      let snapshot = this._history.snapshots[nextIndex];
+      this.restoreFromSnapshot(snapshot);
+      this._history.index = nextIndex;
+    }
+  }
+
   getTarget() {
     return this._targetLabel;
   }

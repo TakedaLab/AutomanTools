@@ -1,5 +1,30 @@
 [
-    {
+  {
+    "command": "save",
+    "mode": "command",
+    "key": "s"
+  },
+  {
+    "command": "undo",
+    "mode": "command",
+    "key": "z"
+  },
+  {
+    "command": "redo",
+    "mode": "command",
+    "key": "y"
+  },
+  {
+    "command": "redo",
+    "mode": "command",
+    "key": "Z"
+  },
+  {
+    "command": "redo",
+    "mode": "view",
+    "key": "Z"
+  },
+  {
     "command": "setCameraBirdView",
     "key": "0"
   },
@@ -14,6 +39,11 @@
   {
     "command": "selectMode",
     "key": "m",
+    "args": {"target": "move"}
+  },
+  {
+    "command": "selectMode",
+    "key": "v",
     "args": {"target": "move"}
   },
   {
@@ -33,8 +63,13 @@
   },
   {
     "command": "temporarySelectMode",
-    "key": "Control",
+    "key": "Alt",
     "args": {"target": "create"}
+  },
+  {
+    "command": "temporarySelectMode",
+    "key": "Control",
+    "args": {"target": "command"}
   },
   {
     "command": "toggleMode",
