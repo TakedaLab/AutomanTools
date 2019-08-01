@@ -390,6 +390,12 @@ const LabelTool = {
   takeSnapshot() {
     annotation.takeSnapshot();
   },
+  clip() {
+    annotation.clip();
+  },
+  paste() {
+    this.selectLabel(annotation.paste());
+  }
 };
 
 // base-labeltool internal functions

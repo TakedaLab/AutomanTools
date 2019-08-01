@@ -5,6 +5,16 @@
     "key": "s"
   },
   {
+    "command": "clip",
+    "mode": "command",
+    "key": "c"
+  },
+  {
+    "command": "paste",
+    "mode": "command",
+    "key": "v"
+  },
+  {
     "command": "undo",
     "mode": "command",
     "key": "z"

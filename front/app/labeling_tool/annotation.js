@@ -12,7 +12,9 @@ export default class Annotation {
   _labelTool = null;
   // History
   _frameNumber = null;
-  _history = {snapshots: [], index: -1};
+  _history = {index: -1, snapshots: []};
+  // Copy
+  _clipboard = null;
 
   constructor(labelTool) {
     this._labelTool = labelTool;
@@ -30,7 +32,7 @@ export default class Annotation {
   load(frameNumber) {
     this._removeAll();
     if (this._frameNumber !== frameNumber) {
-      this._history = {snapshots: [], index: -1};
+      this._history = {index: -1, snapshots: []};
     }
     this._nextId = -1;
     return new Promise((resolve, reject) => {
@@ -42,16 +44,7 @@ export default class Annotation {
         null,
         res => {
           res.records.forEach(obj => {
-            let klass = this._labelTool.getKlass(obj.name);
-            let bboxes = {};
-            this._labelTool.getTools().forEach(tool => {
-              const id = tool.candidateId;
-              if (obj.content[id] != null) {
-                bboxes[id] = tool.createBBox(obj.content[id]);
-                tool._redrawFlag = true;
-              }
-            });
-            let label = new Label(this, obj.object_id, klass, bboxes);
+            this.addLabel(obj);
           });
         },
         err => {
@@ -111,17 +104,37 @@ export default class Annotation {
     });
   }
 
+  addLabel(obj) {
+    let klass = this._labelTool.getKlass(obj.name);
+    let bboxes = {};
+    this._labelTool.getTools().forEach(tool => {
+      const id = tool.candidateId;
+      if (obj.content[id] != null) {
+        bboxes[id] = tool.createBBox(obj.content[id]);
+        tool._redrawFlag = true;
+      }
+    });
+    let label = new Label(this, obj.object_id, klass, bboxes);
+    return label;
+  }
+
   takeSnapshot() {
     if (this.isChanged()) {
       const labels = [];
+      const changedFlags = [];
       this._labels.forEach(label => {
-        labels.push(label.toObject());
+        let obj = label.toObject();
+        if (!('object_id' in obj)) {
+          obj['object_id'] = label.id;
+        }
+        labels.push(obj);
+        changedFlags.push(label.isChanged);
       });
 
       if (this._history.index < (this._history.snapshots.length - 1)) {
         this._history.snapshots = this._history.snapshots.slice(0, this._history.index + 1);
       }
-      this._history.snapshots.push(labels);
+      this._history.snapshots.push({'labels': labels, 'changedFlags': changedFlags});
       this._history.index += 1;
 
       console.log(this._history);
@@ -134,7 +147,7 @@ export default class Annotation {
     // }
 
     // limit history
-    let limit = 20;
+    let limit = 100;
     if (this._history.snapshots.length > limit) {
       this._history.snapshots = this._history.snapshots.slice(
         this._history.snapshots.length - limit, this._history.snapshots.length
@@ -150,18 +163,12 @@ export default class Annotation {
     this._labels = new Map();
     this._deleted = [];
 
-    snapshot.forEach(obj => {
-      let klass = this._labelTool.getKlass(obj.name);
-      let bboxes = {};
-      this._labelTool.getTools().forEach(tool => {
-        const id = tool.candidateId;
-        if (obj.content[id] != null) {
-          bboxes[id] = tool.createBBox(obj.content[id]);
-          tool._redrawFlag = true;
-        }
-      });
-      let label = new Label(this, obj.object_id, klass, bboxes);
-    });
+    const labels = snapshot.labels;
+    const changedFlags = snapshot.changedFlags;
+    for (var i=0; i<labels.length; i++) {
+      const label = this.addLabel(labels[i]);
+      label.isChanged = changedFlags[i];
+    }
 
     this._loaded = true;
   }
@@ -181,6 +188,20 @@ export default class Annotation {
       let snapshot = this._history.snapshots[nextIndex];
       this.restoreFromSnapshot(snapshot);
       this._history.index = nextIndex;
+    }
+  }
+
+  clip() {
+    let targetLabel = this.getTarget();
+    if (targetLabel != null) {
+      this._clipboard = targetLabel.toObject();
+    }
+  }
+
+  paste() {
+    if (this._clipboard != null) {
+      this._clipboard.object_id = this._nextId--;
+      return this.addLabel(this._clipboard);
     }
   }
 

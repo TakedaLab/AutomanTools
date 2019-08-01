@@ -398,7 +398,9 @@ export default class PCDLabelTool{
       // TODO: show internal error
       throw 'Mode error';
     }
-    this._modeStatus.previousMode = this._modeStatus.mode;
+    if (this._modeStatus.mode !== 'command') {
+      this._modeStatus.previousMode = this._modeStatus.mode;
+    }
     this._modeMethods[mode].changeFrom();
     nextMethod.changeTo();
     this._modeStatus.mode = nextMode;
@@ -1248,6 +1250,16 @@ function createModeMethods(pcdTool) {
           pcdTool._labelTool.redo();
         }
       },
+      clip: {
+        'keydown': function() {
+          pcdTool._labelTool.clip();
+        }
+      },
+      paste: {
+        'keydown': function() {
+          pcdTool._labelTool.paste();
+        }
+      }
     },
   };
   return modeMethods;
@@ -1269,6 +1281,7 @@ function createGlobalKeyMethods(pcdTool) {
     },
     temporarySelectMode: {
       keydown: function(args) {
+        if (pcdTool._modeStatus.busy) {return;}
         if (args['target'] && (modeNames.indexOf(args['target']) >= 0)) {
           if (args['target'] !== pcdTool.getMode()) {
             pcdTool.modeChangeRequest(args['target']);
