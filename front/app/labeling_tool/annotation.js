@@ -195,6 +195,7 @@ export default class Annotation {
     let targetLabel = this.getTarget();
     if (targetLabel != null) {
       this._clipboard = targetLabel.toObject();
+      return this._clipboard;
     }
   }
 

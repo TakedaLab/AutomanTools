@@ -382,19 +382,19 @@ const LabelTool = {
     return ret;
   },
   undo() {
-    annotation.undo();
+    return annotation.undo();
   },
   redo() {
-    annotation.redo();
+    return annotation.redo();
   },
   takeSnapshot() {
-    annotation.takeSnapshot();
+    return annotation.takeSnapshot();
   },
   clip() {
-    annotation.clip();
+    return annotation.clip();
   },
   paste() {
-    this.selectLabel(annotation.paste());
+    return annotation.paste();
   }
 };
 

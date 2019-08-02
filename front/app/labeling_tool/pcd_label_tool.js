@@ -1257,7 +1257,7 @@ function createModeMethods(pcdTool) {
       },
       paste: {
         'keydown': function() {
-          pcdTool._labelTool.paste();
+          pcdTool._labelTool.selectLabel(pcdTool._labelTool.paste());
         }
       }
     },
