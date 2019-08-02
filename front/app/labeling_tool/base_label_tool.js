@@ -395,6 +395,11 @@ const LabelTool = {
   },
   paste() {
     return annotation.paste();
+  },
+  duplicateLabel(label) {
+    if (label != null) {
+      return annotation.duplicateLabel(label);
+    }
   }
 };
 

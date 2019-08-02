@@ -398,7 +398,7 @@ export default class PCDLabelTool{
       // TODO: show internal error
       throw 'Mode error';
     }
-    if (this._modeStatus.mode !== 'command') {
+    if (!['command', 'create'].includes(this._modeStatus.mode)) {
       this._modeStatus.previousMode = this._modeStatus.mode;
     }
     this._modeMethods[mode].changeFrom();
@@ -1116,10 +1116,20 @@ function createModeMethods(pcdTool) {
       animate: function() {
       },
       mouseDown: function(e) {
-        const pos = pcdTool.getIntersectPos(e);
-        if (pos != null) {
-          pcdTool._creatingBBox.startPos = pos;
+        const label = pcdTool._labelTool.getTargetLabel();
+        if (label != null) {
+          // For duplicating the selected label
+          pcdTool._labelTool.duplicateLabel(label);
+          setUpdatingBBox(e);
+          pcdTool.modeChangeRequest('move');
           pcdTool._modeStatus.busy = true;
+        }else {
+          // For creating a new label
+          const pos = pcdTool.getIntersectPos(e);
+          if (pos != null) {
+            pcdTool._creatingBBox.startPos = pos;
+            pcdTool._modeStatus.busy = true;
+          }
         }
       },
       mouseMove: function(e) {

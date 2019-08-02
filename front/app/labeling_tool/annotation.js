@@ -118,6 +118,16 @@ export default class Annotation {
     return label;
   }
 
+  duplicateLabel(label) {
+    if (label != null) {
+      let obj = label.toObject();
+      obj.object_id = this._nextId--;
+      let newLabel = this.addLabel(obj);
+      newLabel.isChanged = true;
+      return newLabel;
+    }
+  }
+
   takeSnapshot(force=false) {
     if (this.isChanged() || force) {
       const labels = [];
