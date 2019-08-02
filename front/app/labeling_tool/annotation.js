@@ -118,8 +118,8 @@ export default class Annotation {
     return label;
   }
 
-  takeSnapshot() {
-    if (this.isChanged()) {
+  takeSnapshot(force=false) {
+    if (this.isChanged() || force) {
       const labels = [];
       const changedFlags = [];
       this._labels.forEach(label => {
@@ -139,12 +139,12 @@ export default class Annotation {
 
       console.log(this._history);
     }
-    //
-    // // assertion
-    // if (this._history.index !== (this._history.snapshots.length - 1)) {
-    //   console.error('Assertion error (wrong history length)');
-    //   return;
-    // }
+
+    // assertion
+    if (this._history.index !== (this._history.snapshots.length - 1)) {
+      console.error('Assertion error (wrong history length)');
+      return;
+    }
 
     // limit history
     let limit = 100;
@@ -227,7 +227,9 @@ export default class Annotation {
       this._labelTool.controls.error(txt);
       return null;
     }
-    return new Label(this, this._nextId--, klass, bbox);
+    const label = new Label(this, this._nextId--, klass, bbox);
+    this.takeSnapshot();
+    return label;
   }
   changeKlass(id, klass) {
     let label = this._getLabel(id);
@@ -300,6 +302,7 @@ export default class Annotation {
     }
     this._labels.delete(label.id);
     label.dispose();
+    this.takeSnapshot(true);
   }
 
   // private
