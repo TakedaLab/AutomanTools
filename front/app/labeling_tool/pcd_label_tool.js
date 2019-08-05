@@ -1,5 +1,15 @@
 import LabelTool from "./base_label_tool";
 
+Set.prototype.difference = function(setB) {
+  if (setB === null) {return this;}
+
+  var difference = new Set(this);
+  for (var elem of setB) {
+    difference.delete(elem);
+  }
+  return difference;
+};
+
 const toolStatus = {
 };
 
@@ -46,12 +56,8 @@ export default class PCDLabelTool{
     endPos: null,
     box: null
   };
-  _updatingBBox = {
-    startPos: null,
-    endPos: null,
-    pcdBox: null,
-    originalPCDBox: null,
-  };
+  _updatingBBoxes = [];
+  _hoveringBBox = null;
   _keymap_arr = [];
   _car_template_arr = [];
 
@@ -164,17 +170,30 @@ export default class PCDLabelTool{
   }
   updateTarget(prev, next) {
     const id = this.candidateId;
-    if (prev != null && prev.has(id)) {
-      prev.bbox[id].cube.mesh.material = BBoxParams.material;
-      prev.bbox[id].selected = false;
-      this._redrawFlag = true;
+
+    // reset arrow
+    this.setArrow(null);
+
+    [...prev.difference(next)].filter((obj) => {
+      return obj.bbox[id] !== null;
+    }).forEach((obj) => {
+      obj.bbox[id].deselect();
+    });
+    if (next !== null) {
+      [...next].filter((label) => {
+        return label.bbox[id] !== null
+      }).forEach((obj) => {
+        obj.bbox[id].select();
+      });
+
+      this.setArrow([...next].filter((label) => {
+        return label.bbox[id] !== null;
+      }).map((label) => {
+        return label.bbox[id];
+      }));
     }
-    if (next != null && next.has(id)) {
-      next.bbox[id].cube.mesh.material = BBoxParams.selectingMaterial;
-      next.bbox[id].selected = true;
-      this._redrawFlag = true;
-    }
-    this.setArrow(next && next.bbox[id]);
+    this.redrawRequest();
+    // TODO: set arrow
   }
   // to controls
   redrawRequest() {
@@ -373,7 +392,15 @@ export default class PCDLabelTool{
     if (bbox == null) {
       this._editArrowGroup.visible = false;
     } else {
-      const pos = bbox.box.pos;
+      var pos = new THREE.Vector3();
+      if (Array.isArray(bbox)) {
+        bbox.forEach((box) => {
+          pos.add(box.box.pos);
+        });
+        pos.divideScalar(bbox.length);
+      }else {
+        pos = bbox.box.pos;
+      }
       this._editArrowGroup.visible = true;
       this._editArrowGroup.position.set(pos.x, pos.y, pos.z);
     }
@@ -586,9 +613,9 @@ class PCDBBox {
     if ( changed ) {
       this.label.isChanged = true;
     }
-    if (this.selected) {
-      this.pcdTool.setArrow(this);
-    }
+    // if (this.selected) {
+    //   this.pcdTool.setArrow(this);
+    // }
   }
   clone(addToTool=false) {
     const content = {};
@@ -605,6 +632,14 @@ class PCDBBox {
 
     return pos_bool && size_bool && yaw_bool && id_bool;
   }
+  select() {
+    this.selected = true;
+    this.cube.mesh.material = BBoxParams.selectingMaterial;
+  }
+  deselect() {
+    this.selected = false;
+    this.cube.mesh.material = BBoxParams.material;
+  }
 }
 
 
@@ -614,48 +649,195 @@ const modeNames = [
   ];
 // TODO: move select methods to one place
 function createModeMethods(pcdTool) {
-  const transformSelectedBox = function({dpx=0, dpy=0, dpz=0, dsx=0, dsy=0, dsz=0, drx=0, dry=0, drz=0} = {}) {
-    const label = pcdTool._labelTool.getTargetLabel();
-    if (label == null) { return; } // TODO: this is error
+
+  const getUpdatingBBoxes = function() {
+    return pcdTool._updatingBBoxes;
+  };
+
+  const setUpdatingBBoxes = function(e) {
+    pcdTool._labelTool.getTargetLabels().map((label) => {
+      return label.bbox[pcdTool.candidateId];
+    }).forEach((pcdBox) => {
+      const updatingBBox = {
+        mouse: pcdTool.getMousePos(e),
+        startPos: pcdTool.getIntersectPos(e),
+        endPos: null,
+        pcdBox: pcdBox,
+        originalPCDBox: pcdBox.clone(false)
+      };
+      pcdTool._updatingBBoxes.push(updatingBBox);
+    });
+  };
+
+  const resetUpdatingBBoxes = function() {
+    pcdTool._updatingBBoxes = [];
+  };
+
+  const storeUpdateHistory = function() {
+    // take a shapshot if the box is updated
+    let updatingBBoxes = getUpdatingBBoxes();
+    if (updatingBBoxes.length === 0) {return;}
+
+    let storeFlag = updatingBBoxes.map((bbox) => {
+      return !bbox.pcdBox.isEqualTo(bbox.originalPCDBox);
+    }).some((flag)=>{return flag});
+    if (storeFlag) {
+      pcdTool._labelTool.takeSnapshot();
+    }
+  };
+
+  const transformSelectedBBoxes = function({dpx=0, dpy=0, dpz=0, dsx=0, dsy=0, dsz=0, drx=0, dry=0, drz=0} = {}) {
+    pcdTool._labelTool.getTargetLabels().filter((label) => {
+      return label.bbox[pcdTool.candidateId] != null;
+    }).forEach((label) => {
+      transformBBox({
+        bbox: label.bbox[pcdTool.candidateId],
+        dpx: dpx, dpy: dpy, dpz: dpz,
+        dsx: dsx, dsy: dsy, dsz: dsz,
+        drx: drx, dry: dry, drz: drz
+      });
+    });
+  };
+
+  const transformBBox = function({bbox=null, dpx=0, dpy=0, dpz=0, dsx=0, dsy=0, dsz=0, drx=0, dry=0, drz=0} = {}) {
+    if (bbox == null) { return; }
     const move = new THREE.Vector3(dpx, dpy, dpz);
     const resize = new THREE.Vector3(dsx, dsy, dsz);
     const rotate = drz;
-    const bbox = label.bbox[pcdTool.candidateId];
     bbox.box.pos.add(move);
     bbox.box.size.add(resize);
     bbox.box.yaw += rotate;
     bbox.updateCube(true);
     pcdTool._redrawFlag = true;
-    pcdTool._labelTool.takeSnapshot();
   };
 
-  const getUpdatingBBox = function() {
-    return pcdTool._updatingBBox;
+  const handleMouseMoveForBboxInResizeMode = function(e, bbox) {
+    const normal = this.selectFace.normal.clone();
+    if (normal.z === 1 || normal.z === -1) {
+      // TODO: determine the distance to move based on the intersection point of mouse and vertical plane
+      const pos = pcdTool.getMousePos(e);
+      const diff = ((pos.x - bbox.mouse.x) + (pos.y - bbox.mouse.y)) * 20;
+      bbox.pcdBox.box.size.z += diff;
+      bbox.mouse = pos;
+    }else {
+      const pos = pcdTool.getIntersectPos(e);
+      if (pos != null) {
+        bbox.endPos = pos;
+        const dist = bbox.endPos.distanceTo(bbox.startPos);
+        if (dist > 0.01) {
+          if (this.selectFace != null) {
+            const move = (new THREE.Vector3(
+              (bbox.endPos.x - bbox.startPos.x) * 2.0,
+              (bbox.endPos.y - bbox.startPos.y) * 2.0,
+              0
+            ).multiply(normal));
+            bbox.pcdBox.box.size = bbox.originalPCDBox.box.size.clone();
+            bbox.pcdBox.box.size.add(move);
+          }
+        }
+      }else {
+        // TODO: determine the distance to move based on the intersection point of mouse and vertical plane
+        const pos = pcdTool.getMousePos(e);
+        const diff = ((pos.x - bbox.mouse.x) + (pos.y - bbox.mouse.y)) * 20;
+        const move = (new THREE.Vector3(
+          diff * 2.0,
+          diff * 2.0,
+          0
+        ).multiply(normal));
+        bbox.pcdBox.box.size.add(move);
+        bbox.mouse = pos;
+      }
+    }
+    bbox.pcdBox.updateCube(true);
+    pcdTool._redrawFlag = true;
   };
 
-  const setUpdatingBBox = function(e) {
-    const label = pcdTool._labelTool.getTargetLabel();
-    if (label == null) { return; }
-    const pcdBox = label.bbox[pcdTool.candidateId];
-
-    pcdTool._updatingBBox.startPos = pcdTool.getIntersectPos(e);
-    pcdTool._updatingBBox.pcdBox = pcdBox;
-    pcdTool._updatingBBox.originalPCDBox = pcdBox.clone(false);
+  const handleMouseMoveForBBoxInRotateMode = function(e, bbox) {
+    const mouse = pcdTool.getMousePos(e);
+    const diff = ((mouse.x - bbox.mouse.x) + (mouse.y - bbox.mouse.y)) * Math.PI * 1;
+    bbox.pcdBox.box.yaw += diff;
+    bbox.pcdBox.updateCube(diff != 0);
+    bbox.mouse = mouse;
+    pcdTool._redrawFlag = true;
   };
 
-  const resetUpdatingBBox = function() {
-    const bbox = pcdTool._updatingBBox;
-    bbox.startPos = null;
-    bbox.startPos = null;
-    bbox.pcdBox = null;
-    bbox.originalPCDBox = null;
+  const handleMouseMoveForBBoxInMoveMode = function(e, bbox) {
+    if (this.arrowMoving == null) {
+      // When none of the arrows are selected
+      const pos = pcdTool.getIntersectPos(e);
+      if (pos != null) {
+        bbox.endPos = pos;
+        const dist = bbox.endPos.distanceTo(bbox.startPos);
+        if (dist > 0.01) {
+          bbox.pcdBox.box.pos.x = bbox.originalPCDBox.box.pos.x + (bbox.endPos.x - bbox.startPos.x);
+          bbox.pcdBox.box.pos.y = bbox.originalPCDBox.box.pos.y + (bbox.endPos.y - bbox.startPos.y);
+        }
+      }
+    }else if (this.arrowMoving.arrow === 2) {
+      // When the arrow of Z-axis is selected
+      // TODO: determine the distance to move based on the intersection point of mouse and vertical plane
+      const pos = pcdTool.getMousePos(e);
+      const diff = ((pos.x - bbox.mouse.x) + (pos.y - bbox.mouse.y)) * 20;
+      bbox.pcdBox.box.pos.z += diff;
+      bbox.mouse = pos;
+    }else {
+      // When the arrow of X-axis or Y-axis is selected
+      const pos = pcdTool.getIntersectPos(e);
+      if (pos != null) {
+        bbox.endPos = pos;
+        const dist = bbox.endPos.distanceTo(bbox.startPos);
+        if (dist > 0.01) {
+          if (this.arrowMoving.arrow === 0) {
+            bbox.pcdBox.box.pos.x = bbox.originalPCDBox.box.pos.x + (bbox.endPos.x - bbox.startPos.x);
+          } else if (this.arrowMoving.arrow === 1) {
+            bbox.pcdBox.box.pos.y = bbox.originalPCDBox.box.pos.y + (bbox.endPos.y - bbox.startPos.y);
+          } else {
+            console.error("unknown arrow")
+          }
+        }
+      }else {
+        // TODO: determine the distance to move based on the intersection point of mouse and vertical plane
+        const pos = pcdTool.getMousePos(e);
+        const diff = ((pos.x - bbox.mouse.x) + (pos.y - bbox.mouse.y)) * 20;
+        if (this.arrowMoving.arrow === 0) {
+          bbox.pcdBox.box.pos.x -= diff;
+        }else if (this.arrowMoving.arrow === 1) {
+          bbox.pcdBox.box.pos.y -= diff;
+        }
+        bbox.mouse = pos;
+      }
+    }
+    bbox.pcdBox.updateCube(true);
+    pcdTool._redrawFlag = true;
   };
 
-  const storeUpdateHistory = function() {
-    // take a shapshot if the box is updated
-    let bbox = pcdTool._updatingBBox;
-    if (bbox.pcdBox != null && !bbox.pcdBox.isEqualTo(bbox.originalPCDBox)) {
-      pcdTool._labelTool.takeSnapshot();
+  const handleBoxHover = function(e) {
+    const ray = pcdTool.getRay(e);
+    const bboxes = Array.from(pcdTool.pcdBBoxes);
+    for(let i=0; i<bboxes.length; ++i) {
+      const bbox = bboxes[i];
+      const intersectPos = ray.intersectObject(bbox.cube.mesh);
+      if (intersectPos.length > 0) {
+        if (pcdTool._hoveringBBox === bbox) { return bbox; }
+        resetBoxHover();
+        bbox.cube.mesh.material = BBoxParams.hoverMaterial;
+        pcdTool._hoveringBBox = bbox;
+        pcdTool._redrawFlag = true;
+        return bbox;
+      }
+    }
+    return null;
+  };
+
+  const resetBoxHover = function() {
+    if (pcdTool._hoveringBBox != null) {
+      if ( pcdTool._hoveringBBox.selected ) {
+        pcdTool._hoveringBBox.cube.mesh.material = BBoxParams.selectingMaterial;
+      } else {
+        pcdTool._hoveringBBox.cube.mesh.material = BBoxParams.material;
+      }
+      pcdTool._redrawFlag = true;
+      pcdTool._hoveringBBox = null;
     }
   };
 
@@ -678,7 +860,7 @@ function createModeMethods(pcdTool) {
           pcdTool._labelTool.selectLabel(null);
         }
 
-        setUpdatingBBox(e);
+        setUpdatingBBoxes(e);
         pcdTool._modeStatus.busy = true;
       },
       resetHover: function() {
@@ -727,80 +909,48 @@ function createModeMethods(pcdTool) {
         pcdTool._redrawFlag = true;
       },
       mouseMove: function(e) {
-        const ray = pcdTool.getRay(e);
-        const label = pcdTool._labelTool.getTargetLabel();
-        const bbox = getUpdatingBBox();
-        if (bbox.pcdBox != null) {
-          const normal = this.selectFace.normal.clone();
-          if (normal.z === 1 || normal.z === -1) {
-            // TODO: determine the distance to move based on the intersection point of mouse and vertical plane
-            const pos = pcdTool.getMousePos(e);
-            const diff = ((pos.x - this.mouse.x) + (pos.y - this.mouse.y)) * 20;
-            bbox.pcdBox.box.size.z += diff;
-            this.mouse = pos;
-          }else {
-            const pos = pcdTool.getIntersectPos(e);
-            if (pos != null) {
-              bbox.endPos = pos;
-              const dist = bbox.endPos.distanceTo(bbox.startPos);
-              if (dist > 0.01) {
-                if (this.selectFace != null) {
-                  const move = (new THREE.Vector3(
-                    (bbox.endPos.x - bbox.startPos.x) * 2.0,
-                    (bbox.endPos.y - bbox.startPos.y) * 2.0,
-                    0
-                  ).multiply(normal));
-                  bbox.pcdBox.box.size = bbox.originalPCDBox.box.size.clone();
-                  bbox.pcdBox.box.size.add(move);
+        const bboxes = getUpdatingBBoxes();
+        if (bboxes.length !== 0) {
+          bboxes.forEach((bbox) => {
+            handleMouseMoveForBboxInResizeMode.bind(this)(e, bbox);
+          }, this)
+        } else {
+          const ray = pcdTool.getRay(e);
+          pcdTool._labelTool.getTargetLabels().forEach((label) => {
+            // select face
+            const prevHoverFace = this.hoverFace;
+            this.hoverFace = null;
+            if (label != null) {
+              const bbox = label.bbox[pcdTool.candidateId];
+              const intersectPos = ray.intersectObject(bbox.cube.mesh);
+              if (intersectPos.length > 0) {
+                this.hoverFace = intersectPos[0].face;
+              }
+              if (prevHoverFace != this.hoverFace) {
+                if (this.hoverFace == null) {
+                  this.resetHoverPlane();
+                } else {
+                  this.setHoverPlane(bbox, this.hoverFace);
                 }
               }
-            }else {
-              // TODO: determine the distance to move based on the intersection point of mouse and vertical plane
-              const pos = pcdTool.getMousePos(e);
-              const diff = ((pos.x - this.mouse.x) + (pos.y - this.mouse.y)) * 20;
-              const move = (new THREE.Vector3(
-                diff * 2.0,
-                diff * 2.0,
-                0
-              ).multiply(normal));
-              bbox.pcdBox.box.size.add(move);
-              this.mouse = pos;
             }
-          }
-          bbox.pcdBox.updateCube(true);
-          pcdTool._redrawFlag = true;
-        } else {
-          // select face
-          const prevHoverFace = this.hoverFace;
-          this.hoverFace = null;
-          if (label != null) {
-            const bbox = label.bbox[pcdTool.candidateId];
-            const intersectPos = ray.intersectObject(bbox.cube.mesh);
-            if (intersectPos.length > 0) {
-              this.hoverFace = intersectPos[0].face;
-            }
-            if (prevHoverFace != this.hoverFace) {
-              if (this.hoverFace == null) {
-                this.resetHoverPlane();
-              } else {
-                this.setHoverPlane(bbox, this.hoverFace);
+            // select edit
+            const bboxes = Array.from(pcdTool.pcdBBoxes);
+            for (let i = 0; i < bboxes.length; ++i) {
+              const bbox = bboxes[i];
+              const intersectPos = ray.intersectObject(bbox.cube.mesh);
+              if (intersectPos.length > 0) {
+                if (this.prevHover == bbox) {
+                  return;
+                }
+                this.resetHover();
+                bbox.cube.mesh.material = BBoxParams.hoverMaterial;
+                this.prevHover = bbox;
+                pcdTool._redrawFlag = true;
+                return;
               }
             }
-          }
-          // select edit
-          const bboxes = Array.from(pcdTool.pcdBBoxes);
-          for(let i=0; i<bboxes.length; ++i) {
-            const bbox = bboxes[i];
-            const intersectPos = ray.intersectObject(bbox.cube.mesh);
-            if (intersectPos.length > 0) {
-              if (this.prevHover == bbox) { return; }
-              this.resetHover();
-              bbox.cube.mesh.material = BBoxParams.hoverMaterial;
-              this.prevHover = bbox;
-              pcdTool._redrawFlag = true;
-              return;
-            }
-          }
+          }, this);
           this.resetHover();
         }
       },
@@ -810,7 +960,7 @@ function createModeMethods(pcdTool) {
         }
 
         storeUpdateHistory();
-        resetUpdatingBBox();
+        resetUpdatingBBoxes();
         pcdTool._modeStatus.busy = false;
       },
       changeFrom: function() {
@@ -850,7 +1000,8 @@ function createModeMethods(pcdTool) {
               default:
                 break;
             }
-            transformSelectedBox({dsx: dx, dsy: dy});
+            transformSelectedBBoxes({dsx: dx, dsy: dy});
+            pcdTool._labelTool.takeSnapshot();
           }
         }
       },
@@ -860,25 +1011,17 @@ function createModeMethods(pcdTool) {
       animate: function() {
       },
       mouseDown: function(e) {
-        const label = pcdTool._labelTool.getTargetLabel();
-        if (label != null) {
-          this.mouse = pcdTool.getMousePos(e);
-          pcdTool._modeStatus.busy = true;
-        }
-
-        setUpdatingBBox(e);
+        setUpdatingBBoxes(e);
+        this.mouse = pcdTool.getMousePos(e);
         pcdTool._modeStatus.busy = true;
       },
       mouseMove: function(e) {
         if (this.mouse != null) {
-          const bbox = getUpdatingBBox();
-          if (bbox.pcdBox != null) {
-            const mouse = pcdTool.getMousePos(e);
-            const diff = ((mouse.x - this.mouse.x) + (mouse.y - this.mouse.y)) * Math.PI * 1;
-            bbox.pcdBox.box.yaw += diff;
-            bbox.pcdBox.updateCube(diff != 0);
-            this.mouse = mouse;
-            pcdTool._redrawFlag = true;
+          const bboxes = getUpdatingBBoxes();
+          if (bboxes.length !== 0) {
+            bboxes.forEach((bbox) => {
+              handleMouseMoveForBBoxInRotateMode.bind(this)(e, bbox);
+            }, this);
           }
         }
       },
@@ -888,7 +1031,7 @@ function createModeMethods(pcdTool) {
         }
 
         storeUpdateHistory();
-        resetUpdatingBBox();
+        resetUpdatingBBoxes();
         pcdTool._modeStatus.busy = false;
       },
       changeFrom: function() {
@@ -924,7 +1067,8 @@ function createModeMethods(pcdTool) {
               default:
                 break;
             }
-            transformSelectedBox({drz: dz});
+            transformSelectedBBoxes({drz: dz});
+            pcdTool._labelTool.takeSnapshot();
           }
         }
       },
@@ -936,83 +1080,36 @@ function createModeMethods(pcdTool) {
       animate: function() {
       },
       mouseDown: function(e) {
-        // pcdTool._modeStatus.busy = true;
+        const hoveringBox = handleBoxHover(e);
         if (this.arrowHover !== -1) {
           this.arrowMoving = {
             arrow: this.arrowHover,
             mouse: pcdTool.getMousePos(e)
           };
           pcdTool._modeStatus.busy = true;
-        } else if (this.prevHover != null) {
-          pcdTool._labelTool.selectLabel(this.prevHover.label);
+        } else if (hoveringBox != null) {
+          if (pcdTool._labelTool.getTargetLabels().filter((label) => {
+            return label === hoveringBox.label;
+          }).length === 0) {
+            pcdTool._labelTool.selectLabel(hoveringBox.label);
+          }
         } else {
           pcdTool._labelTool.selectLabel(null);
         }
 
-        setUpdatingBBox(e);
+        setUpdatingBBoxes(e);
         pcdTool._modeStatus.busy = true;
       },
       resetHover: function() {
-        if (this.prevHover != null) {
-          if ( this.prevHover.selected ) {
-            this.prevHover.cube.mesh.material = BBoxParams.selectingMaterial;
-          } else {
-            this.prevHover.cube.mesh.material = BBoxParams.material;
-          }
-          pcdTool._redrawFlag = true;
-          this.prevHover = null;
-        }
+        resetBoxHover();
       },
       mouseMove: function(e) {
-        const bbox = getUpdatingBBox();
-        if (bbox.pcdBox != null) {
-          if (this.arrowMoving == null) {
-            // When none of the arrows are selected
-            const pos = pcdTool.getIntersectPos(e);
-            if (pos != null) {
-              bbox.endPos = pos;
-              const dist = bbox.endPos.distanceTo(bbox.startPos);
-              if (dist > 0.01) {
-                bbox.pcdBox.box.pos.x = bbox.originalPCDBox.box.pos.x + (bbox.endPos.x - bbox.startPos.x);
-                bbox.pcdBox.box.pos.y = bbox.originalPCDBox.box.pos.y + (bbox.endPos.y - bbox.startPos.y);
-              }
-            }
-          }else if (this.arrowMoving.arrow === 2) {
-            // When the arrow of Z-axis is selected
-            // TODO: determine the distance to move based on the intersection point of mouse and vertical plane
-            const pos = pcdTool.getMousePos(e);
-            const diff = ((pos.x - this.arrowMoving.mouse.x) + (pos.y - this.arrowMoving.mouse.y)) * 20;
-            bbox.pcdBox.box.pos.z += diff;
-            this.arrowMoving.mouse = pos;
-          }else {
-            // When the arrow of X-axis or Y-axis is selected
-            const pos = pcdTool.getIntersectPos(e);
-            if (pos != null) {
-              bbox.endPos = pos;
-              const dist = bbox.endPos.distanceTo(bbox.startPos);
-              if (dist > 0.01) {
-                if (this.arrowMoving.arrow === 0) {
-                  bbox.pcdBox.box.pos.x = bbox.originalPCDBox.box.pos.x + (bbox.endPos.x - bbox.startPos.x);
-                } else if (this.arrowMoving.arrow === 1) {
-                  bbox.pcdBox.box.pos.y = bbox.originalPCDBox.box.pos.y + (bbox.endPos.y - bbox.startPos.y);
-                } else {
-                  console.error("unknown arrow")
-                }
-              }
-            }else {
-              // TODO: determine the distance to move based on the intersection point of mouse and vertical plane
-              const pos = pcdTool.getMousePos(e);
-              const diff = ((pos.x - this.arrowMoving.mouse.x) + (pos.y - this.arrowMoving.mouse.y)) * 20;
-              if (this.arrowMoving.arrow === 0) {
-                bbox.pcdBox.box.pos.x -= diff;
-              }else if (this.arrowMoving.arrow === 1) {
-                bbox.pcdBox.box.pos.y -= diff;
-              }
-              this.arrowMoving.mouse = pos;
-            }
-          }
-          bbox.pcdBox.updateCube(true);
-          pcdTool._redrawFlag = true;
+        const bboxes = getUpdatingBBoxes();
+        if (bboxes.length !== 0) {
+          bboxes.forEach((bbox) => {
+            handleMouseMoveForBBoxInMoveMode.bind(this)(e, bbox);
+          }, this);
+          pcdTool.setArrow(bboxes.map((bbox)=>{return bbox.pcdBox;}));
         }
 
         const ray = pcdTool.getRay(e);
@@ -1040,21 +1137,10 @@ function createModeMethods(pcdTool) {
 
         // select edit
         if (this.arrowHover == -1) {
-          const bboxes = Array.from(pcdTool.pcdBBoxes);
-          for(let i=0; i<bboxes.length; ++i) {
-            const bbox = bboxes[i];
-            const intersectPos = ray.intersectObject(bbox.cube.mesh);
-            if (intersectPos.length > 0) {
-              if (this.prevHover == bbox) { return; }
-              this.resetHover();
-              bbox.cube.mesh.material = BBoxParams.hoverMaterial;
-              this.prevHover = bbox;
-              pcdTool._redrawFlag = true;
-              return;
-            }
+          if (handleBoxHover(e) == null) {
+            resetBoxHover();
           }
         }
-        this.resetHover();
       },
       mouseUp: function(e) {
         if (this.arrowMoving != null) {
@@ -1062,7 +1148,7 @@ function createModeMethods(pcdTool) {
         }
 
         storeUpdateHistory();
-        resetUpdatingBBox();
+        resetUpdatingBBoxes();
         pcdTool._modeStatus.busy = false;
       },
       changeFrom: function() {
@@ -1107,7 +1193,8 @@ function createModeMethods(pcdTool) {
               default:
                 break;
             }
-            transformSelectedBox({dpx: dx, dpy: dy});
+            transformSelectedBBoxes({dpx: dx, dpy: dy});
+            pcdTool._labelTool.takeSnapshot();
           }
         }
       },
@@ -1116,11 +1203,11 @@ function createModeMethods(pcdTool) {
       animate: function() {
       },
       mouseDown: function(e) {
-        const label = pcdTool._labelTool.getTargetLabel();
-        if (label != null) {
-          // For duplicating the selected label
-          pcdTool._labelTool.duplicateLabel(label);
-          setUpdatingBBox(e);
+        const labels = pcdTool._labelTool.getTargetLabels();
+        if (labels.length !== 0) {
+          // For duplicating the selected labels
+          pcdTool._labelTool.duplicateLabels(labels);
+          setUpdatingBBoxes(e);
           pcdTool.modeChangeRequest('move');
           pcdTool._modeStatus.busy = true;
         }else {
@@ -1200,11 +1287,21 @@ function createModeMethods(pcdTool) {
         pcdTool._controls.update();
       },
       mouseDown: function(e) {
+        const hoveringBox = handleBoxHover(e);
+        if (hoveringBox !== null) {
+          pcdTool._labelTool.selectLabel(hoveringBox.label, true);
+          setUpdatingBBoxes(e);
+        }
         pcdTool._modeStatus.busy = true;
       },
       mouseMove: function(e) {
+        // select edit
+        if (handleBoxHover(e) == null) {
+          resetBoxHover();
+        }
       },
       mouseUp: function(e) {
+        resetUpdatingBBoxes();
         pcdTool._modeStatus.busy = false;
       },
       changeFrom: function() {
@@ -1227,22 +1324,30 @@ function createModeMethods(pcdTool) {
     },
     'command': {
       animate: function() {
-        pcdTool._redrawFlag = true;
-        pcdTool._controls.update();
       },
       mouseDown: function(e) {
+        const hoveringBox = handleBoxHover(e);
+        if (hoveringBox !== null) {
+          pcdTool._labelTool.selectLabel(hoveringBox.label, true);
+          setUpdatingBBoxes(e);
+        }
         pcdTool._modeStatus.busy = true;
       },
       mouseMove: function(e) {
+        // select edit
+        if (handleBoxHover(e) == null) {
+          resetBoxHover();
+        }
       },
       mouseUp: function(e) {
+        resetUpdatingBBoxes();
         pcdTool._modeStatus.busy = false;
       },
       changeFrom: function() {
         pcdTool._controls.enabled = false;
       },
       changeTo: function() {
-        pcdTool._controls.enabled = true;
+        pcdTool._controls.enabled = false;
         pcdTool._wrapper.css('cursor', 'default');
       },
       save: {
@@ -1267,7 +1372,10 @@ function createModeMethods(pcdTool) {
       },
       paste: {
         'keydown': function() {
-          pcdTool._labelTool.selectLabel(pcdTool._labelTool.paste());
+          pcdTool._labelTool.selectLabel(null);
+          pcdTool._labelTool.paste().forEach((label) => {
+            pcdTool._labelTool.selectLabel(label, true);
+          })
         }
       }
     },
@@ -1353,11 +1461,9 @@ function createGlobalKeyMethods(pcdTool) {
     },
     deleteBbox: {
       keydown: function(args) {
-        let labelTool = pcdTool._labelTool;
-        let label = labelTool.getTargetLabel();
-        if (label != null) {
-          labelTool.removeLabel(label);
-        }
+        pcdTool._labelTool.getTargetLabels().forEach((label) => {
+          pcdTool._labelTool.removeLabel(label);
+        })
       }
     }
   };
