@@ -33,6 +33,9 @@ export default class Annotation {
     this._removeAll();
     if (this._frameNumber !== frameNumber) {
       this._history = {index: -1, snapshots: []};
+    }else {
+      // TODO: track the boxes whose object_id are newly assigned and set the value instead of removing history.
+      this._history = {index: -1, snapshots: []};
     }
     this._nextId = -1;
     return new Promise((resolve, reject) => {

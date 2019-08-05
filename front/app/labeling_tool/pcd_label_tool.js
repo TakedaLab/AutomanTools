@@ -1203,10 +1203,16 @@ function createModeMethods(pcdTool) {
       animate: function() {
       },
       mouseDown: function(e) {
-        const labels = pcdTool._labelTool.getTargetLabels();
-        if (labels.length !== 0) {
+        const selectedLabels = pcdTool._labelTool.getTargetLabels().filter((label)=>{
+          return label.bbox[pcdTool.candidateId] !== null
+        });
+        const hoveredLabel = handleBoxHover(e);
+        let flag = selectedLabels.map((label) => {
+          return label.bbox[pcdTool.candidateId] === hoveredLabel;
+        }).some((flag) => {return flag});
+        if (selectedLabels.length !== 0 && flag) {
           // For duplicating the selected labels
-          pcdTool._labelTool.duplicateLabels(labels);
+          pcdTool._labelTool.duplicateLabels(selectedLabels);
           setUpdatingBBoxes(e);
           pcdTool.modeChangeRequest('move');
           pcdTool._modeStatus.busy = true;
