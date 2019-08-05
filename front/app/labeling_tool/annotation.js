@@ -12,7 +12,7 @@ export default class Annotation {
   _labelTool = null;
   // History
   _frameNumber = null;
-  _history = {index: -1, snapshots: []};
+  _history = { index: -1, snapshots: [] };
   // Copy
   _clipboard = [];
 
@@ -32,10 +32,10 @@ export default class Annotation {
   load(frameNumber) {
     this._removeAll();
     if (this._frameNumber !== frameNumber) {
-      this._history = {index: -1, snapshots: []};
-    }else {
+      this._history = { index: -1, snapshots: [] };
+    } else {
       // TODO: track the boxes whose object_id are newly assigned and set the value instead of removing history.
-      this._history = {index: -1, snapshots: []};
+      this._history = { index: -1, snapshots: [] };
     }
     this._nextId = -1;
     return new Promise((resolve, reject) => {
@@ -131,7 +131,7 @@ export default class Annotation {
     }
   }
 
-  takeSnapshot(force=false) {
+  takeSnapshot(force = false) {
     if (this.isChanged() || force) {
       const labels = [];
       const changedFlags = [];
@@ -144,17 +144,23 @@ export default class Annotation {
         changedFlags.push(label.isChanged);
       });
 
-      if (this._history.index < (this._history.snapshots.length - 1)) {
-        this._history.snapshots = this._history.snapshots.slice(0, this._history.index + 1);
+      if (this._history.index < this._history.snapshots.length - 1) {
+        this._history.snapshots = this._history.snapshots.slice(
+          0,
+          this._history.index + 1
+        );
       }
-      this._history.snapshots.push({'labels': labels, 'changedFlags': changedFlags});
+      this._history.snapshots.push({
+        labels: labels,
+        changedFlags: changedFlags
+      });
       this._history.index += 1;
 
       console.log(this._history);
     }
 
     // assertion
-    if (this._history.index !== (this._history.snapshots.length - 1)) {
+    if (this._history.index !== this._history.snapshots.length - 1) {
       console.error('Assertion error (wrong history length)');
       return;
     }
@@ -163,7 +169,8 @@ export default class Annotation {
     let limit = 100;
     if (this._history.snapshots.length > limit) {
       this._history.snapshots = this._history.snapshots.slice(
-        this._history.snapshots.length - limit, this._history.snapshots.length
+        this._history.snapshots.length - limit,
+        this._history.snapshots.length
       );
       this._history.index = limit - 1;
     }
@@ -178,7 +185,7 @@ export default class Annotation {
 
     const labels = snapshot.labels;
     const changedFlags = snapshot.changedFlags;
-    for (var i=0; i<labels.length; i++) {
+    for (let i = 0; i < labels.length; i++) {
       const label = this.addLabel(labels[i]);
       label.isChanged = changedFlags[i];
     }
@@ -196,7 +203,7 @@ export default class Annotation {
   }
 
   redo() {
-    if (this._history.index < (this._history.snapshots.length - 1)) {
+    if (this._history.index < this._history.snapshots.length - 1) {
       let nextIndex = this._history.index + 1;
       let snapshot = this._history.snapshots[nextIndex];
       this.restoreFromSnapshot(snapshot);
@@ -207,14 +214,16 @@ export default class Annotation {
   clip() {
     let targetLabels = this.getTargets();
     if (targetLabels != null && targetLabels.length !== 0) {
-      this._clipboard = targetLabels.map((label) => {return label.toObject()});
+      this._clipboard = targetLabels.map(label => {
+        return label.toObject();
+      });
       return this._clipboard;
     }
   }
 
   paste() {
     if (this._clipboard != null && this._clipboard.length !== 0) {
-      return this._clipboard.map((label) => {
+      return this._clipboard.map(label => {
         label.object_id = this._nextId--;
         return this.addLabel(label);
       }, this);
@@ -224,7 +233,7 @@ export default class Annotation {
   getTargets() {
     return [...this._targetLabels];
   }
-  setTarget(tgt, add=false) {
+  setTarget(tgt, add = false) {
     let next = this._getLabel(tgt),
       prev = new Set(this._targetLabels);
     // if (prev != null && next != null && next.id === prev.id) {
@@ -234,10 +243,10 @@ export default class Annotation {
       if (next !== null) {
         this._targetLabels.add(next);
       }
-    }else {
+    } else {
       if (next !== null) {
         this._targetLabels = new Set([next]);
-      }else {
+      } else {
         this._targetLabels = new Set();
       }
     }
@@ -312,7 +321,7 @@ export default class Annotation {
       return;
     }
     const tgts = this._targetLabels;
-    tgts.forEach((tgt) => {
+    tgts.forEach(tgt => {
       if (tgt != null && label.id === tgt.id) {
         let originalTargetLabels = new Set(this._targetLabels);
         this._targetLabels.delete(tgt);
