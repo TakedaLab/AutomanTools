@@ -10,12 +10,12 @@ let annotation, imageLabelTool, pcdLabelTool, controls, klassSet;
 
 const toolStatus = {
   // informations
-  projectId: null,       // from location
-  projectInfo: null,     // from 'project'
-  annotationId: null,    // from location
-  annotationName: null,  // from 'annotation'
-  datasetId: null,       // from 'annotation'
-  originalId: null,      // from 'dataset'
+  projectId: null, // from location
+  projectInfo: null, // from 'project'
+  annotationId: null, // from location
+  annotationName: null, // from 'annotation'
+  datasetId: null, // from 'annotation'
+  originalId: null, // from 'dataset'
   // navigation
   pageBox: null,
   nextFrameButton: null,
@@ -43,9 +43,11 @@ const LabelTool = {
     return annotation.isChanged();
   },
   isLoaded() {
-    return innerStatus.loaded &&
+    return (
+      innerStatus.loaded &&
       annotation.isLoaded() &&
-      toolStatus.tools.every(tool=>tool.isLoaded());
+      toolStatus.tools.every(tool => tool.isLoaded())
+    );
   },
   isEditable() {
     return LabelTool.isLoaded();
@@ -62,9 +64,9 @@ const LabelTool = {
     if (LabelTool.isChanged()) {
       const TEXT_SAVE = 'Do you want to save?';
       const TEXT_MOVE = 'Do you want to move frame WITHOUT saving?';
-      if ( window.confirm(TEXT_SAVE) ) {
+      if (window.confirm(TEXT_SAVE)) {
         savePromise = annotation.save();
-      } else if ( window.confirm(TEXT_MOVE) ) {
+      } else if (window.confirm(TEXT_MOVE)) {
         savePromise = Promise.resolve();
       } else {
         return Promise.resolve();
@@ -81,7 +83,7 @@ const LabelTool = {
         .then(() => {
           toolStatus.frameNumber = num;
           toolStatus.pageBox[0].placeholder =
-            (num + 1) + '/' + toolStatus.frameLength;
+            num + 1 + '/' + toolStatus.frameLength;
           toolStatus.pageBox.val('');
 
           // load something (image, pcd)
@@ -229,7 +231,7 @@ const LabelTool = {
     if (newKls !== null) {
       const labels = annotation.getTargets();
       if (labels !== null && labels.length !== 0) {
-        labels.forEach((label)=>{
+        labels.forEach(label => {
           annotation.changeKlass(label, newKls);
           controls.SideBar.update();
         });
@@ -246,7 +248,7 @@ const LabelTool = {
   getKlass(name) {
     return klassSet.getByName(name);
   },
-  selectLabel(label, additional=false) {
+  selectLabel(label, additional = false) {
     if (!LabelTool.isLoaded()) {
       return false;
     }
@@ -405,7 +407,9 @@ const LabelTool = {
     }
   },
   duplicateLabels(labels) {
-    return labels.map((label) => {return this.duplicateLabel(label)}, this);
+    return labels.map(label => {
+      return this.duplicateLabel(label);
+    }, this);
   }
 };
 
@@ -554,13 +558,13 @@ const initializeEvent = function() {
     .keydown(function(e) {
       if (LabelTool.getTool().name === 'PCD') {
         LabelTool.getTool().handles.keydown(e);
-      }else if (e.keyCode == 8 || e.keyCode == 46) {
+      } else if (e.keyCode == 8 || e.keyCode == 46) {
         // Backspace or Delete
         // const label = LabelTool.getTargetLabel();
         // if (label != null) {
         //   LabelTool.removeLabel(label);
         // }
-        LabelTool.getTargetLabels().forEach((label) => {
+        LabelTool.getTargetLabels().forEach(label => {
           LabelTool.removeLabel(label);
         });
       } else if (e.keyCode == 39) {
