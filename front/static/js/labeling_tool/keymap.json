@@ -87,6 +87,48 @@
     "args": {"candidates": ["move", "resize", "rotate"]}
   },
   {
+    "command": "adjustToTemplate",
+    "mode": "create",
+    "key": "1",
+    "args": {"templateName": "mini_car"}
+  },
+  {
+    "command": "adjustToTemplate",
+    "mode": "create",
+    "key": "2",
+    "args": {"templateName": "sedan"}
+  },
+  {
+    "command": "adjustToTemplate",
+    "mode": "create",
+    "key": "3",
+    "args": {"templateName": "mini_van"}
+  },
+  {
+    "command": "adjustToTemplate",
+    "mode": "create",
+    "key": "4",
+    "args": {"templateName": "mini_truck"}
+  },
+  {
+    "command": "adjustToTemplate",
+    "mode": "create",
+    "key": "5",
+    "args": {"templateName": "middle_truck"}
+  },
+  {
+    "command": "adjustToTemplate",
+    "mode": "create",
+    "key": "6",
+    "args": {"templateName": "heavy_truck"}
+  },
+  {
+    "command": "adjustToTemplate",
+    "mode": "create",
+    "key": "7",
+    "args": {"templateName": "motorbike"}
+  },
+  {
     "command": "keyboardCommand",
     "mode": "move",
     "key": "ArrowLeft",
