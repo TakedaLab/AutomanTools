@@ -64,7 +64,7 @@ export default class PCDLabelTool {
   _updatingBBoxes = [];
   _hoveringBBox = null;
   _keymap_arr = [];
-  _car_template_arr = [];
+  _boxTemplates = [];
 
   // public
   name = 'PCD';
@@ -94,6 +94,7 @@ export default class PCDLabelTool {
     this._initArrow();
     this._initFacePlane();
     this._initKeyMap();
+    this._initBoxTemplates();
 
     this._animate();
   }
@@ -418,15 +419,17 @@ export default class PCDLabelTool {
         this._keymap_arr = data;
       })
     );
+    return promises;
+  }
+  _initBoxTemplates() {
+    let promises = [];
     promises.push(
       new Promise((resolve, reject) => {
-        $.getJSON('/static/js/labeling_tool/const/car_template.json', function(
-          data
-        ) {
+        $.getJSON('/static/js/labeling_tool/pcd_box_templates.json', function(data) {
           resolve(data);
         });
       }).then(data => {
-        this._car_template_arr = data;
+        this._boxTemplates = data;
       })
     );
     return promises;
@@ -812,6 +815,15 @@ function createModeMethods(pcdTool) {
     bbox.box.pos.add(move);
     bbox.box.size.add(resize);
     bbox.box.yaw += rotate;
+    bbox.updateCube(true);
+    pcdTool._redrawFlag = true;
+  };
+
+  const resizeBBox = function({ bbox = null, length = 0, width = 0, height = 0 } = {}) {
+    if (bbox == null) {
+      return;
+    }
+    bbox.box.size = new THREE.Vector3(length, width, height);
     bbox.updateCube(true);
     pcdTool._redrawFlag = true;
   };
@@ -1401,6 +1413,37 @@ function createModeMethods(pcdTool) {
       changeFrom: function() {},
       changeTo: function() {
         pcdTool._wrapper.css('cursor', 'crosshair');
+      },
+      adjustToTemplate: {
+        keydown: function(args) {
+          if (
+            !args['templateName'] ||
+            !(args.templateName in pcdTool._boxTemplates)
+          ) {
+            return;
+          }
+          const template = pcdTool._boxTemplates[args.templateName];
+          if (
+            !('length' in template) ||
+            !('width' in template) ||
+            !('height' in template)
+          ) {
+            return;
+          }
+          pcdTool._labelTool
+            .getTargetLabels()
+            .filter(label => {
+              return label.bbox[pcdTool.candidateId] != null;
+            })
+            .forEach(label => {
+              resizeBBox({
+                bbox: label.bbox[pcdTool.candidateId],
+                length: template.length,
+                width: template.width,
+                height: template.height
+              });
+            });
+        }
       }
     },
     view: {
