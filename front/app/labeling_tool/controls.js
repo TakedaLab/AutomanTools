@@ -189,7 +189,7 @@ const guiRef = {
         return 0;
       }
       bbox.box.pos.x = v;
-      bbox.updateCube();
+      bbox.updateCube(true);
       PCDLabelTool.redrawRequest();
     },
     set posY(v) {
@@ -198,7 +198,7 @@ const guiRef = {
         return 0;
       }
       bbox.box.pos.y = v;
-      bbox.updateCube();
+      bbox.updateCube(true);
       PCDLabelTool.redrawRequest();
     },
     set posZ(v) {
@@ -207,7 +207,7 @@ const guiRef = {
         return 0;
       }
       bbox.box.pos.z = v;
-      bbox.updateCube();
+      bbox.updateCube(true);
       PCDLabelTool.redrawRequest();
     },
     set sizeX(v) {
@@ -216,7 +216,7 @@ const guiRef = {
         return 0;
       }
       bbox.box.size.x = v;
-      bbox.updateCube();
+      bbox.updateCube(true);
       PCDLabelTool.redrawRequest();
     },
     set sizeY(v) {
@@ -225,7 +225,7 @@ const guiRef = {
         return 0;
       }
       bbox.box.size.y = v;
-      bbox.updateCube();
+      bbox.updateCube(true);
       PCDLabelTool.redrawRequest();
     },
     set sizeZ(v) {
@@ -234,7 +234,7 @@ const guiRef = {
         return 0;
       }
       bbox.box.size.z = v;
-      bbox.updateCube();
+      bbox.updateCube(true);
       PCDLabelTool.redrawRequest();
     },
     set yaw(v) {
@@ -243,7 +243,7 @@ const guiRef = {
         return 0;
       }
       bbox.box.yaw = (v * Math.PI) / 180;
-      bbox.updateCube();
+      bbox.updateCube(true);
       PCDLabelTool.redrawRequest();
     },
     set objectID(v) {
@@ -252,7 +252,7 @@ const guiRef = {
         return 0;
       }
       bbox.box.object_id = v;
-      bbox.updateCube();
+      bbox.updateCube(true);
       PCDLabelTool.redrawRequest();
     }
   }
