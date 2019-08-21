@@ -439,6 +439,7 @@ export default class PCDLabelTool{
         Math.abs(w*rx + h*ry),
         Math.abs(w*ry - h*rx),
         1.0);
+    data.box.object_id = 0;
   }
 
 };
@@ -467,7 +468,8 @@ class PCDBBox {
     this.box = {
       pos: new THREE.Vector3(0,0,0),
       size: new THREE.Vector3(0,0,0),
-      yaw: 0
+      yaw: 0,
+      object_id: 0
     };
     if (content != null) {
       // init parameters
@@ -478,6 +480,7 @@ class PCDBBox {
       this.box.size.y = +content['height_3d'];
       this.box.size.z = +content['length_3d'];
       this.box.yaw    = +content['rotation_y'];
+      this.box.object_id = +content['object_id'];
     }
     this.initCube();
     this.pcdTool.pcdBBoxes.add(this);
@@ -510,6 +513,7 @@ class PCDBBox {
     obj['height_3d'] = this.box.size.y;
     obj['length_3d'] = this.box.size.z;
     obj['rotation_y'] = this.box.yaw;
+    obj['object_id'] = this.box.object_id;
   }
   initCube() {
     const mesh = new THREE.Mesh(
@@ -890,6 +894,7 @@ function createModeMethods(pcdTool) {
               'height_3d': bbox.box.scale.y,
               'length_3d': bbox.box.scale.z,
               'rotation_y': bbox.box.rotation.z,
+              'object_id': bbox.box.object_id,
             });
         // TODO: add branch use selecting label 
         const label = pcdTool._labelTool.createLabel(

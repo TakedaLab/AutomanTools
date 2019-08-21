@@ -128,54 +128,66 @@ const guiRef = {
       else if (v > 180) { v -= 360; }
       return v;
     },
+    get objectID() {
+      let bbox = guiRef.pcd.getBBox();
+      if (bbox == null) { return 0; }
+      return bbox.box.object_id;
+    },
     // setters
     set posX(v) {
       let bbox = guiRef.pcd.getBBox();
       if (bbox == null) { return 0; }
       bbox.box.pos.x = v;
-      bbox.updateCube();
+      bbox.updateCube(true);
       PCDLabelTool.redrawRequest();
     },
     set posY(v) {
       let bbox = guiRef.pcd.getBBox();
       if (bbox == null) { return 0; }
       bbox.box.pos.y = v;
-      bbox.updateCube();
+      bbox.updateCube(true);
       PCDLabelTool.redrawRequest();
     },
     set posZ(v) {
       let bbox = guiRef.pcd.getBBox();
       if (bbox == null) { return 0; }
       bbox.box.pos.z = v;
-      bbox.updateCube();
+      bbox.updateCube(true);
       PCDLabelTool.redrawRequest();
     },
     set sizeX(v) {
       let bbox = guiRef.pcd.getBBox();
       if (bbox == null) { return 0; }
       bbox.box.size.x = v;
-      bbox.updateCube();
+      bbox.updateCube(true);
       PCDLabelTool.redrawRequest();
     },
     set sizeY(v) {
       let bbox = guiRef.pcd.getBBox();
       if (bbox == null) { return 0; }
       bbox.box.size.y = v;
-      bbox.updateCube();
+      bbox.updateCube(true);
       PCDLabelTool.redrawRequest();
     },
     set sizeZ(v) {
       let bbox = guiRef.pcd.getBBox();
       if (bbox == null) { return 0; }
       bbox.box.size.z = v;
-      bbox.updateCube();
+      bbox.updateCube(true);
       PCDLabelTool.redrawRequest();
     },
     set yaw(v) {
       let bbox = guiRef.pcd.getBBox();
       if (bbox == null) { return 0; }
       bbox.box.yaw = v*Math.PI/180;
-      bbox.updateCube();
+      bbox.updateCube(true);
+      PCDLabelTool.redrawRequest();
+    },
+    set objectID(v) {
+      let bbox = guiRef.pcd.getBBox();
+      if (bbox == null) { return 0; }
+      bbox.box.object_id = v;
+      bbox.updateCube(true);
       PCDLabelTool.redrawRequest();
     },
   },
@@ -228,6 +240,9 @@ const initGUIPCD = function(gui, targetLabel) {
   const frotate = folder.addFolder('Rotation');
   frotate.open();
   frotate.add(guiRef.pcd, 'yaw').name('yaw').max(180).min(-180).step(1).listen();
+  const fmeta = folder.addFolder('Meta');
+  fmeta.open();
+  fmeta.add(guiRef.pcd, 'objectID').name('ID').max(999).min(0).step(1).listen();
 };
 // Add tool 
 let toolFolder = null;
