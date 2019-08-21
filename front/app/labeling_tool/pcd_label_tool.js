@@ -398,7 +398,9 @@ export default class PCDLabelTool{
       // TODO: show internal error
       throw 'Mode error';
     }
-    this._modeStatus.previousMode = this._modeStatus.mode;
+    if (this._modeStatus.mode !== 'command') {
+      this._modeStatus.previousMode = this._modeStatus.mode;
+    }
     this._modeMethods[mode].changeFrom();
     nextMethod.changeTo();
     this._modeStatus.mode = nextMode;
@@ -466,6 +468,7 @@ export default class PCDLabelTool{
     this._keymap_arr.filter(function(keymap_val) {
       return e.key === keymap_val.key;
     }).forEach(function(keymap_val){
+      e.preventDefault();
       if (keymap_val["mode"]) {
         // Execute mode specific key method
         if (keymap_val["mode"] === this._modeStatus.mode) {
@@ -592,12 +595,22 @@ class PCDBBox {
     this.toContent(content);
     return new PCDBBox(this.pcdTool, content, addToTool);
   }
+  isEqualTo(pcdBBox) {
+    if (pcdBBox === null) {return false;}
+
+    let pos_bool = (this.box.pos.distanceTo(pcdBBox.box.pos) === 0);
+    let size_bool = (this.box.size.distanceTo(pcdBBox.box.size) === 0);
+    let yaw_bool = (this.box.yaw === pcdBBox.box.yaw);
+    let id_bool = (this.box.object_id === pcdBBox.box.object_id);
+
+    return pos_bool && size_bool && yaw_bool && id_bool;
+  }
 }
 
 
 
 const modeNames = [
-    'create', 'view', 'move', 'resize', 'rotate'
+    'command', 'create', 'view', 'move', 'resize', 'rotate'
   ];
 // TODO: move select methods to one place
 function createModeMethods(pcdTool) {
@@ -613,6 +626,7 @@ function createModeMethods(pcdTool) {
     bbox.box.yaw += rotate;
     bbox.updateCube(true);
     pcdTool._redrawFlag = true;
+    pcdTool._labelTool.takeSnapshot();
   };
 
   const getUpdatingBBox = function() {
@@ -638,7 +652,11 @@ function createModeMethods(pcdTool) {
   };
 
   const storeUpdateHistory = function() {
-    // TODO: store histroy based on _updatingBBox.pcdBox and originalPCDBox
+    // take a shapshot if the box is updated
+    let bbox = pcdTool._updatingBBox;
+    if (bbox.pcdBox != null && !bbox.pcdBox.isEqualTo(bbox.originalPCDBox)) {
+      pcdTool._labelTool.takeSnapshot();
+    }
   };
 
   const modeMethods = {
@@ -734,9 +752,6 @@ function createModeMethods(pcdTool) {
                   ).multiply(normal));
                   bbox.pcdBox.box.size = bbox.originalPCDBox.box.size.clone();
                   bbox.pcdBox.box.size.add(move);
-                } else {
-                  bbox.pcdBox.box.size.x = bbox.originalPCDBox.box.size.x + ((bbox.endPos.x - bbox.startPos.x) * 2.0);
-                  bbox.pcdBox.box.size.y = bbox.originalPCDBox.box.size.y + ((bbox.endPos.y - bbox.startPos.y) * 2.0);
                 }
               }
             }else {
@@ -1161,6 +1176,7 @@ function createModeMethods(pcdTool) {
         bbox.startPos = null;
         bbox.endPos = null;
         bbox.box = null;
+        storeUpdateHistory();
       },
       changeFrom: function() {
       },
@@ -1179,6 +1195,7 @@ function createModeMethods(pcdTool) {
       mouseMove: function(e) {
       },
       mouseUp: function(e) {
+        pcdTool._modeStatus.busy = false;
       },
       changeFrom: function() {
         pcdTool._controls.enabled = false;
@@ -1187,6 +1204,62 @@ function createModeMethods(pcdTool) {
         pcdTool._controls.enabled = true;
         pcdTool._wrapper.css('cursor', 'default');
       },
+      undo: {
+        'keydown': function() {
+          pcdTool._labelTool.undo();
+        }
+      },
+      redo: {
+        'keydown': function() {
+          pcdTool._labelTool.redo();
+        }
+      },
+    },
+    'command': {
+      animate: function() {
+        pcdTool._redrawFlag = true;
+        pcdTool._controls.update();
+      },
+      mouseDown: function(e) {
+        pcdTool._modeStatus.busy = true;
+      },
+      mouseMove: function(e) {
+      },
+      mouseUp: function(e) {
+        pcdTool._modeStatus.busy = false;
+      },
+      changeFrom: function() {
+        pcdTool._controls.enabled = false;
+      },
+      changeTo: function() {
+        pcdTool._controls.enabled = true;
+        pcdTool._wrapper.css('cursor', 'default');
+      },
+      save: {
+        'keydown': function() {
+          pcdTool._labelTool.saveFrame();
+        }
+      },
+      undo: {
+        'keydown': function() {
+          pcdTool._labelTool.undo();
+        }
+      },
+      redo: {
+        'keydown': function() {
+          pcdTool._labelTool.redo();
+        }
+      },
+      clip: {
+        'keydown': function() {
+          pcdTool._labelTool.clip();
+        }
+      },
+      paste: {
+        'keydown': function() {
+          pcdTool._labelTool.selectLabel(pcdTool._labelTool.paste());
+        }
+      }
     },
   };
   return modeMethods;
@@ -1208,6 +1281,7 @@ function createGlobalKeyMethods(pcdTool) {
     },
     temporarySelectMode: {
       keydown: function(args) {
+        if (pcdTool._modeStatus.busy) {return;}
         if (args['target'] && (modeNames.indexOf(args['target']) >= 0)) {
           if (args['target'] !== pcdTool.getMode()) {
             pcdTool.modeChangeRequest(args['target']);
