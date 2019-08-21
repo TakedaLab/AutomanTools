@@ -6,7 +6,12 @@ let ImageLabelTool, PCDLabelTool, LabelTool;
 // dat.GUI menu tool
 let gui = null;
 const getLabel = function() {
-  return LabelTool.getTargetLabel();
+  const labels = LabelTool.getTargetLabels();
+  if (labels.length === 0 || labels.length > 1) {
+    return null;
+  }else {
+    return [...labels][0];
+  }
 };
 const guiRef = {
   label: {
@@ -273,9 +278,11 @@ const toolRef = {
     });
   },
   deleteLabel: () => {
-    const targetLabel = LabelTool.getTargetLabel();
-    if (targetLabel != null) {
-      LabelTool.removeLabel(targetLabel);
+    const targetLabels = LabelTool.getTargetLabels();
+    if (targetLabels != null && targetLabels.length !== 0) {
+      targetLabels.forEach((targetLabel) => {
+        LabelTool.removeLabel(targetLabel);
+      });
     }
   }
 };
@@ -341,16 +348,16 @@ export default class Controls {
   }
   GUI = {
     update() {
-      const targetLabel = LabelTool.getTargetLabel();
+      const targetLabel = getLabel();
       initGUITool(gui, targetLabel);
       initGUIImage(gui, targetLabel);
       initGUIPCD(gui, targetLabel);
     }
-  }
+  };
   ToolBar = {
     update() {
     }
-  }
+  };
   SideBar = {
     update() {
     }

@@ -227,10 +227,13 @@ const LabelTool = {
     }
     let newKls = klassSet.setTarget(kls);
     if (newKls !== null) {
-      const label = annotation.getTarget();
-      if (label !== null) {
-        annotation.changeKlass(label, newKls);
-        controls.SideBar.update();
+      const labels = annotation.getTargets();
+      if (labels !== null && labels.length !== 0) {
+        labels.forEach((label)=>{
+          annotation.changeKlass(label, newKls);
+          controls.SideBar.update();
+        });
+        annotation.takeSnapshot();
       }
     } else {
       return false;
@@ -243,20 +246,20 @@ const LabelTool = {
   getKlass(name) {
     return klassSet.getByName(name);
   },
-  selectLabel(label) {
+  selectLabel(label, additional=false) {
     if (!LabelTool.isLoaded()) {
       return false;
     }
     let newLabel;
-    newLabel = annotation.setTarget(label);
+    newLabel = annotation.setTarget(label, additional);
     if (newLabel !== null) {
       klassSet.setTarget(newLabel.klass);
     }
     controls.update();
     return true;
   },
-  getTargetLabel() {
-    return annotation.getTarget();
+  getTargetLabels() {
+    return annotation.getTargets();
   },
   createLabel(klass, param) {
     if (!LabelTool.isLoaded()) {
@@ -400,6 +403,9 @@ const LabelTool = {
     if (label != null) {
       return annotation.duplicateLabel(label);
     }
+  },
+  duplicateLabels(labels) {
+    return labels.map((label) => {return this.duplicateLabel(label)}, this);
   }
 };
 
@@ -550,10 +556,13 @@ const initializeEvent = function() {
         LabelTool.getTool().handles.keydown(e);
       }else if (e.keyCode == 8 || e.keyCode == 46) {
         // Backspace or Delete
-        const label = LabelTool.getTargetLabel();
-        if (label != null) {
+        // const label = LabelTool.getTargetLabel();
+        // if (label != null) {
+        //   LabelTool.removeLabel(label);
+        // }
+        LabelTool.getTargetLabels().forEach((label) => {
           LabelTool.removeLabel(label);
-        }
+        });
       } else if (e.keyCode == 39) {
         LabelTool.nextFrame();
       } else if (e.keyCode == 37) {

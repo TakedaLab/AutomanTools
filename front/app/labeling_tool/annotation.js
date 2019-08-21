@@ -3,7 +3,7 @@ import RequestClient from 'automan/services/request-client';
 export default class Annotation {
   _labels = null;
   _deleted = null;
-  _targetLabel = null;
+  _targetLabels = new Set();
   // DOM
   _bboxTable = null;
   // status
@@ -14,7 +14,7 @@ export default class Annotation {
   _frameNumber = null;
   _history = {index: -1, snapshots: []};
   // Copy
-  _clipboard = null;
+  _clipboard = [];
 
   constructor(labelTool) {
     this._labelTool = labelTool;
@@ -205,33 +205,45 @@ export default class Annotation {
   }
 
   clip() {
-    let targetLabel = this.getTarget();
-    if (targetLabel != null) {
-      this._clipboard = targetLabel.toObject();
+    let targetLabels = this.getTargets();
+    if (targetLabels != null && targetLabels.length !== 0) {
+      this._clipboard = targetLabels.map((label) => {return label.toObject()});
       return this._clipboard;
     }
   }
 
   paste() {
-    if (this._clipboard != null) {
-      this._clipboard.object_id = this._nextId--;
-      return this.addLabel(this._clipboard);
+    if (this._clipboard != null && this._clipboard.length !== 0) {
+      return this._clipboard.map((label) => {
+        label.object_id = this._nextId--;
+        return this.addLabel(label);
+      }, this);
     }
   }
 
-  getTarget() {
-    return this._targetLabel;
+  getTargets() {
+    return [...this._targetLabels];
   }
-  setTarget(tgt) {
+  setTarget(tgt, add=false) {
     let next = this._getLabel(tgt),
-      prev = this._targetLabel;
-    if (prev != null && next != null && next.id === prev.id) {
-      return prev;
+      prev = new Set(this._targetLabels);
+    // if (prev != null && next != null && next.id === prev.id) {
+    //   return prev;
+    // }
+    if (add) {
+      if (next !== null) {
+        this._targetLabels.add(next);
+      }
+    }else {
+      if (next !== null) {
+        this._targetLabels = new Set([next]);
+      }else {
+        this._targetLabels = new Set();
+      }
     }
-    this._targetLabel = next;
     // table dom events
     this._labelTool.getTools().forEach(tool => {
-      tool.updateTarget(prev, next);
+      tool.updateTarget(prev, this._targetLabels);
     });
     return next;
   }
@@ -299,18 +311,21 @@ export default class Annotation {
       this._labelTool.controls.error(txt);
       return;
     }
+    const tgts = this._targetLabels;
+    tgts.forEach((tgt) => {
+      if (tgt != null && label.id === tgt.id) {
+        let originalTargetLabels = new Set(this._targetLabels);
+        this._targetLabels.delete(tgt);
+        this._labelTool.getTools().forEach(tool => {
+          tool.updateTarget(originalTargetLabels, this._targetLabels);
+        });
+      }
+    }, this);
     this._labelTool.getTools().forEach(tool => {
       if (label.bbox[tool.candidateId] != null) {
         tool.disposeBBox(label.bbox[tool.candidateId]);
       }
     });
-    const tgt = this._targetLabel;
-    if (tgt != null && label.id === tgt.id) {
-      this._targetLabel = null;
-      this._labelTool.getTools().forEach(tool => {
-        tool.updateTarget(tgt, null);
-      });
-    }
     if (label.id >= 0) {
       this._deleted.push(label.id);
     }
@@ -346,7 +361,7 @@ export default class Annotation {
     });
     this._labels.clear();
     this._labels = null;
-    this._targetLabel = null;
+    this._targetLabel = new Set();
   }
 }
 
