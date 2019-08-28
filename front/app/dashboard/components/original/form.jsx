@@ -31,7 +31,7 @@ class OriginalDataForm extends React.Component {
     this.state = {
       open: false,
       uploadFiles: [],
-      storage: { storage_type: null },
+      storage: { id: 0, storage_type: null },
       storages: [],
       targetFileIndex: null,
       isUploaded: false
@@ -66,7 +66,15 @@ class OriginalDataForm extends React.Component {
     });
   };
   handleChangeStorage = event => {
-    this.setState({ storage: event.target.value });
+    // find corresponding storage
+    this.state.storages
+      .filter(storage => {
+        return storage.id === event.target.value;
+      })
+      .forEach(storage => {
+        this.setState({ storage: storage });
+      }, this);
+    // this.setState({ storage: event.target.value });
   };
   handleClickCancel = event => {
     // TODO: implement
@@ -200,7 +208,7 @@ class OriginalDataForm extends React.Component {
     );
     const storageMenu = this.state.storages.map(function(storage, index) {
       return (
-        <MenuItem key={index} value={storage}>
+        <MenuItem key={index} value={storage.id}>
           {storage.storage_type}
         </MenuItem>
       );
@@ -230,7 +238,7 @@ class OriginalDataForm extends React.Component {
               <InputLabel htmlFor="storage">storage</InputLabel>
               <Select
                 autoFocus
-                value={this.state.storage.storage_type || false}
+                value={this.state.storage.id || false}
                 onChange={this.handleChangeStorage}
               >
                 {storageMenu}
