@@ -15,7 +15,7 @@ class OriginalSelect extends React.Component {
     super(props);
     this.state = {
       originals: [],
-      original: { name: null }
+      selectIdx: 0
     };
   }
   componentDidMount() {
@@ -32,16 +32,16 @@ class OriginalSelect extends React.Component {
     );
   }
   handleChangeOriginal = e => {
-    this.setState({ original: e.target.value });
+    this.setState({ selectIdx: e.target.value });
     this.props.handleSetJobConfig({
-      original_id: e.target.value.id,
+      original_id: e.target.value,
       candidates: []
     });
   };
   render() {
     const originalMenu = this.state.originals.map(function(original, index) {
       return (
-        <MenuItem key={index} value={original}>
+        <MenuItem key={index} value={original.id}>
           {original.name}
         </MenuItem>
       );
@@ -51,7 +51,7 @@ class OriginalSelect extends React.Component {
         <InputLabel htmlFor="original">Original</InputLabel>
         <Select
           autoFocus
-          value={this.state.original.name || false}
+          value={this.state.selectIdx}
           onChange={this.handleChangeOriginal}
         >
           {originalMenu}
