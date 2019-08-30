@@ -16,6 +16,22 @@ status:
   loadBalancer: {}
 ---
 apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: app-pv
+  labels:
+    app: automan-labeling
+spec:
+  capacity:
+    storage: 60Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: app
+  hostPath:
+    path: /home/vagrant/storage/app
+---
+apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: app-pv-claim
@@ -26,7 +42,8 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 20Gi
+      storage: 50Gi
+  storageClassName: app
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -60,6 +77,8 @@ spec:
           volumeMounts:
             - mountPath: "/share"
               name: app-persistent-storage
+            - mountPath: "/opt/automan"
+              name: app
           env:
             - name: MYSQL_USER
               valueFrom:
@@ -91,7 +110,13 @@ spec:
               value: "8080"
       restartPolicy: Always
       volumes:
+        #- name: app-persistent-storage
+        #  hostPath:
+        #    path: "/home/vagrant/shared/storage/app"
         - name: app-persistent-storage
           persistentVolumeClaim:
             claimName: app-pv-claim
+        - name: app
+          hostPath:
+            path: "/home/vagrant/shared/kube/AutomanTools"
 status: {}
