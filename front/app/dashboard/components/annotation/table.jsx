@@ -129,6 +129,41 @@ class AnnotationTable extends React.Component {
       }
     );
   }
+  handleSemiLabel(row) {
+    const datasetUrl =
+      `/projects/${this.props.currentProject.id}` +
+      `/datasets/${row.dataset_id}/`;
+    RequestClient.get(
+      datasetUrl,
+      null,
+      datasetInfo => {
+        const url = `/projects/${this.props.currentProject.id}/jobs/`,
+          data = {
+            job_type: 'SEMI_LABELER',
+            job_config: {
+              original_id: datasetInfo.original_id,
+              dataset_id: row.dataset_id,
+              annotation_id: row.id
+            }
+          };
+        RequestClient.post(
+          url,
+          data,
+          res => {},
+          mes => {
+            this.setState({
+              error: mes.message
+            });
+          }
+        );
+      },
+      mes => {
+        this.setState({
+          error: mes.message
+        });
+      }
+    );
+  }
   render() {
     // if ( this.state.error ) {
     //     return (
@@ -149,6 +184,11 @@ class AnnotationTable extends React.Component {
             actions = (
               <div className="text-center">
                 <span>
+                  <a
+                    className="button glyphicon glyphicon-tasks"
+                    onClick={e => this.handleSemiLabel(row)}
+                    title="Semi-label"
+                  />
                   <a
                     className="button glyphicon glyphicon-folder-close"
                     onClick={e => this.handleArchive(row)}
@@ -173,6 +213,11 @@ class AnnotationTable extends React.Component {
             actions = (
               <div className="text-center">
                 <span>
+                  <a
+                    className="button glyphicon glyphicon-tasks"
+                    onClick={e => this.handleSemiLabel(row)}
+                    title="Semi-label"
+                  />
                   <a
                     className="button glyphicon glyphicon-folder-close"
                     onClick={e => this.handleArchive(row)}
