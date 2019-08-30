@@ -12,6 +12,22 @@ spec:
   clusterIP: None
 ---
 apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: mysql-pv
+  labels:
+    app: automan-labeling
+spec:
+  capacity:
+    storage: 30Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Recycle
+  storageClassName: mysql
+  hostPath:
+    path: /home/vagrant/storage/mysql
+---
+apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: mysql-pv-claim
@@ -23,6 +39,7 @@ spec:
   resources:
     requests:
       storage: 20Gi
+  storageClassName: mysql
 ---
 apiVersion: apps/v1 # for versions before 1.9.0 use apps/v1beta2
 kind: Deployment
@@ -57,6 +74,9 @@ spec:
         - name: mysql-persistent-storage
           mountPath: /var/lib/mysql
       volumes:
+      # - name: mysql-persistent-storage
+      #  hostPath:
+      #    path: /home/vagrant/storage/mysql
       - name: mysql-persistent-storage
         persistentVolumeClaim:
           claimName: mysql-pv-claim
