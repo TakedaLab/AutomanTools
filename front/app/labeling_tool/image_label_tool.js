@@ -39,6 +39,7 @@ export default class ImageLabelTool {
     this._container = container;
     this._decoration = new Decorations(this._paper);
     container.hide();
+    this._paper.canvas.style.display = 'none';
   }
   load() {
     this._loaded = false;
@@ -64,8 +65,10 @@ export default class ImageLabelTool {
   setActive(isActive) {
     if ( isActive ) {
       this._container.show();
+      this._paper.canvas.style.display = 'unset';
     } else {
       this._container.hide();
+      this._paper.canvas.style.display = 'none';
     }
     // set canvas size
     

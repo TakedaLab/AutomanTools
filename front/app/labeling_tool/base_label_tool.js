@@ -531,15 +531,30 @@ const initializeBase = function() {
             LabelTool.getURL('candidate_info'),
             null,
             res => {
+              // add tools
+              let numberOfImages = res.records.filter(record => {
+                return record.data_type === 'IMAGE';
+              }).length;
+              for (let i = 1; i < numberOfImages; i++) {
+                toolStatus.tools.unshift(new ImageLabelTool(LabelTool));
+              }
+              let numberOfPCDs = res.records.filter(record => {
+                return record.data_type === 'PCD';
+              }).length;
+              for (let i = 1; i < numberOfPCDs; i++) {
+                toolStatus.tools.push(new PCDLabelTool(LabelTool));
+              }
+
               const tools = toolStatus.tools;
               res.records.forEach(info => {
-                tools.forEach(tool => {
+                tools.some(tool => {
                   if (tool.dataType === info.data_type) {
                     if (tool.candidateId >= 0) {
                       return;
                     }
-                    tool.candidateId = info.candidate_id; // TODO: multi candidate_id
+                    tool.candidateId = info.candidate_id;
                     toolStatus.filenames[tool.candidateId] = [];
+                    return true;
                   }
                 });
               });
