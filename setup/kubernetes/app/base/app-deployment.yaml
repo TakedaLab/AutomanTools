@@ -16,6 +16,22 @@ status:
   loadBalancer: {}
 ---
 apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: app-pv
+  labels:
+    app: automan-labeling
+spec:
+  capacity:
+    storage: 60Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: app
+  hostPath:
+    path: /home/vagrant/storage/app
+---
+apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: app-pv-claim
@@ -26,7 +42,8 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 20Gi
+      storage: 50Gi
+  storageClassName: app
 ---
 apiVersion: apps/v1
 kind: Deployment
