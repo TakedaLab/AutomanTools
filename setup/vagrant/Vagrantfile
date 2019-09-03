@@ -1,6 +1,6 @@
 Vagrant.configure("2") do |config|
 
-   config.vm.synced_folder "~/share/automantool-vagrant", "/home/vagrant/shared", owner: "vagrant", group: "vagrant"
+   config.vm.synced_folder "~/share/automantool-vagrant", "/home/vagrant/storage", owner: "vagrant", group: "vagrant"
 
    config.vm.define 'automan-labeling' do |machine|
     machine.vm.box = "ubuntu/xenial64"
