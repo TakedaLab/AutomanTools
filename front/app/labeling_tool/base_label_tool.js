@@ -513,9 +513,16 @@ const initializeBase = function() {
             res => {
               toolStatus.originalId = res.original_id;
               toolStatus.frameLength = res.frame_count;
+              toolStatus.filePath = res.file_path;
               toolStatus.pageBox[0].placeholder =
                 1 + '/' + toolStatus.frameLength;
               toolStatus.pageBox.val('');
+
+              // extract candidate id from file path
+              toolStatus.activeCandidateIds = toolStatus.filePath
+                .split('_')
+                .slice(1, -1);
+
               resolve();
             },
             err => {
@@ -533,13 +540,23 @@ const initializeBase = function() {
             res => {
               // add tools
               let numberOfImages = res.records.filter(record => {
-                return record.data_type === 'IMAGE';
+                return (
+                  record.data_type === 'IMAGE' &&
+                  toolStatus.activeCandidateIds.includes(
+                    String(record.candidate_id)
+                  )
+                );
               }).length;
               for (let i = 1; i < numberOfImages; i++) {
                 toolStatus.tools.unshift(new ImageLabelTool(LabelTool));
               }
               let numberOfPCDs = res.records.filter(record => {
-                return record.data_type === 'PCD';
+                return (
+                  record.data_type === 'PCD' &&
+                  toolStatus.activeCandidateIds.includes(
+                    String(record.candidate_id)
+                  )
+                );
               }).length;
               for (let i = 1; i < numberOfPCDs; i++) {
                 toolStatus.tools.push(new PCDLabelTool(LabelTool));
@@ -547,16 +564,22 @@ const initializeBase = function() {
 
               const tools = toolStatus.tools;
               res.records.forEach(info => {
-                tools.some(tool => {
-                  if (tool.dataType === info.data_type) {
-                    if (tool.candidateId >= 0) {
-                      return;
+                if (
+                  toolStatus.activeCandidateIds.includes(
+                    String(info.candidate_id)
+                  )
+                ) {
+                  tools.some(tool => {
+                    if (tool.dataType === info.data_type) {
+                      if (tool.candidateId >= 0) {
+                        return;
+                      }
+                      tool.candidateId = info.candidate_id;
+                      toolStatus.filenames[tool.candidateId] = [];
+                      return true;
                     }
-                    tool.candidateId = info.candidate_id;
-                    toolStatus.filenames[tool.candidateId] = [];
-                    return true;
-                  }
-                });
+                  });
+                }
               });
               resolve();
             },
