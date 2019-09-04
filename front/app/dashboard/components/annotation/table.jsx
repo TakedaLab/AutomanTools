@@ -182,6 +182,10 @@ class AnnotationTable extends React.Component {
                     onClick={e => this.handleArchive(row)}
                     title="Archive"
                   />
+                  <LabelImportDialog
+                    project_id={this.props.currentProject.id}
+                    annotation_id={row.id}
+                  />
                 </span>
               </div>
             );
