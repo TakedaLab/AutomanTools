@@ -166,6 +166,10 @@ class AnnotationTable extends React.Component {
                     }}
                     title="Download"
                   />
+                  <LabelImportDialog
+                    project_id={this.props.currentProject.id}
+                    annotation_id={row.id}
+                  />
                 </span>
               </div>
             );

@@ -96,3 +96,10 @@ def download_archived_annotation(request, project_id, annotation_id):
     archive_path = annotation_manager.get_archive_path(annotation_id)
     archive = open(archive_path, "rb").read()
     return HttpResponse(archive, content_type="application/octet-stream")
+
+
+@api_view(['POST'])
+def import_labels_from_json(request, project_id, annotation_id):
+    if request.method == 'POST':
+        print(request.data.keys())
+        return HttpResponse(content=json.dumps(request.data), status=200, content_type='application/json')
