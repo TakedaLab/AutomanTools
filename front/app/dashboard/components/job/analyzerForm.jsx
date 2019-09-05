@@ -15,7 +15,7 @@ class AnalyzerForm extends React.Component {
     super(props);
     this.state = {
       originals: [],
-      original: { name: null }
+      selectedIdx: 0
     };
   }
   componentDidMount() {
@@ -30,13 +30,13 @@ class AnalyzerForm extends React.Component {
     );
   }
   handleChangeOriginal = e => {
-    this.setState({ original: e.target.value });
-    this.props.handleSetJobConfig('original_id', e.target.value.id);
+    this.setState({ selectedIdx: e.target.value });
+    this.props.handleSetJobConfig('original_id', e.target.value);
   };
   render() {
     const originalMenu = this.state.originals.map(function(original, index) {
       return (
-        <MenuItem key={index} value={original}>
+        <MenuItem key={index} value={original.id}>
           {original.name}
         </MenuItem>
       );
@@ -46,7 +46,7 @@ class AnalyzerForm extends React.Component {
         <InputLabel htmlFor="original">Original</InputLabel>
         <Select
           autoFocus
-          value={this.state.original.name || false}
+          value={this.state.selectedIdx}
           onChange={this.handleChangeOriginal}
         >
           {originalMenu}
