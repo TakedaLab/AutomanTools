@@ -5,6 +5,9 @@ import { amber, green } from '@material-ui/core/colors';
 import Dialog from '@material-ui/core/Dialog';
 import DialogContent from '@material-ui/core/DialogContent';
 import FormControl from '@material-ui/core/FormControl'
+import InputLabel from '@material-ui/core/InputLabel';
+import MenuItem from '@material-ui/core/MenuItem';
+import Select from '@material-ui/core/Select';
 import SnackbarContent from '@material-ui/core/SnackbarContent';
 import Close from '@material-ui/icons/Close';
 import Send from '@material-ui/icons/Send';
@@ -18,11 +21,17 @@ export default class LabelImportDialog extends React.Component {
       file: null,
       isImportSuccess: null,
       message: '',
+
+      // States for candidates
+      candidatesObjects: [],
+      selectedCandidateId: null,
     };
   }
 
   show = () => {
     this.setState({ formOpen: true });
+
+    this.fetchCandidates();
   }
 
   hide = () => {
@@ -34,6 +43,10 @@ export default class LabelImportDialog extends React.Component {
     this.setState({ file: file });
   }
 
+  handleChangeStorage = (e) => {
+    this.setState({ selectedCandidateId: e.target.value });
+  };
+
   handleSubmit = () => {
     // Define data reader
     var reader = new FileReader();
@@ -41,8 +54,11 @@ export default class LabelImportDialog extends React.Component {
     reader.readAsText(this.state.file);
     // After loading
     reader.addEventListener( 'load', function() {
-      // Parse JSON
-      const data = JSON.parse(reader.result);
+      // Create data to send to API
+      const data = {
+        labelJson: JSON.parse(reader.result),
+        candidateId: this.state.selectedCandidateId,
+      };
       // Set url for API
       let url = `/projects/${this.props.project_id}/annotations/${this.props.annotation_id}/import_labels_from_json/`;
       // Post request
@@ -59,6 +75,30 @@ export default class LabelImportDialog extends React.Component {
         }.bind(this)
       );
     }.bind(this));
+  }
+
+  fetchCandidates = () => {
+    // Set url for API
+    let url = `/projects/${this.props.project_id}/originals/${this.props.dataset_id}/candidates/`;
+    // Post request
+    RequestClient.get(
+      url,
+      {},
+      function(res) {
+        var candidates = [];
+        for(let v of res.records) {
+          candidates.push({
+            name: JSON.parse(v.analyzed_info).topic_name,
+            id: v.candidate_id,
+            data_type: v.data_type,
+          });
+        }
+        this.setState({ candidatesObjects: candidates })
+      }.bind(this),
+      function(res) {
+        console.log(res);
+      }.bind(this)
+    );
   }
 
   render() {
@@ -90,6 +130,16 @@ export default class LabelImportDialog extends React.Component {
       />
     );
 
+    const storageMenu = this.state.candidatesObjects.map(
+      (candidate, index) => {
+        return (
+          <MenuItem key={index} value={candidate.id}>
+            {candidate.data_type} : {candidate.name}
+          </MenuItem>
+        );
+      }
+    );
+
     return (
       <span>
         <a
@@ -105,12 +155,27 @@ export default class LabelImportDialog extends React.Component {
           >
             <CardHeader action={closeButton} title="Import Labels from JSON" />
             <DialogContent>
-              <FormControl>
-                <input
-                  type="file"
-                  onChange={(e) => this.handleChangeFile(e)}
-                />
-              </FormControl>
+              <div>
+                <FormControl>
+                  <input
+                    type="file"
+                    onChange={(e) => this.handleChangeFile(e)}
+                  />
+                </FormControl>
+              </div>
+
+              <div style={{ marginTop: '15px' }}>
+                <FormControl>
+                  <InputLabel htmlFor="candidate">Candidate</InputLabel>
+                  <Select
+                    autoFocus
+                    value={this.state.selectedCandidateId || false}
+                    onChange={this.handleChangeStorage}
+                  >
+                    {storageMenu}
+                  </Select>
+                </FormControl>
+              </div>
 
               <div style={{ marginTop: '15px' }}>
                 <Button

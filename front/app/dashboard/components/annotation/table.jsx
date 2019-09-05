@@ -170,6 +170,7 @@ class AnnotationTable extends React.Component {
                   <LabelImportDialog
                     project_id={this.props.currentProject.id}
                     annotation_id={row.id}
+                    dataset_id={row.dataset_id}
                   />
                 </span>
               </div>
@@ -186,6 +187,7 @@ class AnnotationTable extends React.Component {
                   <LabelImportDialog
                     project_id={this.props.currentProject.id}
                     annotation_id={row.id}
+                    dataset_id={row.dataset_id}
                   />
                 </span>
               </div>
