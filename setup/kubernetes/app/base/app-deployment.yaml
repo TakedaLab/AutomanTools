@@ -23,13 +23,13 @@ metadata:
     app: automan-labeling
 spec:
   capacity:
-    storage: 60Gi
+    storage: 510Gi
   accessModes:
     - ReadWriteOnce
   persistentVolumeReclaimPolicy: Retain
   storageClassName: app
   hostPath:
-    path: /home/vagrant/storage/app
+    path: /storage/app
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -42,7 +42,7 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 50Gi
+      storage: 500Gi
   storageClassName: app
 ---
 apiVersion: apps/v1
