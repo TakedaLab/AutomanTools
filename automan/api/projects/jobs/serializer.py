@@ -6,6 +6,7 @@ from django.db.models import Q
 from django.core.exceptions import FieldError, ValidationError
 from rest_framework import serializers
 from libs.k8s.jobs import BaseJob
+from libs.k8s.jobs.annotation_semi_labeler import AnnotationSemiLabeler
 from libs.k8s.jobs.annotation_archiver import AnnotationArchiver
 from libs.k8s.jobs.rosbag_extractor import RosbagExtractor
 from libs.k8s.jobs.rosbag_analyzer import RosbagAnalyzer
@@ -73,6 +74,44 @@ class JobSerializer(serializers.ModelSerializer):
     def job_total_count(cls, project_id):
         jobs = Job.objects.filter(project_id=project_id)
         return jobs.count()
+
+    @classmethod
+    @transaction.atomic
+    def semi_label(cls, user_id, project_id, dataset_id, original_id, annotation_id):
+        original = OriginalManager().get_original(project_id, original_id, status='analyzed')
+        storage = StorageSerializer().get_storage(project_id, original['storage_id'])
+        storage_config = copy.deepcopy(storage['storage_config'])
+
+        automan_config = cls.__get_automan_config(user_id)
+        automan_config.update({'path': '/projects/' + str(project_id) + '/annotations/' + str(annotation_id) + '/'})
+        semi_labeling_config = cls.__get_semi_labeling_info(user_id, project_id, dataset_id, annotation_id, original_id)
+        job_config = {
+            'storage_type': storage['storage_type'],
+            'storage_config': storage_config,
+            'automan_config': automan_config,
+            'semi_labeling_config': semi_labeling_config,
+        }
+        job_config_json = json.dumps(job_config)
+        new_job = Job(
+            job_type='semi-labeler',
+            user_id=user_id,
+            project_id=project_id,
+            job_config=job_config_json)
+        new_job.save()
+        job = AnnotationSemiLabeler(**job_config)
+        job.create(cls.__generate_job_name(new_job.id, 'semi-labeler'))
+        res = job.run()
+        return res
+
+    def __get_semi_labeling_info(user_id, project_id, dataset_id, annotation_id, original_id):
+        dataset = DatasetManager().get_dataset(user_id, dataset_id)
+        semi_labeling_config = {
+            'project_id': project_id,
+            'dataset_id': dataset_id,
+            'annotation_id': annotation_id,
+            'original_id': original_id
+        }
+        return semi_labeling_config
 
     @classmethod
     @transaction.atomic
