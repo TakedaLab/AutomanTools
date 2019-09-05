@@ -6,6 +6,7 @@ import { TableHeaderColumn } from 'react-bootstrap-table';
 import Typography from '@material-ui/core/Typography';
 
 import ResizableTable from 'automan/dashboard/components/parts/resizable_table';
+import LabelImportDialog from 'automan/dashboard/components/annotation/label_import_dialog';
 import { mainStyle } from 'automan/assets/main-style';
 
 function actionFormatter(cell, row) {
