@@ -10,12 +10,12 @@ let annotation, imageLabelTool, pcdLabelTool, controls, klassSet;
 
 const toolStatus = {
   // informations
-  projectId: null,       // from location
-  projectInfo: null,     // from 'project'
-  annotationId: null,    // from location
-  annotationName: null,  // from 'annotation'
-  datasetId: null,       // from 'annotation'
-  originalId: null,      // from 'dataset'
+  projectId: null, // from location
+  projectInfo: null, // from 'project'
+  annotationId: null, // from location
+  annotationName: null, // from 'annotation'
+  datasetId: null, // from 'annotation'
+  originalId: null, // from 'dataset'
   // navigation
   pageBox: null,
   nextFrameButton: null,
@@ -43,9 +43,11 @@ const LabelTool = {
     return annotation.isChanged();
   },
   isLoaded() {
-    return innerStatus.loaded &&
+    return (
+      innerStatus.loaded &&
       annotation.isLoaded() &&
-      toolStatus.tools.every(tool=>tool.isLoaded());
+      toolStatus.tools.every(tool => tool.isLoaded())
+    );
   },
   isEditable() {
     return LabelTool.isLoaded();
@@ -62,9 +64,9 @@ const LabelTool = {
     if (LabelTool.isChanged()) {
       const TEXT_SAVE = 'Do you want to save?';
       const TEXT_MOVE = 'Do you want to move frame WITHOUT saving?';
-      if ( window.confirm(TEXT_SAVE) ) {
+      if (window.confirm(TEXT_SAVE)) {
         savePromise = annotation.save();
-      } else if ( window.confirm(TEXT_MOVE) ) {
+      } else if (window.confirm(TEXT_MOVE)) {
         savePromise = Promise.resolve();
       } else {
         return Promise.resolve();
@@ -81,7 +83,7 @@ const LabelTool = {
         .then(() => {
           toolStatus.frameNumber = num;
           toolStatus.pageBox[0].placeholder =
-            (num + 1) + '/' + toolStatus.frameLength;
+            num + 1 + '/' + toolStatus.frameLength;
           toolStatus.pageBox.val('');
 
           // load something (image, pcd)
@@ -127,6 +129,7 @@ const LabelTool = {
         .then(
           () => {
             // all loaded
+            annotation.takeSnapshot();
             controls.update();
             innerStatus.loaded = true;
             resolve();
@@ -226,10 +229,13 @@ const LabelTool = {
     }
     let newKls = klassSet.setTarget(kls);
     if (newKls !== null) {
-      const label = annotation.getTarget();
-      if (label !== null) {
-        annotation.changeKlass(label, newKls);
-        controls.SideBar.update();
+      const labels = annotation.getTargets();
+      if (labels !== null && labels.length !== 0) {
+        labels.forEach(label => {
+          annotation.changeKlass(label, newKls);
+          controls.SideBar.update();
+        });
+        annotation.takeSnapshot();
       }
     } else {
       return false;
@@ -242,20 +248,20 @@ const LabelTool = {
   getKlass(name) {
     return klassSet.getByName(name);
   },
-  selectLabel(label) {
+  selectLabel(label, additional = false) {
     if (!LabelTool.isLoaded()) {
       return false;
     }
     let newLabel;
-    newLabel = annotation.setTarget(label);
+    newLabel = annotation.setTarget(label, additional);
     if (newLabel !== null) {
       klassSet.setTarget(newLabel.klass);
     }
     controls.update();
     return true;
   },
-  getTargetLabel() {
-    return annotation.getTarget();
+  getTargetLabels() {
+    return annotation.getTargets();
   },
   createLabel(klass, param) {
     if (!LabelTool.isLoaded()) {
@@ -379,6 +385,31 @@ const LabelTool = {
         controls.error(text);
     }
     return ret;
+  },
+  undo() {
+    return annotation.undo();
+  },
+  redo() {
+    return annotation.redo();
+  },
+  takeSnapshot() {
+    return annotation.takeSnapshot();
+  },
+  clip() {
+    return annotation.clip();
+  },
+  paste() {
+    return annotation.paste();
+  },
+  duplicateLabel(label) {
+    if (label != null) {
+      return annotation.duplicateLabel(label);
+    }
+  },
+  duplicateLabels(labels) {
+    return labels.map(label => {
+      return this.duplicateLabel(label);
+    }, this);
   }
 };
 
@@ -482,9 +513,16 @@ const initializeBase = function() {
             res => {
               toolStatus.originalId = res.original_id;
               toolStatus.frameLength = res.frame_count;
+              toolStatus.filePath = res.file_path;
               toolStatus.pageBox[0].placeholder =
                 1 + '/' + toolStatus.frameLength;
               toolStatus.pageBox.val('');
+
+              // extract candidate id from file path
+              toolStatus.activeCandidateIds = toolStatus.filePath
+                .split('_')
+                .slice(1, -1);
+
               resolve();
             },
             err => {
@@ -500,17 +538,48 @@ const initializeBase = function() {
             LabelTool.getURL('candidate_info'),
             null,
             res => {
+              // add tools
+              let numberOfImages = res.records.filter(record => {
+                return (
+                  record.data_type === 'IMAGE' &&
+                  toolStatus.activeCandidateIds.includes(
+                    String(record.candidate_id)
+                  )
+                );
+              }).length;
+              for (let i = 1; i < numberOfImages; i++) {
+                toolStatus.tools.unshift(new ImageLabelTool(LabelTool));
+              }
+              let numberOfPCDs = res.records.filter(record => {
+                return (
+                  record.data_type === 'PCD' &&
+                  toolStatus.activeCandidateIds.includes(
+                    String(record.candidate_id)
+                  )
+                );
+              }).length;
+              for (let i = 1; i < numberOfPCDs; i++) {
+                toolStatus.tools.push(new PCDLabelTool(LabelTool));
+              }
+
               const tools = toolStatus.tools;
               res.records.forEach(info => {
-                tools.forEach(tool => {
-                  if (tool.dataType === info.data_type) {
-                    if (tool.candidateId >= 0) {
-                      return;
+                if (
+                  toolStatus.activeCandidateIds.includes(
+                    String(info.candidate_id)
+                  )
+                ) {
+                  tools.some(tool => {
+                    if (tool.dataType === info.data_type) {
+                      if (tool.candidateId >= 0) {
+                        return;
+                      }
+                      tool.candidateId = info.candidate_id;
+                      toolStatus.filenames[tool.candidateId] = [];
+                      return true;
                     }
-                    tool.candidateId = info.candidate_id; // TODO: multi candidate_id
-                    toolStatus.filenames[tool.candidateId] = [];
-                  }
-                });
+                  });
+                }
               });
               resolve();
             },
@@ -525,12 +594,17 @@ const initializeBase = function() {
 const initializeEvent = function() {
   $(window)
     .keydown(function(e) {
-      if (e.keyCode == 8 || e.keyCode == 46) {
+      if (LabelTool.getTool().name === 'PCD') {
+        LabelTool.getTool().handles.keydown(e);
+      } else if (e.keyCode == 8 || e.keyCode == 46) {
         // Backspace or Delete
-        const label = LabelTool.getTargetLabel();
-        if (label != null) {
+        // const label = LabelTool.getTargetLabel();
+        // if (label != null) {
+        //   LabelTool.removeLabel(label);
+        // }
+        LabelTool.getTargetLabels().forEach(label => {
           LabelTool.removeLabel(label);
-        }
+        });
       } else if (e.keyCode == 39) {
         LabelTool.nextFrame();
       } else if (e.keyCode == 37) {

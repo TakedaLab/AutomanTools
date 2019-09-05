@@ -1,3 +1,12 @@
+Set.prototype.difference = function(setB) {
+  if (setB === null) {return this;}
+
+  var difference = new Set(this);
+  for (var elem of setB) {
+    difference.delete(elem);
+  }
+  return difference;
+};
 
 export default class ImageLabelTool {
   // private
@@ -30,6 +39,7 @@ export default class ImageLabelTool {
     this._container = container;
     this._decoration = new Decorations(this._paper);
     container.hide();
+    this._paper.canvas.style.display = 'none';
   }
   load() {
     this._loaded = false;
@@ -55,8 +65,10 @@ export default class ImageLabelTool {
   setActive(isActive) {
     if ( isActive ) {
       this._container.show();
+      this._paper.canvas.style.display = 'unset';
     } else {
       this._container.hide();
+      this._paper.canvas.style.display = 'none';
     }
     // set canvas size
     
@@ -73,15 +85,23 @@ export default class ImageLabelTool {
   }
   updateTarget(prev, next) {
     const id = this.candidateId;
-    if (prev != null && prev.has(id)) {
-      prev.bbox[id].selected = false;
-    }
-    if (next != null && next.has(id)) {
-      const bbox = next.bbox[id];
+
+    [...prev.difference(next)].filter((obj) => {
+      return obj.has(id);
+    }).forEach((obj) => {
+      obj.bbox[id].selected = false;
+    });
+
+    [...next].filter((obj) => {
+      return obj.has(id);
+    }).forEach((obj) => {
+      const bbox = obj.bbox[id];
       bbox.selected = true;
       bbox.toFront();
       this._decoration.show(bbox);
-    } else {
+    }, this);
+
+    if (next.length === 0) {
       this._decoration.hide();
     }
   }

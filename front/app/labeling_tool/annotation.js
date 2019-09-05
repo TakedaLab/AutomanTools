@@ -3,13 +3,18 @@ import RequestClient from 'automan/services/request-client';
 export default class Annotation {
   _labels = null;
   _deleted = null;
-  _targetLabel = null;
+  _targetLabels = new Set();
   // DOM
   _bboxTable = null;
   // status
   _loaded = true;
   _nextId = -1;
   _labelTool = null;
+  // History
+  _frameNumber = null;
+  _history = { index: -1, snapshots: [] };
+  // Copy
+  _clipboard = [];
 
   constructor(labelTool) {
     this._labelTool = labelTool;
@@ -26,6 +31,12 @@ export default class Annotation {
   }
   load(frameNumber) {
     this._removeAll();
+    if (this._frameNumber !== frameNumber) {
+      this._history = { index: -1, snapshots: [] };
+    } else {
+      // TODO: track the boxes whose object_id are newly assigned and set the value instead of removing history.
+      this._history = { index: -1, snapshots: [] };
+    }
     this._nextId = -1;
     return new Promise((resolve, reject) => {
       this._labels = new Map();
@@ -36,15 +47,7 @@ export default class Annotation {
         null,
         res => {
           res.records.forEach(obj => {
-            let klass = this._labelTool.getKlass(obj.name);
-            let bboxes = {};
-            this._labelTool.getTools().forEach(tool => {
-              const id = tool.candidateId;
-              if (obj.content[id] != null) {
-                bboxes[id] = tool.createBBox(obj.content[id]);
-              }
-            });
-            let label = new Label(this, obj.object_id, klass, bboxes);
+            this.addLabel(obj);
           });
         },
         err => {
@@ -53,6 +56,7 @@ export default class Annotation {
       );
 
       resolve();
+      this._frameNumber = frameNumber;
       this._loaded = true;
     });
   }
@@ -102,19 +106,153 @@ export default class Annotation {
       );
     });
   }
-  getTarget() {
-    return this._targetLabel;
+
+  addLabel(obj) {
+    let klass = this._labelTool.getKlass(obj.name);
+    let bboxes = {};
+    this._labelTool.getTools().forEach(tool => {
+      const id = tool.candidateId;
+      if (obj.content[id] != null) {
+        bboxes[id] = tool.createBBox(obj.content[id]);
+        tool._redrawFlag = true;
+      }
+    });
+    let label = new Label(this, obj.object_id, klass, bboxes);
+    return label;
   }
-  setTarget(tgt) {
-    let next = this._getLabel(tgt),
-      prev = this._targetLabel;
-    if (prev != null && next != null && next.id === prev.id) {
-      return prev;
+
+  duplicateLabel(label) {
+    if (label != null) {
+      let obj = label.toObject();
+      obj.object_id = this._nextId--;
+      let newLabel = this.addLabel(obj);
+      newLabel.isChanged = true;
+      return newLabel;
     }
-    this._targetLabel = next;
+  }
+
+  takeSnapshot(force = false) {
+    if (this.isChanged() || force) {
+      const labels = [];
+      const changedFlags = [];
+      this._labels.forEach(label => {
+        let obj = label.toObject();
+        if (!('object_id' in obj)) {
+          obj['object_id'] = label.id;
+        }
+        labels.push(obj);
+        changedFlags.push(label.isChanged);
+      });
+
+      if (this._history.index < this._history.snapshots.length - 1) {
+        this._history.snapshots = this._history.snapshots.slice(
+          0,
+          this._history.index + 1
+        );
+      }
+      this._history.snapshots.push({
+        labels: labels,
+        changedFlags: changedFlags
+      });
+      this._history.index += 1;
+
+      console.log(this._history);
+    }
+
+    // assertion
+    if (this._history.index !== this._history.snapshots.length - 1) {
+      console.error('Assertion error (wrong history length)');
+      return;
+    }
+
+    // limit history
+    let limit = 100;
+    if (this._history.snapshots.length > limit) {
+      this._history.snapshots = this._history.snapshots.slice(
+        this._history.snapshots.length - limit,
+        this._history.snapshots.length
+      );
+      this._history.index = limit - 1;
+    }
+  }
+
+  restoreFromSnapshot(snapshot) {
+    this._removeAll();
+    this._loaded = false;
+    this._nextId = -1;
+    this._labels = new Map();
+    this._deleted = [];
+
+    const labels = snapshot.labels;
+    const changedFlags = snapshot.changedFlags;
+    for (let i = 0; i < labels.length; i++) {
+      const label = this.addLabel(labels[i]);
+      label.isChanged = changedFlags[i];
+    }
+
+    this._loaded = true;
+  }
+
+  undo() {
+    if (this._history.index > 0) {
+      let previousIndex = this._history.index - 1;
+      let snapshot = this._history.snapshots[previousIndex];
+      this.restoreFromSnapshot(snapshot);
+      this._history.index = previousIndex;
+    }
+  }
+
+  redo() {
+    if (this._history.index < this._history.snapshots.length - 1) {
+      let nextIndex = this._history.index + 1;
+      let snapshot = this._history.snapshots[nextIndex];
+      this.restoreFromSnapshot(snapshot);
+      this._history.index = nextIndex;
+    }
+  }
+
+  clip() {
+    let targetLabels = this.getTargets();
+    if (targetLabels != null && targetLabels.length !== 0) {
+      this._clipboard = targetLabels.map(label => {
+        return label.toObject();
+      });
+      return this._clipboard;
+    }
+  }
+
+  paste() {
+    if (this._clipboard != null && this._clipboard.length !== 0) {
+      return this._clipboard.map(label => {
+        label.object_id = this._nextId--;
+        return this.addLabel(label);
+      }, this);
+    }
+  }
+
+  getTargets() {
+    return [...this._targetLabels];
+  }
+  setTarget(tgt, add = false) {
+    let next = this._getLabel(tgt),
+      prev = new Set(this._targetLabels);
+    // if (prev != null && next != null && next.id === prev.id) {
+    //   return prev;
+    // }
+    if (add) {
+      if (next !== null) {
+        this._targetLabels.add(next);
+      }
+    } else {
+      if (next !== null) {
+        this._targetLabels = new Set([next]);
+      } else {
+        this._targetLabels = new Set();
+      }
+    }
     // table dom events
     this._labelTool.getTools().forEach(tool => {
-      tool.updateTarget(prev, next);
+      tool.updateTarget(prev, this._targetLabels);
     });
     return next;
   }
@@ -124,7 +262,9 @@ export default class Annotation {
       this._labelTool.controls.error(txt);
       return null;
     }
-    return new Label(this, this._nextId--, klass, bbox);
+    const label = new Label(this, this._nextId--, klass, bbox);
+    this.takeSnapshot();
+    return label;
   }
   changeKlass(id, klass) {
     let label = this._getLabel(id);
@@ -180,23 +320,27 @@ export default class Annotation {
       this._labelTool.controls.error(txt);
       return;
     }
+    const tgts = this._targetLabels;
+    tgts.forEach(tgt => {
+      if (tgt != null && label.id === tgt.id) {
+        let originalTargetLabels = new Set(this._targetLabels);
+        this._targetLabels.delete(tgt);
+        this._labelTool.getTools().forEach(tool => {
+          tool.updateTarget(originalTargetLabels, this._targetLabels);
+        });
+      }
+    }, this);
     this._labelTool.getTools().forEach(tool => {
       if (label.bbox[tool.candidateId] != null) {
         tool.disposeBBox(label.bbox[tool.candidateId]);
       }
     });
-    const tgt = this._targetLabel;
-    if (tgt != null && label.id === tgt.id) {
-      this._targetLabel = null;
-      this._labelTool.getTools().forEach(tool => {
-        tool.updateTarget(tgt, null);
-      });
-    }
     if (label.id >= 0) {
       this._deleted.push(label.id);
     }
     this._labels.delete(label.id);
     label.dispose();
+    this.takeSnapshot(true);
   }
 
   // private
@@ -226,7 +370,7 @@ export default class Annotation {
     });
     this._labels.clear();
     this._labels = null;
-    this._targetLabel = null;
+    this._targetLabel = new Set();
   }
 }
 

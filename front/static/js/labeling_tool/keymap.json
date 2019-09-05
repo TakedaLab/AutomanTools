@@ -1,0 +1,205 @@
+[
+  {
+    "command": "save",
+    "mode": "command",
+    "key": "s"
+  },
+  {
+    "command": "clip",
+    "mode": "command",
+    "key": "c"
+  },
+  {
+    "command": "paste",
+    "mode": "command",
+    "key": "v"
+  },
+  {
+    "command": "undo",
+    "mode": "command",
+    "key": "z"
+  },
+  {
+    "command": "redo",
+    "mode": "command",
+    "key": "y"
+  },
+  {
+    "command": "redo",
+    "mode": "command",
+    "key": "Z"
+  },
+  {
+    "command": "redo",
+    "mode": "view",
+    "key": "Z"
+  },
+  {
+    "command": "setCameraBirdView",
+    "key": "0"
+  },
+  {
+    "command": "setCameraHorizon",
+    "key": "9"
+  },
+  {
+    "command": "deleteBbox",
+    "key": "d"
+  },
+  {
+    "command": "selectMode",
+    "key": "m",
+    "args": {"target": "move"}
+  },
+  {
+    "command": "selectMode",
+    "key": "v",
+    "args": {"target": "move"}
+  },
+  {
+    "command": "selectMode",
+    "key": "s",
+    "args": {"target": "resize"}
+  },
+  {
+    "command": "selectMode",
+    "key": "r",
+    "args": {"target": "rotate"}
+  },
+  {
+    "command": "temporarySelectMode",
+    "key": "Shift",
+    "args": {"target": "view"}
+  },
+  {
+    "command": "temporarySelectMode",
+    "key": "Alt",
+    "args": {"target": "create"}
+  },
+  {
+    "command": "temporarySelectMode",
+    "key": "Control",
+    "args": {"target": "command"}
+  },
+  {
+    "command": "toggleMode",
+    "key": " ",
+    "args": {"candidates": ["move", "resize", "rotate"]}
+  },
+  {
+    "command": "adjustToTemplate",
+    "mode": "create",
+    "key": "1",
+    "args": {"templateName": "mini_car"}
+  },
+  {
+    "command": "adjustToTemplate",
+    "mode": "create",
+    "key": "2",
+    "args": {"templateName": "sedan"}
+  },
+  {
+    "command": "adjustToTemplate",
+    "mode": "create",
+    "key": "3",
+    "args": {"templateName": "mini_van"}
+  },
+  {
+    "command": "adjustToTemplate",
+    "mode": "create",
+    "key": "4",
+    "args": {"templateName": "mini_truck"}
+  },
+  {
+    "command": "adjustToTemplate",
+    "mode": "create",
+    "key": "5",
+    "args": {"templateName": "middle_truck"}
+  },
+  {
+    "command": "adjustToTemplate",
+    "mode": "create",
+    "key": "6",
+    "args": {"templateName": "heavy_truck"}
+  },
+  {
+    "command": "adjustToTemplate",
+    "mode": "create",
+    "key": "7",
+    "args": {"templateName": "motorbike"}
+  },
+  {
+    "command": "keyboardCommand",
+    "mode": "move",
+    "key": "ArrowLeft",
+    "args": {"action": "move", "direction": "left", "step": 0.1}
+  },
+  {
+    "command": "keyboardCommand",
+    "mode": "move",
+    "key": "ArrowRight",
+    "args": {"action": "move", "direction": "right", "step": 0.1}
+  },
+  {
+    "command": "keyboardCommand",
+    "mode": "move",
+    "key": "ArrowUp",
+    "args": {"action": "move", "direction": "up", "step": 0.1}
+  },
+  {
+    "command": "keyboardCommand",
+    "mode": "move",
+    "key": "ArrowDown",
+    "args": {"action": "move", "direction": "down", "step": 0.1}
+  },
+
+  {
+    "command": "keyboardCommand",
+    "mode": "resize",
+    "key": "ArrowLeft",
+    "args": {"action": "size", "direction": "left", "step": 0.1}
+  },
+  {
+    "command": "keyboardCommand",
+    "mode": "resize",
+    "key": "ArrowRight",
+    "args": {"action": "size", "direction": "right", "step": 0.1}
+  },
+  {
+    "command": "keyboardCommand",
+    "mode": "resize",
+    "key": "ArrowUp",
+    "args": {"action": "size", "direction": "up", "step": 0.1}
+  },
+  {
+    "command": "keyboardCommand",
+    "mode": "resize",
+    "key": "ArrowDown",
+    "args": {"action": "size", "direction": "down", "step": 0.1}
+  },
+  
+  {
+    "command": "keyboardCommand",
+    "mode": "rotate",
+    "key": "ArrowLeft",
+    "args": {"action": "rotate", "direction": "left", "step": 0.1}
+  },
+  {
+    "command": "keyboardCommand",
+    "mode": "rotate",
+    "key": "ArrowRight",
+    "args": {"action": "rotate", "direction": "right", "step": 0.1}
+  },
+  {
+    "command": "keyboardCommand",
+    "mode": "rotate",
+    "key": "ArrowUp",
+    "args": {"action": "rotate", "direction": "up", "step": 0.1}
+  },
+  {
+    "command": "keyboardCommand",
+    "mode": "rotate",
+    "key": "ArrowDown",
+    "args": {"action": "rotate", "direction": "down", "step": 0.1}
+  }
+]

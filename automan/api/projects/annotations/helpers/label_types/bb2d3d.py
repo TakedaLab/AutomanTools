@@ -39,6 +39,11 @@ class BB2D3D(object):
             'required': True,
             'empty': False,
         },
+        'object_id': {
+            'type': 'float',
+            'required': True,
+            'empty': False,
+        },
     }
 
     @staticmethod
