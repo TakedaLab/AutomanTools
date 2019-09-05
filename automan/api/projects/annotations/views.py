@@ -96,3 +96,42 @@ def download_archived_annotation(request, project_id, annotation_id):
     archive_path = annotation_manager.get_archive_path(annotation_id)
     archive = open(archive_path, "rb").read()
     return HttpResponse(archive, content_type="application/octet-stream")
+
+
+@api_view(['POST'])
+def import_labels_from_json(request, project_id, annotation_id):
+    def convert_bbox(bbox, candidate_id):
+        return {
+                    'name': bbox['class'].lower(),
+                    'content': {
+                        '{}'.format(candidate_id): {
+                            'x_3d': bbox['x'],
+                            'y_3d': bbox['y'],
+                            'z_3d': bbox['z'],
+                            'width_3d': bbox['length'],
+                            'height_3d': bbox['width'],
+                            'length_3d': bbox['height'],
+                            'rotation_y': bbox['rotation'],
+                        }
+                    }
+                }
+
+    username = request.user
+    user_id = AccountManager.get_id_by_username(username)
+    candidate_id = request.data.get('candidateId')
+    data = request.data.get('labelJson')
+    annotation_manager = AnnotationManager()
+
+    if request.method == 'POST':
+        # Get all frame ids
+        frame_ids = data.keys()
+        for frame_id in frame_ids:
+            bboxes = data[frame_id]
+            frame_id = '{}'.format(int(frame_id)) # Temporarily: avoiding error because of zero-padded frame ID
+
+            created = [convert_bbox(bbox, candidate_id) for bbox in bboxes]
+            edited = []
+            deleted = []
+
+            annotation_manager.set_frame_label(user_id, project_id, annotation_id, frame_id, created, edited, deleted)
+        return HttpResponse(status=201)

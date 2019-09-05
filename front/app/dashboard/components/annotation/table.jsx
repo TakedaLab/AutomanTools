@@ -6,6 +6,7 @@ import { TableHeaderColumn } from 'react-bootstrap-table';
 import Typography from '@material-ui/core/Typography';
 
 import ResizableTable from 'automan/dashboard/components/parts/resizable_table';
+import LabelImportDialog from 'automan/dashboard/components/annotation/label_import_dialog';
 import { mainStyle } from 'automan/assets/main-style';
 
 function actionFormatter(cell, row) {
@@ -166,6 +167,11 @@ class AnnotationTable extends React.Component {
                     }}
                     title="Download"
                   />
+                  <LabelImportDialog
+                    project_id={this.props.currentProject.id}
+                    annotation_id={row.id}
+                    dataset_id={row.dataset_id}
+                  />
                 </span>
               </div>
             );
@@ -177,6 +183,11 @@ class AnnotationTable extends React.Component {
                     className="button glyphicon glyphicon-folder-close"
                     onClick={e => this.handleArchive(row)}
                     title="Archive"
+                  />
+                  <LabelImportDialog
+                    project_id={this.props.currentProject.id}
+                    annotation_id={row.id}
+                    dataset_id={row.dataset_id}
                   />
                 </span>
               </div>
