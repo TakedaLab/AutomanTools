@@ -134,4 +134,4 @@ def import_labels_from_json(request, project_id, annotation_id):
             deleted = []
 
             annotation_manager.set_frame_label(user_id, project_id, annotation_id, frame_id, created, edited, deleted)
-        return HttpResponse(content=json.dumps(request.data), status=200, content_type='application/json')
+        return HttpResponse(status=201)
