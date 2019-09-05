@@ -1,9 +1,11 @@
 import React from 'react';
 import Button from '@material-ui/core/Button';
 import CardHeader from '@material-ui/core/CardHeader';
+import { amber, green } from '@material-ui/core/colors';
 import Dialog from '@material-ui/core/Dialog';
 import DialogContent from '@material-ui/core/DialogContent';
 import FormControl from '@material-ui/core/FormControl'
+import SnackbarContent from '@material-ui/core/SnackbarContent';
 import Close from '@material-ui/icons/Close';
 import Send from '@material-ui/icons/Send';
 
@@ -14,6 +16,8 @@ export default class LabelImportDialog extends React.Component {
     this.state = {
       formOpen: false,
       file: null,
+      isImportSuccess: null,
+      message: '',
     };
   }
 
@@ -45,12 +49,14 @@ export default class LabelImportDialog extends React.Component {
       RequestClient.post(
         url,
         data,
-        function(res) {
-          console.log(res);
-        },
-        function(mes) {
-          console.log(mes);
-        }
+        function() {
+          this.setState({ isImportSuccess: true });
+          this.setState({ message: '成功しました' });
+        }.bind(this),
+        function() {
+          this.setState({ isImportSuccess: false });
+          this.setState({ message: '失敗しました' });
+        }.bind(this)
       );
     }.bind(this));
   }
@@ -62,6 +68,26 @@ export default class LabelImportDialog extends React.Component {
       >
         <Close />
       </Button>
+    );
+
+    const successMessage = (
+      <SnackbarContent 
+        message={this.state.message}
+        style={{
+          backgroundColor: green[600],
+          marginTop: '15px',
+        }}
+      />
+    );
+
+    const errorMessage = (
+      <SnackbarContent 
+        message={this.state.message}
+        style={{
+          backgroundColor: amber[700],
+          marginTop: '15px',
+        }}
+      />
     );
 
     return (
@@ -86,13 +112,18 @@ export default class LabelImportDialog extends React.Component {
                 />
               </FormControl>
 
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={this.handleSubmit}
-              >
-                <Send />&nbsp;Submit
-              </Button>
+              <div style={{ marginTop: '15px' }}>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={this.handleSubmit}
+                >
+                  <Send />&nbsp;Submit
+                </Button>
+              </div>
+
+              {this.state.isImportSuccess === true ? successMessage : null}
+              {this.state.isImportSuccess === false ? errorMessage : null}
             </DialogContent>
           </Dialog>
         </div>
