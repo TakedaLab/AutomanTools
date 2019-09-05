@@ -49,6 +49,7 @@ export default class Annotation {
           res.records.forEach(obj => {
             this.addLabel(obj);
           });
+          this.takeSnapshot(true);
         },
         err => {
           reject(err);
