@@ -103,7 +103,7 @@ const request = (url, data, method, successCB, failCB, options) => {
     data: data,
     contentType: 'application/json',
     cache: false,
-    timeout: 20000,
+    timeout: 1800000,
     success: (res, status, xhr) => {
       switch(xhr.status) {
       case 200:
