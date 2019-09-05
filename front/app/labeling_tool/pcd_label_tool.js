@@ -65,6 +65,7 @@ export default class PCDLabelTool {
   _hoveringBBox = null;
   _keymap_arr = [];
   _boxTemplates = [];
+  _font = null;
 
   // public
   name = 'PCD';
@@ -95,6 +96,7 @@ export default class PCDLabelTool {
     this._initFacePlane();
     this._initKeyMap();
     this._initBoxTemplates();
+    this._initFont();
 
     this._animate();
   }
@@ -434,6 +436,22 @@ export default class PCDLabelTool {
     );
     return promises;
   }
+  _initFont() {
+    let promises = [];
+    promises.push(
+      new Promise((resolve, reject) => {
+        $.getJSON('/static/fonts/helvetiker_regular.typeface.json', function(
+          data
+        ) {
+          resolve(data);
+        });
+      }).then(data => {
+        let font_loader = new THREE.FontLoader();
+        this._font = font_loader.parse(data);
+      })
+    );
+    return promises;
+  }
   _animate() {
     const id = window.requestAnimationFrame(() => {
       this._animate();
@@ -630,6 +648,7 @@ class PCDBBox {
     if (addToTool) {
       this.initCube();
       this.pcdTool.pcdBBoxes.add(this);
+      this.initText();
       this._redrawFlag = true;
     }
   }
@@ -640,6 +659,9 @@ class PCDBBox {
     }
     this.label = label;
     this.labelItem = label.addBBox('PCD');
+
+    // update text
+    this.updateText();
   }
   updateKlass() {}
   remove() {
@@ -672,6 +694,47 @@ class PCDBBox {
       mesh: mesh
     };
   }
+  initText() {
+    if ('mesh' in this.cube === false) {
+      return;
+    }
+
+    // object id label
+    let color = "#FF3366";
+    if (this.label != null) {
+      color = this.label.klass.color;
+    }
+    let matDark = new THREE.LineBasicMaterial({
+      color: color,
+      side: THREE.DoubleSide
+    });
+    let matDarkBackSide = new THREE.LineBasicMaterial({
+      color: color,
+      side: THREE.DoubleSide
+    });
+    matDarkBackSide.color.offsetHSL(0, 0, 0.4);
+    let message = this.box.object_id;
+    let shapes = this.pcdTool._font.generateShapes(message, 1.5);
+    let geometry = new THREE.ShapeBufferGeometry(shapes);
+    geometry.computeBoundingBox();
+    let xMid = -0.6 * (geometry.boundingBox.max.x - geometry.boundingBox.min.x);
+    let yMid = -0.5 * (geometry.boundingBox.max.y - geometry.boundingBox.min.y);
+    geometry.translate(xMid, yMid, 1.0);
+    let text = new THREE.Mesh(geometry, matDark);
+    text.visible = true;
+    let text_backside = new THREE.Mesh(geometry, matDarkBackSide);
+    text_backside.translateX(0.1);
+    text_backside.translateY(-0.12);
+    text_backside.translateZ(-0.01);
+    text.add(text_backside);
+    text.rotation.z = -1.57;
+    this.cube.mesh.add(text);
+    text.scale.set(
+      1.0 / text.parent.scale.y,
+      1.0 / text.parent.scale.x,
+      1.0 / text.parent.scale.z
+    );
+  }
   updateCube(changed) {
     const mesh = this.cube.mesh;
     const box = this.box;
@@ -686,6 +749,13 @@ class PCDBBox {
     // if (this.selected) {
     //   this.pcdTool.setArrow(this);
     // }
+    this.updateText();
+  }
+  updateText() {
+    if ('mesh' in this.cube && this.cube.mesh.children.length > 0) {
+      this.cube.mesh.children.pop();
+      this.initText();
+    }
   }
   clone(addToTool = false) {
     const content = {};
