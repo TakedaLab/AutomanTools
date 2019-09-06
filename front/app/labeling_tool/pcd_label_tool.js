@@ -286,7 +286,7 @@ export default class PCDLabelTool {
     //   PAN: THREE.MOUSE.LEFT,
     // };
     controls.rotateSpeed = 2.0;
-    controls.zoomSpeed = 0.3;
+    controls.zoomSpeed = 1.0;
     controls.panSpeed = 0.2;
     controls.enableZoom = true;
     controls.enablePan = true;
