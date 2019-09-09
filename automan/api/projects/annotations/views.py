@@ -135,3 +135,25 @@ def import_labels_from_json(request, project_id, annotation_id):
 
             annotation_manager.set_frame_label(user_id, project_id, annotation_id, frame_id, created, edited, deleted)
         return HttpResponse(status=201)
+
+
+@api_view(['GET', 'POST'])
+def check_result(request, project_id, annotation_id):
+    username = request.user
+    user_id = AccountManager.get_id_by_username(username)
+    annotation_manager = AnnotationManager()
+    if request.method == 'GET':
+        if not Permission.hasPermission(user_id, 'get_label', project_id):
+            raise PermissionDenied
+        uuid = request.GET.get('uuid', None)
+        check_result = annotation_manager.get_check_result(annotation_id, uuid)
+        return HttpResponse(content=json.dumps(check_result), status=200, content_type='application/json')
+
+    else:
+        if not Permission.hasPermission(user_id, 'create_label', project_id):
+            raise PermissionDenied
+        uuid = request.data.get('uuid', "")
+        content = request.data.get('content', "")
+        annotation_manager.set_check_result(annotation_id, uuid, content)
+        res_data = {'uuid': uuid}
+        return HttpResponse(content=json.dumps(res_data), status=201, content_type='application/json')

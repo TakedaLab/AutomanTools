@@ -1,12 +1,14 @@
 import os
 import copy
 import json
+from uuid import uuid4
 from django.db import transaction
 from django.db.models import Q
 from django.core.exceptions import FieldError, ValidationError
 from rest_framework import serializers
 from libs.k8s.jobs import BaseJob
 from libs.k8s.jobs.annotation_semi_labeler import AnnotationSemiLabeler
+from libs.k8s.jobs.annotation_checker import AnnotationChecker
 from libs.k8s.jobs.annotation_archiver import AnnotationArchiver
 from libs.k8s.jobs.rosbag_extractor import RosbagExtractor
 from libs.k8s.jobs.rosbag_analyzer import RosbagAnalyzer
@@ -112,6 +114,45 @@ class JobSerializer(serializers.ModelSerializer):
             'original_id': original_id
         }
         return semi_labeling_config
+
+    @classmethod
+    @transaction.atomic
+    def annotation_check(cls, user_id, project_id, dataset_id, original_id, annotation_id):
+        original = OriginalManager().get_original(project_id, original_id, status='analyzed')
+        storage = StorageSerializer().get_storage(project_id, original['storage_id'])
+        storage_config = copy.deepcopy(storage['storage_config'])
+
+        automan_config = cls.__get_automan_config(user_id)
+        automan_config.update({'path': '/projects/' + str(project_id) + '/annotations/' + str(annotation_id) + '/'})
+        check_config = cls.__get_annotation_check_info(user_id, project_id, dataset_id, annotation_id, original_id)
+        job_config = {
+            'storage_type': storage['storage_type'],
+            'storage_config': storage_config,
+            'automan_config': automan_config,
+            'check_config': check_config,
+        }
+        job_config_json = json.dumps(job_config)
+        new_job = Job(
+            job_type='annotation-checker',
+            user_id=user_id,
+            project_id=project_id,
+            job_config=job_config_json)
+        new_job.save()
+        job = AnnotationChecker(**job_config)
+        job.create(cls.__generate_job_name(new_job.id, 'annotation-checker'))
+        res = job.run()
+        return check_config['uuid']
+
+    def __get_annotation_check_info(user_id, project_id, dataset_id, annotation_id, original_id):
+        dataset = DatasetManager().get_dataset(user_id, dataset_id)
+        annotation_check_config = {
+            'project_id': project_id,
+            'dataset_id': dataset_id,
+            'annotation_id': annotation_id,
+            'original_id': original_id,
+            'uuid': str(uuid4())
+        }
+        return annotation_check_config
 
     @classmethod
     @transaction.atomic

@@ -54,6 +54,17 @@ class JobViewSet(viewsets.ModelViewSet):
             dataset_id = int(job_config['dataset_id'])
             annotation_id = int(job_config['annotation_id'])
             content = JobSerializer.semi_label(user_id, int(project_id), dataset_id, original_id, annotation_id)
+        elif job_type == 'ANNOTATION_CHECKER':
+            if not Permission.hasPermission(user_id, 'get_original', project_id):
+                raise PermissionDenied
+            if not Permission.hasPermission(user_id, 'create_label', project_id):
+                raise PermissionDenied
+            job_config = request.data['job_config']
+            original_id = int(job_config['original_id'])
+            dataset_id = int(job_config['dataset_id'])
+            annotation_id = int(job_config['annotation_id'])
+            uuid = JobSerializer.annotation_check(user_id, int(project_id), dataset_id, original_id, annotation_id)
+            content = json.dumps({'uuid': uuid})
         else:
             raise ValidationError
 

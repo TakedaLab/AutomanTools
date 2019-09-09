@@ -42,3 +42,10 @@ class DatasetObjectAnnotation(models.Model):
     delete_flag = models.BooleanField(default=False)
     name = models.CharField(max_length=45)
     content = models.CharField(max_length=511)
+
+
+class CheckResult(models.Model):
+    annotation = models.ForeignKey(Annotation, on_delete=models.CASCADE)
+    registered_at = models.DateTimeField(default=timezone.now)
+    uuid = models.CharField(max_length=64, default='')
+    content = models.TextField(blank=True, null=True)

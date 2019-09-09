@@ -7,6 +7,7 @@ import Typography from '@material-ui/core/Typography';
 
 import ResizableTable from 'automan/dashboard/components/parts/resizable_table';
 import LabelImportDialog from 'automan/dashboard/components/annotation/label_import_dialog';
+import AnnotationCheckDialog from 'automan/dashboard/components/annotation/annotation_check_dialog';
 import { mainStyle } from 'automan/assets/main-style';
 
 function actionFormatter(cell, row) {
@@ -192,6 +193,11 @@ class AnnotationTable extends React.Component {
                     onClick={e => this.handleSemiLabel(row)}
                     title="Semi-label"
                   />
+                  <AnnotationCheckDialog
+                    project_id={this.props.currentProject.id}
+                    annotation_id={row.id}
+                    dataset_id={row.dataset_id}
+                  />
                   <a
                     className="button glyphicon glyphicon-folder-close"
                     onClick={e => this.handleArchive(row)}
@@ -225,6 +231,11 @@ class AnnotationTable extends React.Component {
                     className="button glyphicon glyphicon-tasks"
                     onClick={e => this.handleSemiLabel(row)}
                     title="Semi-label"
+                  />
+                  <AnnotationCheckDialog
+                    project_id={this.props.currentProject.id}
+                    annotation_id={row.id}
+                    dataset_id={row.dataset_id}
                   />
                   <a
                     className="button glyphicon glyphicon-folder-close"

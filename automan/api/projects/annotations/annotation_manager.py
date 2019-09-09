@@ -2,7 +2,7 @@ import json
 from django.db import transaction
 from django.db.models import Q
 from django.core.exceptions import ValidationError, ObjectDoesNotExist, FieldError
-from projects.annotations.models import DatasetObject, DatasetObjectAnnotation, AnnotationProgress
+from projects.annotations.models import DatasetObject, DatasetObjectAnnotation, AnnotationProgress, CheckResult
 from projects.annotations.helpers.label_types.bb2d import BB2D
 from projects.annotations.helpers.label_types.bb2d3d import BB2D3D
 from .models import Annotation, ArchivedLabelDataset
@@ -206,3 +206,27 @@ class AnnotationManager(object):
             annotation_id=annotation_id).order_by('-date').first()
         archive_path = archive.file_path + '/' + archive.file_name
         return archive_path
+
+    def get_check_result(self, annotation_id, uuid=None):
+        if uuid is None:
+            check = CheckResult.objects.filter(annotation_id=annotation_id).last()
+        else:
+            check = CheckResult.objects.filter(annotation_id=annotation_id, uuid=uuid).last()
+
+        if check is None:
+            raise ObjectDoesNotExist()
+
+        contents = {}
+        contents['id'] = annotation_id
+        contents['registered_at'] = str(check.registered_at)
+        contents['uuid'] = check.uuid
+        contents['content'] = check.content
+        return contents
+
+    def set_check_result(self, annotation_id, uuid, content):
+        new_check = CheckResult(
+            annotation_id=annotation_id,
+            uuid=uuid,
+            content=content
+        )
+        new_check.save()
