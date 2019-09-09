@@ -658,6 +658,7 @@ class PCDBBox {
       throw 'Label already set';
     }
     this.label = label;
+    // this.labelItem = label.addBBox('PCD');
     this.labelItem = label.addBBox('PCD');
 
     // update text
@@ -756,6 +757,7 @@ class PCDBBox {
       this.cube.mesh.children.pop();
       this.initText();
     }
+    this.labelItem.text('PCD (ID: ' + String(this.box.object_id) + ')');
   }
   clone(addToTool = false) {
     const content = {};
