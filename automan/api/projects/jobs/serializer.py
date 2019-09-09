@@ -54,7 +54,7 @@ class JobSerializer(serializers.ModelSerializer):
             record['job_type'] = job.job_type
             if job.status not in [STATUS_MAP['succeeded'], STATUS_MAP['failed']]:
                 status, start_time, completion_time = cls.__get_job_status(job.id, job.job_type)
-                job.status = status
+                job.status = status if status is not None else 'UNKNOWN'
                 job.started_at = start_time
                 job.completed_at = completion_time
                 job.save()
