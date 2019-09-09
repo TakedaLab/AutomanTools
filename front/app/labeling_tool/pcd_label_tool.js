@@ -280,11 +280,11 @@ export default class PCDLabelTool {
     this._scene.add(camera);
 
     const controls = new THREE.OrbitControls(camera, this._renderer.domElement);
-    // controls.mouseButtons = {
-    //   ORBIT: THREE.MOUSE.RIGHT,
-    //   ZOOM: THREE.MOUSE.MIDDLE,
-    //   PAN: THREE.MOUSE.LEFT,
-    // };
+    controls.mouseButtons = {
+      ORBIT: THREE.MOUSE.RIGHT,
+      ZOOM: THREE.MOUSE.MIDDLE,
+      PAN: THREE.MOUSE.LEFT,
+    };
     controls.rotateSpeed = 2.0;
     controls.zoomSpeed = 1.0;
     controls.panSpeed = 0.2;
@@ -903,8 +903,10 @@ function createModeMethods(pcdTool) {
     if (normal.z === 1 || normal.z === -1) {
       // TODO: determine the distance to move based on the intersection point of mouse and vertical plane
       const pos = pcdTool.getMousePos(e);
-      const diff = (pos.x - bbox.mouse.x + (pos.y - bbox.mouse.y)) * 20;
-      bbox.pcdBox.box.size.z += diff;
+      const diff_resize = (pos.x - bbox.mouse.x + (pos.y - bbox.mouse.y)) * 20;
+      const diff_move = (pos.x - bbox.mouse.x + (pos.y - bbox.mouse.y)) * 10;
+      bbox.pcdBox.box.size.z += diff_resize;
+      bbox.pcdBox.box.pos.z += diff_move;
       bbox.mouse = pos;
     } else {
       const pos = pcdTool.getIntersectPos(e);
@@ -913,13 +915,20 @@ function createModeMethods(pcdTool) {
         const dist = bbox.endPos.distanceTo(bbox.startPos);
         if (dist > 0.01) {
           if (this.selectFace != null) {
-            const move = new THREE.Vector3(
-              (bbox.endPos.x - bbox.startPos.x) * 2.0,
-              (bbox.endPos.y - bbox.startPos.y) * 2.0,
+            const resize = new THREE.Vector3(
+              bbox.endPos.x - bbox.startPos.x,
+              bbox.endPos.y - bbox.startPos.y,
               0
             ).multiply(normal);
+            const move = new THREE.Vector3(
+              (bbox.endPos.x - bbox.startPos.x) / 2.0,
+              (bbox.endPos.y - bbox.startPos.y) / 2.0,
+              0
+            ).multiply(normal).multiply(normal);
             bbox.pcdBox.box.size = bbox.originalPCDBox.box.size.clone();
-            bbox.pcdBox.box.size.add(move);
+            bbox.pcdBox.box.size.add(resize);
+            bbox.pcdBox.box.pos = bbox.originalPCDBox.box.pos.clone();
+            bbox.pcdBox.box.pos.add(move);
           }
         }
       } else {
