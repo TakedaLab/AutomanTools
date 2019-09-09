@@ -150,7 +150,9 @@ class AnnotationTable extends React.Component {
         RequestClient.post(
           url,
           data,
-          res => {},
+          res => {
+            alert('Semi-labeling job has been sent');
+          },
           mes => {
             this.setState({
               error: mes.message
