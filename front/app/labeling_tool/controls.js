@@ -321,8 +321,8 @@ const initGUIPCD = function(gui, targetLabel) {
   fpos
     .add(guiRef.pcd, 'posX')
     .name('x')
-    .max(30)
-    .min(-30)
+    .max(100)
+    .min(-100)
     .step(0.01)
     .listen();
   fpos
@@ -335,8 +335,8 @@ const initGUIPCD = function(gui, targetLabel) {
   fpos
     .add(guiRef.pcd, 'posZ')
     .name('z')
-    .max(30)
-    .min(-30)
+    .max(10)
+    .min(-10)
     .step(0.01)
     .listen();
   const fsize = folder.addFolder('Size');
@@ -344,7 +344,7 @@ const initGUIPCD = function(gui, targetLabel) {
   fsize
     .add(guiRef.pcd, 'sizeX')
     .name('x')
-    .max(10)
+    .max(20)
     .min(0.5)
     .step(0.1)
     .listen();
@@ -358,7 +358,7 @@ const initGUIPCD = function(gui, targetLabel) {
   fsize
     .add(guiRef.pcd, 'sizeZ')
     .name('z')
-    .max(10)
+    .max(5)
     .min(0.5)
     .step(0.1)
     .listen();
