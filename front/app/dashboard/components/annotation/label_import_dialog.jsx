@@ -141,7 +141,7 @@ export default class LabelImportDialog extends React.Component {
     );
 
     return (
-      <span>
+      <span className="col-xs-1">
         <a
           className="button glyphicon glyphicon-import"
           onClick={this.show}

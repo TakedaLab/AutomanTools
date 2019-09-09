@@ -7,6 +7,8 @@ import Typography from '@material-ui/core/Typography';
 
 import ResizableTable from 'automan/dashboard/components/parts/resizable_table';
 import LabelImportDialog from 'automan/dashboard/components/annotation/label_import_dialog';
+import AnnotationArchiveDialog from 'automan/dashboard/components/annotation/annotation_archive_dialog';
+import AnnotationSemiLabelingDialog from 'automan/dashboard/components/annotation/annotation_semi_labeling_dialog';
 import AnnotationCheckDialog from 'automan/dashboard/components/annotation/annotation_check_dialog';
 import { mainStyle } from 'automan/assets/main-style';
 
@@ -96,78 +98,6 @@ class AnnotationTable extends React.Component {
   handleClick(index) {
     this.props.onClickAnnotation(this.state.data[index].id);
   }
-  handleArchive(row) {
-    const datasetUrl =
-      `/projects/${this.props.currentProject.id}` +
-      `/datasets/${row.dataset_id}/`;
-    RequestClient.get(
-      datasetUrl,
-      null,
-      datasetInfo => {
-        const url = `/projects/${this.props.currentProject.id}/jobs/`,
-          data = {
-            job_type: 'ARCHIVER',
-            job_config: {
-              original_id: datasetInfo.original_id,
-              dataset_id: row.dataset_id,
-              annotation_id: row.id
-            }
-          };
-        RequestClient.post(
-          url,
-          data,
-          res => {},
-          mes => {
-            this.setState({
-              error: mes.message
-            });
-          }
-        );
-      },
-      mes => {
-        this.setState({
-          error: mes.message
-        });
-      }
-    );
-  }
-  handleSemiLabel(row) {
-    const datasetUrl =
-      `/projects/${this.props.currentProject.id}` +
-      `/datasets/${row.dataset_id}/`;
-    RequestClient.get(
-      datasetUrl,
-      null,
-      datasetInfo => {
-        const url = `/projects/${this.props.currentProject.id}/jobs/`,
-          data = {
-            job_type: 'SEMI_LABELER',
-            job_config: {
-              original_id: datasetInfo.original_id,
-              dataset_id: row.dataset_id,
-              annotation_id: row.id
-            }
-          };
-        RequestClient.post(
-          url,
-          data,
-          res => {
-            alert('Semi-labeling job has been sent');
-          },
-          mes => {
-            this.setState({
-              error: mes.message
-            });
-          }
-        );
-      },
-      mes => {
-        this.setState({
-          error: mes.message
-        });
-      }
-    );
-  }
   render() {
     // if ( this.state.error ) {
     //     return (
@@ -188,23 +118,28 @@ class AnnotationTable extends React.Component {
             actions = (
               <div className="text-center">
                 <span>
-                  <a
-                    className="button glyphicon glyphicon-tasks"
-                    onClick={e => this.handleSemiLabel(row)}
-                    title="Semi-label"
+                  <LabelImportDialog
+                    project_id={this.props.currentProject.id}
+                    annotation_id={row.id}
+                    dataset_id={row.dataset_id}
+                  />
+                  <AnnotationSemiLabelingDialog
+                    project_id={this.props.currentProject.id}
+                    annotation_id={row.id}
+                    dataset_id={row.dataset_id}
                   />
                   <AnnotationCheckDialog
                     project_id={this.props.currentProject.id}
                     annotation_id={row.id}
                     dataset_id={row.dataset_id}
                   />
-                  <a
-                    className="button glyphicon glyphicon-folder-close"
-                    onClick={e => this.handleArchive(row)}
-                    title="Archive"
+                  <AnnotationArchiveDialog
+                    project_id={this.props.currentProject.id}
+                    annotation_id={row.id}
+                    dataset_id={row.dataset_id}
                   />
                   <a
-                    className="button glyphicon glyphicon-download-alt"
+                    className="button glyphicon glyphicon-download-alt col-xs-1"
                     onClick={()=>{
                       RequestClient.getBinaryAsURL(row.archive_url, (url) => {
                         let a = document.createElement('a');
@@ -215,11 +150,6 @@ class AnnotationTable extends React.Component {
                     }}
                     title="Download"
                   />
-                  <LabelImportDialog
-                    project_id={this.props.currentProject.id}
-                    annotation_id={row.id}
-                    dataset_id={row.dataset_id}
-                  />
                 </span>
               </div>
             );
@@ -227,22 +157,22 @@ class AnnotationTable extends React.Component {
             actions = (
               <div className="text-center">
                 <span>
-                  <a
-                    className="button glyphicon glyphicon-tasks"
-                    onClick={e => this.handleSemiLabel(row)}
-                    title="Semi-label"
+                  <LabelImportDialog
+                    project_id={this.props.currentProject.id}
+                    annotation_id={row.id}
+                    dataset_id={row.dataset_id}
+                  />
+                  <AnnotationSemiLabelingDialog
+                    project_id={this.props.currentProject.id}
+                    annotation_id={row.id}
+                    dataset_id={row.dataset_id}
                   />
                   <AnnotationCheckDialog
                     project_id={this.props.currentProject.id}
                     annotation_id={row.id}
                     dataset_id={row.dataset_id}
                   />
-                  <a
-                    className="button glyphicon glyphicon-folder-close"
-                    onClick={e => this.handleArchive(row)}
-                    title="Archive"
-                  />
-                  <LabelImportDialog
+                  <AnnotationArchiveDialog
                     project_id={this.props.currentProject.id}
                     annotation_id={row.id}
                     dataset_id={row.dataset_id}
@@ -317,7 +247,7 @@ class AnnotationTable extends React.Component {
           <TableHeaderColumn width="10%" dataField="dataset_id">
             Dataset ID
           </TableHeaderColumn>
-          <TableHeaderColumn width="10%" dataField="actions" dataFormat={actionFormatter}>
+          <TableHeaderColumn width="20px" dataField="actions" dataFormat={actionFormatter}>
             Actions
           </TableHeaderColumn>
         </ResizableTable>

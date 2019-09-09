@@ -12,15 +12,14 @@ import SnackbarContent from '@material-ui/core/SnackbarContent';
 import Close from '@material-ui/icons/Close';
 import Send from '@material-ui/icons/Send';
 
-export default class AnnotationCheckDialog extends React.Component {
+export default class AnnotationSemiLabelingDialog extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
       formOpen: false,
       isJobSent: false,
-      uuid: '',
+      isSendFailed: false,
       message: '',
-      retry: 0
     };
   }
 
@@ -42,7 +41,7 @@ export default class AnnotationCheckDialog extends React.Component {
       datasetInfo => {
         const url = `/projects/${this.props.project_id}/jobs/`,
           data = {
-            job_type: 'ANNOTATION_CHECKER',
+            job_type: 'SEMI_LABELER',
             job_config: {
               original_id: datasetInfo.original_id,
               dataset_id: this.props.dataset_id,
@@ -53,16 +52,14 @@ export default class AnnotationCheckDialog extends React.Component {
           url,
           data,
           res => {
-            let parsed = JSON.parse(res);
             this.setState({
               isJobSent: true,
-              uuid: parsed.uuid,
-              message: 'Checking...'
+              message: 'Semi-labeling job has successfully been sent.'
             });
-            this.getResult();
           },
           mes => {
             this.setState({
+              isSendFailed: true,
               message: mes.message
             });
           }
@@ -75,42 +72,27 @@ export default class AnnotationCheckDialog extends React.Component {
       }
     );
   };
-  getResult = () => {
-    const url =
-      `/projects/${this.props.project_id}` +
-      `/annotations/${this.props.annotation_id}/check_result/`;
-    RequestClient.get(
-      url,
-      { uuid: this.state.uuid },
-      res => {
-        this.setState({
-          message: res.content
-        });
-      },
-      mes => {
-        this.setState({
-          retry: this.state.retry + 1
-        });
-        if (this.state.retry < 30) {
-          setTimeout(() => {
-            this.getResult();
-          }, 1000);
-        }
-      }
-    );
-  };
   render() {
     const closeButton = (
       <Button onClick={this.hide}>
         <Close />
       </Button>
     );
-    const textContent = (
+    const successMessage = (
       <SnackbarContent
         message={this.state.message}
         style={{
-          marginTop: '15px',
-          whiteSpace: 'pre-line'
+          backgroundColor: green[600],
+          marginTop: '15px'
+        }}
+      />
+    );
+    const errorMessage = (
+      <SnackbarContent
+        message={this.state.message}
+        style={{
+          backgroundColor: amber[700],
+          marginTop: '15px'
         }}
       />
     );
@@ -118,9 +100,9 @@ export default class AnnotationCheckDialog extends React.Component {
     return (
       <span className="col-xs-1">
         <a
-          className="button glyphicon glyphicon-check"
+          className="button glyphicon glyphicon-tasks"
           onClick={this.show}
-          title="Check"
+          title="Semi-labeling"
         />
 
         <div>
@@ -128,7 +110,7 @@ export default class AnnotationCheckDialog extends React.Component {
             open={this.state.formOpen}
             aria-labelledby="form-dialog-title"
           >
-            <CardHeader action={closeButton} title="Annotation Check" />
+            <CardHeader action={closeButton} title="Semi Labeling" />
             <DialogContent>
               <div style={{ marginTop: '5px' }}>
                 <Button
@@ -137,10 +119,11 @@ export default class AnnotationCheckDialog extends React.Component {
                   onClick={this.sendJob}
                 >
                   <Send />
-                  &nbsp;Check
+                  &nbsp;Submit
                 </Button>
               </div>
-              {this.state.isJobSent === true ? textContent : null}
+              {this.state.isJobSent === true ? successMessage : null}
+              {this.state.isSendFailed === true ? errorMessage : null}
             </DialogContent>
           </Dialog>
         </div>
