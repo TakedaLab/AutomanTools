@@ -21,7 +21,7 @@ class OriginalSelect extends React.Component {
   componentDidMount() {
     let url =
       `/projects/${this.props.currentProject.id}` +
-      `/originals/?status=analyzed`;
+      `/originals/?status=analyzed&per_page=1000`;
     RequestClient.get(
       url,
       null,
