@@ -51,7 +51,7 @@ class AnnotationPage extends React.Component {
   };
   handleClickOpenForm = () => {
     RequestClient.get(
-      '/projects/' + this.props.currentProject.id + '/datasets/',
+      '/projects/' + this.props.currentProject.id + '/datasets/?per_page=1000',
       null,
       res => {
         this.setState({
