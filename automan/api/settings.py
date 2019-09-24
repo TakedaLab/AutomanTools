@@ -2,7 +2,7 @@ import os
 
 # Database default settings
 PER_PAGE = 10
-PER_PAGE_LIMIT = 100
+PER_PAGE_LIMIT = 1000
 SORT_KEY = "id"
 MOUNT_PATH = os.environ.get('MOUNT_PATH', None)
 VOLUME_NAME = os.environ.get('VOLUME_NAME', None)
