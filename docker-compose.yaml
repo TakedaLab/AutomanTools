@@ -1,0 +1,33 @@
+version: '3'
+services:
+    automan-tools:
+        build: .
+        image: hdwlab/automan-tools:develop-hdl
+        container_name: automan-tools
+        volumes:
+            - .:/opt/automan:rw
+        ports:
+            - 8000:8000
+        environment:
+            MYSQL_USER: root
+            MYSQL_PASSWORD: root
+            MYSQL_HOST: 192.168.1.108
+            MYSQL_PORT: 30081
+            MYSQL_DB_NAME: automan_labeling
+            MOUNT_PATH: /Volumes/docker/kubernetes/kube-dev/automan-app-pv-claim-pvc-331453a3-2f92-4fff-be66-67b6cc844934
+            VOLUME_NAME: app-persistent-storage
+            CLAIM_NAME: app-pv-claim
+            AWS_ACCESS_KEY_ID: root
+            AWS_SECRET_ACCESS_KEY: root
+            AWS_ARN: root
+            AWS_REGION: root
+            AZURE_STORAGE_ACCOUNT: ""
+            AZURE_STORAGE_KEY: ""
+            AUTOMAN_URL: automan-labeling-service
+            AUTOMAN_PORT: "8080"
+        command: >
+            bash -c "\
+              cd /opt/automan/automan && uwsgi --ini conf/app.ini & \
+              cd /opt/automan/front && yarn watch \
+            "
+        tty: true

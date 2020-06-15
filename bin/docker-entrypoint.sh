@@ -1,7 +1,7 @@
 #! /bin/bash
 set -ex
 
-until mysqladmin ping -h ${MYSQL_HOST} --silent; do
+until mysqladmin ping -h ${MYSQL_HOST} -P ${MYSQL_PORT:-3306} --silent; do
     echo 'waiting for mysqld to be connectable...'
     sleep 3
 done
