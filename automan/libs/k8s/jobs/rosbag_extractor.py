@@ -2,6 +2,7 @@ import json
 from kubernetes import client
 from libs.k8s.jobs import BaseJob
 from projects.storages.aws_s3 import AwsS3Client
+import re
 
 
 class RosbagExtractor(BaseJob):
@@ -88,7 +89,7 @@ class RosbagExtractor(BaseJob):
                     args=args,
                     image=self.IMAGE_NAME,
                     image_pull_policy='IfNotPresent',
-                    name=self.IMAGE_NAME,
+                    name=re.sub('[^a-z0-9-]', '', self.IMAGE_NAME),
                     # env=[access_key_env, secret_key_env],
                     volume_mounts=[client.models.V1VolumeMount(mount_path=self.mount_path, name=self.volume_name)],
                     resources=client.models.V1ResourceRequirements(limits=system_usage, requests=system_usage),
@@ -101,7 +102,7 @@ class RosbagExtractor(BaseJob):
                     args=args,
                     image=self.IMAGE_NAME,
                     image_pull_policy='IfNotPresent',
-                    name=self.IMAGE_NAME,
+                    name=re.sub('[^a-z0-9-]', '', self.IMAGE_NAME),
                     resources=client.models.V1ResourceRequirements(limits=system_usage, requests=system_usage),
                 )
             ]
