@@ -5,11 +5,11 @@ on:
     branches:
       - master
       - develop
-      - hdl-*
+      - develop-hdl
 
 jobs:
   docker:
-    runs-on: ubuntu-18.04
+    runs-on: self-hosted
     timeout-minutes: 300
 
     steps:

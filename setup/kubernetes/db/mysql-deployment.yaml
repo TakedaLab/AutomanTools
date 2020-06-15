@@ -7,9 +7,10 @@ metadata:
 spec:
   ports:
     - port: 3306
+      nodePort: 30081
   selector:
     app: automan-labeling-mysql
-  clusterIP: None
+  type: NodePort
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim

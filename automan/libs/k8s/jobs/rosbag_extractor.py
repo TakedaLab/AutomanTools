@@ -5,7 +5,7 @@ from projects.storages.aws_s3 import AwsS3Client
 
 
 class RosbagExtractor(BaseJob):
-    IMAGE_NAME = 'automan-rosbag-extractor'
+    IMAGE_NAME = 'hdwlab/automan-rosbag-extractor:develop'
     MEMORY = '512Mi'
 
     # TODO: automan_server_info

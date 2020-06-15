@@ -43,9 +43,9 @@ spec:
         app: automan-labeling
     spec:
       containers:
-        - image: automan-labeling-app:latest
+        - image: hdwlab/automan-tools:develop-hdl
           name: automan-labeling-app
-          imagePullPolicy: Never
+          imagePullPolicy: Always
           livenessProbe:
             httpGet:
               path: /health

@@ -1,3 +1,4 @@
+namespace: automan
 commonLabels:
   variant: develop
 commonAnnotations:

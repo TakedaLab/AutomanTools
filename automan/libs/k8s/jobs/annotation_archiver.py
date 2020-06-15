@@ -5,7 +5,7 @@ from projects.storages.aws_s3 import AwsS3Client
 
 
 class AnnotationArchiver(BaseJob):
-    IMAGE_NAME = 'automan-annotation-archiver'
+    IMAGE_NAME = 'hdwlab/automan-annotation-archiver:develop'
     MEMORY = '512Mi'
 
     # TODO: automan_server_info
