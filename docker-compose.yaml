@@ -6,6 +6,7 @@ services:
         container_name: automan-tools
         volumes:
             - .:/opt/automan:rw
+            - /Volumes/docker/kubernetes/kube-dev/default-app-pv-claim-pvc-801c442a-91a8-4937-9bff-6a1266b89689:/share:rw
         ports:
             - 8000:8000
         environment:
@@ -14,7 +15,7 @@ services:
             MYSQL_HOST: 192.168.1.108
             MYSQL_PORT: 30081
             MYSQL_DB_NAME: automan_labeling
-            MOUNT_PATH: /Volumes/docker/kubernetes/kube-dev/automan-app-pv-claim-pvc-331453a3-2f92-4fff-be66-67b6cc844934
+            MOUNT_PATH: /share
             VOLUME_NAME: app-persistent-storage
             CLAIM_NAME: app-pv-claim
             AWS_ACCESS_KEY_ID: root
