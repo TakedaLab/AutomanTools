@@ -6,6 +6,7 @@ services:
         container_name: automan-tools
         volumes:
             - .:/opt/automan:rw
+            - /opt/automan/front/node_modules
             - /Volumes/docker/kubernetes/kube-dev/default-app-pv-claim-pvc-801c442a-91a8-4937-9bff-6a1266b89689:/share:rw
         ports:
             - 8000:8000
