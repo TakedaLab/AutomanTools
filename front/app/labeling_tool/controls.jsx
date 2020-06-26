@@ -633,10 +633,10 @@ class Controls extends React.Component {
           {this.toolComponents}
         </main>
         {this.renderRightBar(classes)}
-        <LoadingProgress
+        {/* <LoadingProgress
           text="Prefetching Files"
           progress={this.props.loadingState}
-        />
+        /> */}
       </div>
     );
   }
