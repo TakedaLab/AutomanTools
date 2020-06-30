@@ -106,7 +106,7 @@ class Controls extends React.Component {
   initEvent() {
     $(window)
       .keydown(e => {
-        if (this.isLoading) {
+        if (this.state.isLoading) {
           return;
         }
         if (e.keyCode == 8 || e.keyCode == 46) {
@@ -143,7 +143,7 @@ class Controls extends React.Component {
         }
       })
       .keyup(e => {
-        if (this.isLoading) {
+        if (this.state.isLoading) {
           return;
         }
         this.getTool().handles.keyup(e);
@@ -341,7 +341,7 @@ class Controls extends React.Component {
       );
   }
   loadFrame(num) {
-    if (this.isLoading) {
+    if (this.state.isLoading) {
       return Promise.reject('duplicate loading');
     }
     this.selectLabel(null);
@@ -350,7 +350,6 @@ class Controls extends React.Component {
       num = this.state.frameNumber;
     }
 
-    this.isLoading = true;
     this.setState({ isLoading: true });
     return this.props.labelTool.loadBlobURL(num)
       .then(() => {
@@ -370,7 +369,6 @@ class Controls extends React.Component {
         );
       })
       .then(() => {
-        this.isLoading = false;
         this.setState({ isLoading: false });
         this.setState({frameNumber: num});
       });
@@ -430,7 +428,6 @@ class Controls extends React.Component {
 
   // events
   onClickLogout = (e) => {
-    this.isLoading = true;
     this.setState({ isLoading: true });
     RequestClient.delete(
       this.props.labelTool.getURL('unlock'),
