@@ -354,6 +354,12 @@ class Controls extends React.Component {
       .then(() => {
         return this.props.annotation.load(num);
       })
+      // Load previous frame data for wipe
+      .then(() => {
+        if (num > 1) {
+          return this.props.labelTool.loadBlobURL(num - 1);
+        }
+      })
       .then(() => {
         return Promise.all(
           this.getTools().map(
@@ -633,10 +639,10 @@ class Controls extends React.Component {
           {this.toolComponents}
         </main>
         {this.renderRightBar(classes)}
-        <LoadingProgress
+        {/* <LoadingProgress
           text="Prefetching Files"
           progress={this.props.loadingState}
-        />
+        /> */}
       </div>
     );
   }

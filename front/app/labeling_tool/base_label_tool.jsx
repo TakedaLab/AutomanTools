@@ -161,7 +161,6 @@ class LabelTool extends React.Component {
           this.setState({isInitialized: true});
         });
       })
-      .then(() => this.prefetchBlobs())
       .then(() => {
         this.initializeEvent();
 
