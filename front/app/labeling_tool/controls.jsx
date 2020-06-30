@@ -43,7 +43,8 @@ class Controls extends React.Component {
     this.state = {
       frameNumber: 0,
       skipFrameCount: 1,
-      activeTool: 0
+      activeTool: 0,
+      isLoading: false,
     };
 
     this.frameLength = props.labelTool.frameLength;
@@ -350,6 +351,7 @@ class Controls extends React.Component {
     }
 
     this.isLoading = true;
+    this.setState({ isLoading: true });
     return this.props.labelTool.loadBlobURL(num)
       .then(() => {
         return this.props.annotation.load(num);
@@ -369,6 +371,7 @@ class Controls extends React.Component {
       })
       .then(() => {
         this.isLoading = false;
+        this.setState({ isLoading: false });
         this.setState({frameNumber: num});
       });
   }
@@ -428,6 +431,7 @@ class Controls extends React.Component {
   // events
   onClickLogout = (e) => {
     this.isLoading = true;
+    this.setState({ isLoading: true });
     RequestClient.delete(
       this.props.labelTool.getURL('unlock'),
       null,
@@ -639,10 +643,12 @@ class Controls extends React.Component {
           {this.toolComponents}
         </main>
         {this.renderRightBar(classes)}
-        {/* <LoadingProgress
-          text="Prefetching Files"
-          progress={this.props.loadingState}
-        /> */}
+        { this.state.isLoading &&
+          <LoadingProgress
+            text="Loading"
+            progress={null}
+          />
+        }
       </div>
     );
   }
