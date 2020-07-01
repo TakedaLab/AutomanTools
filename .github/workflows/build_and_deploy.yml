@@ -7,34 +7,34 @@ on:
       - feature/ci-auto-deploy
 
 jobs:
-  build:
-    runs-on: ubuntu-18.04
-    timeout-minutes: 300
-
-    steps:
-      - uses: actions/checkout@v1
-
-      - name: Build image
-        env:
-          TAG: ${{ github.ref }}
-        shell: bash
-        run: |
-          docker build -t hdwlab/automan-tools:${TAG##*/} .
-
-      - name: Push to DockerHub
-        env:
-          TAG: ${{ github.ref }}
-          DOCKER_USER: ${{ secrets.DOCKER_USER }}
-          DOCKER_PASS: ${{ secrets.DOCKER_PASS }}
-        shell: bash
-        run: |
-          docker login -u ${DOCKER_USER} -p ${DOCKER_PASS} \
-          && docker push hdwlab/automan-tools:${TAG##*/}
+#  build:
+#    runs-on: ubuntu-18.04
+#    timeout-minutes: 300
+#
+#    steps:
+#      - uses: actions/checkout@v1
+#
+#      - name: Build image
+#        env:
+#          TAG: ${{ github.ref }}
+#        shell: bash
+#        run: |
+#          docker build -t hdwlab/automan-tools:${TAG##*/} .
+#
+#      - name: Push to DockerHub
+#        env:
+#          TAG: ${{ github.ref }}
+#          DOCKER_USER: ${{ secrets.DOCKER_USER }}
+#          DOCKER_PASS: ${{ secrets.DOCKER_PASS }}
+#        shell: bash
+#        run: |
+#          docker login -u ${DOCKER_USER} -p ${DOCKER_PASS} \
+#          && docker push hdwlab/automan-tools:${TAG##*/}
 
   deploy-dev:
     runs-on: ubuntu-18.04
     timeout-minutes: 30
-    needs: build
+#    needs: build
     steps:
       - name: Deploy to cluster
         uses: steebchen/kubectl@master
