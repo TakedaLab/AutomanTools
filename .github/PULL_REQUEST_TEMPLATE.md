@@ -1,13 +1,17 @@
-## What type of PR is this? (check all applicable)
-<!-- Please leave only what's applicable -->
+## What?
+(概要など)
+例:
+- Hogehogeモジュールの〇〇のバグを修正
+- Hogehogeモジュールのオプションを追加
 
-- [ ] Refactor
-- [ ] Feature
-- [ ] Bug Fix
-- [ ] Other
+## Why?
+(モチベーションなど)
+例:
+- Hogehogeモジュールのオプション名が間違っていたため
+- Hogehogeモジュールのハードコーディングパラメータを制御したくなったため
 
-## Description
+## See also [Optional]
+- 関連するissueやPR番号へのリンク
+- 参考にしたURLなど
 
-## Related Tickets & Documents
-
-## Mobile & Desktop Screenshots/Recordings (if there are UI changes)
+## Screenshot or video [Optional]
