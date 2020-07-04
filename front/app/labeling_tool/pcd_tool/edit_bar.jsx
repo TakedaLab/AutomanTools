@@ -9,11 +9,23 @@ import { RotateLeft, RotateRight } from '@material-ui/icons';
 import { compose } from 'redux';
 import { connect } from 'react-redux';
 
+import BasePCDEditBar from './base_edit_bar'
+
 class PCDEditBar extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
+      bbox_params: {
+        x: 50, y: 50, z: 50,
+        width: 50, height: 50, depth: 50,
+        yaw: 50
+      },
+      disabled: false,
     };
+  }
+  setBboxParams(value){
+    this.setState({bbox_params: value})
+    setState({disabled: false})
   }
   render() {
     const label = this.props.targetLabel;
@@ -46,6 +58,10 @@ class PCDEditBar extends React.Component {
             </Button>
           </Grid>
         </Grid>
+        <BasePCDEditBar
+          bbox_params={this.state.bbox_params}
+          setBboxParams={this.setBboxParams}
+        />
       </div>
     );
   }

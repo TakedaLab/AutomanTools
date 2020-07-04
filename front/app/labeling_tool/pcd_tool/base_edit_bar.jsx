@@ -16,43 +16,67 @@ import { RotateLeft, RotateRight, ExpandMore } from '@material-ui/icons';
 
 
 const InputSlider = props => {
-  const [value, setValue] = React.useState(30);
+  const {
+    label,
+    value,
+    disabled = false,
+    setParam
+  } = props;
+
+  // const [value, setParam] = React.useState(30);
+  const [inputMin, setInputMin] = React.useState(-100);
+  const [inputMax, setInputMax] = React.useState(100);
 
   const handleSliderChange = (event, newValue) => {
-    setValue(newValue);
+    setParam(label, newValue);
   };
 
   const handleInputChange = (event) => {
-    setValue(event.target.value === '' ? '' : Number(event.target.value));
+    setParam(label, event.target.value === '' ? '' : Number(event.target.value));
+    resetRange()
   };
 
   const handleBlur = () => {
-    if (value < 0) {
-      setValue(0);
-    } else if (value > 100) {
-      setValue(100);
-    }
+    // if (value < 0) {
+    //   setParam(0);
+    // } else if (value > 100) {
+    //   setParam(100);
+    // }
   };
 
-  const {
-    label = "x",
-    disabled = false,
-  } = props;
+  React.useEffect(() => {
+    resetRange()
+  }, []);
+
+  const resetRange = () => {
+    setInputMin(value - 50)
+    setInputMax(value + 50)
+  }
 
   return (
     <div style={{width: "100%", display: "block"}}>
-      <Grid container spacing={2} alignItems="center">
+      <Grid container spacing={4} alignItems="center">
         <Grid item>
           <Typography style={{width: "64px", display: "block"}} variant="caption">
             {label}
           </Typography>
         </Grid>
-        <Grid item xs>
+        <Grid item xs
+        >
           <Slider
             value={typeof value === 'number' ? value : 0}
             onChange={handleSliderChange}
+            onChangeCommitted={resetRange}
             aria-labelledby="input-slider"
             disabled={disabled}
+            min={inputMin}
+            max={inputMax}
+            track={false}
+            marks={[
+              {value: inputMin, label: inputMin},
+              {value: inputMax, label: inputMax},
+              {value: value, label: value},
+            ]}
           />
         </Grid>
         <Grid item>
@@ -64,9 +88,7 @@ const InputSlider = props => {
             onChange={handleInputChange}
             onBlur={handleBlur}
             inputProps={{
-              step: 10,
-              min: 0,
-              max: 100,
+              step: 1,
               type: 'number',
               'aria-labelledby': 'input-slider',
             }}
@@ -78,15 +100,21 @@ const InputSlider = props => {
 }
 
 export default class BasePCDEditBar extends React.Component {
+  setParam = (label, value) => {
+    const { bbox_params, setBboxParams } = this.props;
+    var bbox_params_new = {...bbox_params}
+    bbox_params_new[label] = value
+    setBboxParams(bbox_params_new)
+  }
   render() {
     const {
       rotateFront,
       disabled = false,
       moveSelectedCube = () => {},
       bbox_params = {
-        x: 0, y: 0, z: 0,
+        x: 1, y: 0, z: 0,
         w: 1, h: 1, d: 1,
-        y: 1
+        yaw: 1
       }
     } = this.props;
     return (
@@ -105,63 +133,31 @@ export default class BasePCDEditBar extends React.Component {
                 <Typography component="h4" variant="body1">
                   Position
                 </Typography>
-                <InputSlider
-                  label="x"
-                  disabled={disabled}
-                />
-                <InputSlider
-                  label="y"
-                  disabled={disabled}
-                />
-                <InputSlider
-                  label="z"
-                  disabled={disabled}
-                />
-                <InputSlider
-                  label="yaw"
-                  disabled={disabled}
-                />
+                {["x", "y", "z", "yaw"].map((item) => 
+                  <InputSlider
+                    label={item}
+                    disabled={disabled}
+                    value={bbox_params[item]}
+                    setParam={this.setParam}
+                  />
+                )}
               </div>
               <div style={{marginBottom: "32px"}}>
                 <Typography component="h4" variant="body1">
                   Size
                 </Typography>
-                <InputSlider
-                  label="depth"
-                  disabled={disabled}
-                />
-                <InputSlider
-                  label="width"
-                  disabled={disabled}
-                />
-                <InputSlider
-                  label="height"
-                  disabled={disabled}
-                />
+                {["depth", "width", "height"].map((item) => 
+                  <InputSlider
+                    label={item}
+                    disabled={disabled}
+                    value={bbox_params[item]}
+                    setParam={this.setParam}
+                  />
+                )}
               </div>
             </div>
           </ExpansionPanelDetails>
         </ExpansionPanel>
-
-        <Grid container>
-          <Grid item xs={12}>
-            Rotate Front
-          </Grid>
-          <Grid item xs={6}>
-            <Button
-              onClick={() => rotateFront(1)}
-            >
-              <RotateLeft />
-            </Button>
-          </Grid>
-          <Grid item xs={6}>
-            <Button
-              onClick={() => rotateFront(-1)}
-            >
-              <RotateRight />
-            </Button>
-          </Grid>
-        </Grid>
       </div>
     );
   }
