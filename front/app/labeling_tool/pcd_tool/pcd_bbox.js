@@ -215,6 +215,21 @@ export default class PCDBBox {
       this.pcdTool.setArrow(this);
     }
   }
+  setBboxParams(new_box){
+    const box = this.box;
+    box.size.set(
+      new_box.size.x,
+      new_box.size.y,
+      new_box.size.z,
+    )
+    box.pos.set(
+      new_box.pos.x,
+      new_box.pos.y,
+      new_box.pos.z,
+    )
+    box.yaw = new_box.yaw
+    this.updateParam(true);
+  }
   rotateFront(n) {
     const box = this.box;
     let cnt = n % 4;

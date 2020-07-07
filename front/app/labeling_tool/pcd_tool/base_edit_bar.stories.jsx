@@ -7,15 +7,19 @@ import BasePCDEditBar from './base_edit_bar'
 
 const SamplePCDEditBar = (props) => {
   const [bbox_params, setBboxParams] = React.useState({
-    x: 50, y: 50, z: 50,
-    width: 50, height: 50, depth: 50,
-    yaw: 50
+        pos: {
+          x: 111.111111, y: 111.111111, z: 111.11111,
+        },
+        size: {
+          x: 111.111, y: 111.111, z: 111.111111,
+        },
+        yaw: 111.1111111,
   });
   return(
     <BasePCDEditBar
       disabled={props.disabled}
       rotateFront={action('button-click')}
-      bbox_params={bbox_params}
+      box={bbox_params}
       setBboxParams={setBboxParams}
     />
   )

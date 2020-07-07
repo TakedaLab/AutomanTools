@@ -23,9 +23,16 @@ class PCDEditBar extends React.Component {
       disabled: false,
     };
   }
-  setBboxParams(value){
-    this.setState({bbox_params: value})
-    setState({disabled: false})
+  setBboxParams = (box_new) => {
+    const label = this.props.targetLabel;
+    if (label == null) {
+      return null;
+    }
+    const bbox = label.bbox[this.props.candidateId];
+    if (bbox == null) {
+      return null;
+    }
+    bbox.setBboxParams(box_new)
   }
   render() {
     const label = this.props.targetLabel;
@@ -59,7 +66,7 @@ class PCDEditBar extends React.Component {
           </Grid>
         </Grid>
         <BasePCDEditBar
-          bbox_params={this.state.bbox_params}
+          box={bbox.box}
           setBboxParams={this.setBboxParams}
         />
       </div>
