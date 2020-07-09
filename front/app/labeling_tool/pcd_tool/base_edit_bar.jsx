@@ -155,6 +155,7 @@ export default class BasePCDEditBar extends React.Component {
                 </Typography>
                 {["x", "y", "z"].map((item) => 
                   <InputSlider
+                    key={item}
                     label={item}
                     disabled={disabled}
                     value={box.pos[item]}
@@ -168,6 +169,7 @@ export default class BasePCDEditBar extends React.Component {
                 </Typography>
                 {["x", "y", "z"].map((item) => 
                   <InputSlider
+                    key={item}
                     label={item}
                     disabled={disabled}
                     value={box.size[item]}
@@ -181,6 +183,7 @@ export default class BasePCDEditBar extends React.Component {
                 </Typography>
                 {["yaw"].map((item) => 
                   <InputSlider
+                    key={item}
                     label={item}
                     disabled={disabled}
                     value={box[item]}

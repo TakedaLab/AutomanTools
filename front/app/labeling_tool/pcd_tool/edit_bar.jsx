@@ -15,34 +15,39 @@ class PCDEditBar extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      bbox_params: {
-        x: 50, y: 50, z: 50,
-        width: 50, height: 50, depth: 50,
-        yaw: 50
-      },
       disabled: false,
     };
   }
   setBboxParams = (box_new) => {
-    const label = this.props.targetLabel;
-    if (label == null) {
-      return null;
-    }
-    const bbox = label.bbox[this.props.candidateId];
-    if (bbox == null) {
-      return null;
-    }
+    // const label = this.props.targetLabel;
+    // if (label == null) {
+    //   return null;
+    // }
+    // const bbox = label.bbox[this.props.candidateId];
+    // if (bbox == null) {
+    //   return null;
+    // }
+    const bbox = this.props.bbox;
     bbox.setBboxParams(box_new)
+    bbox.updateSelected(true)
   }
   render() {
-    const label = this.props.targetLabel;
-    if (label == null) {
-      return null;
+    // const label = this.props.targetLabel;
+    // if (label == null) {
+    //   return null;
+    // }
+    // const bbox = label.bbox[this.props.candidateId];
+    // if (bbox == null) {
+    //   return null;
+    // }
+    // console.log("label", label)
+    // console.log("bbox", bbox)
+    // console.log("props.bbox", this.props.bbox)
+    const bbox = this.props.bbox;
+    if(bbox == null){
+      return null
     }
-    const bbox = label.bbox[this.props.candidateId];
-    if (bbox == null) {
-      return null;
-    }
+    console.log("bbox", bbox)
     return (
       <div>
         <Divider />
@@ -73,13 +78,30 @@ class PCDEditBar extends React.Component {
     );
   }
 }
-const mapStateToProps = state => ({
-  targetLabel: state.annotation.targetLabel,
-});
+const mapStateToProps = (state, ownProps) => {
+  const { targetLabel } = state.annotation
+  const { candidateId } = ownProps
+  if(targetLabel == null){
+    return {
+      targetLabel: targetLabel,
+      bbox: null,
+    }
+  }
+  const bbox = targetLabel.bbox[candidateId];
+  if(bbox == null){
+    return {
+      targetLabel: targetLabel,
+      bbox: null,
+    }
+  }
+  return {
+    targetLabel: targetLabel,
+    bbox: bbox,
+  }
+};
 export default compose(
   connect(
     mapStateToProps,
     null
   )
 )(PCDEditBar);
-

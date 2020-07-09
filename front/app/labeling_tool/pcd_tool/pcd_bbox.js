@@ -228,7 +228,7 @@ export default class PCDBBox {
       new_box.pos.z,
     )
     box.yaw = new_box.yaw
-    this.updateParam(true);
+    this.updateParam();
   }
   rotateFront(n) {
     const box = this.box;
@@ -243,7 +243,7 @@ export default class PCDBBox {
     }
     box.yaw = (box.yaw + Math.PI / 2 * n) % (Math.PI * 2)
 
-    this.updateParam(true);
+    this.updateParam();
   }
 }
 
