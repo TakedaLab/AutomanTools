@@ -44,7 +44,7 @@ class PCDLabelTool extends React.Component {
     return this._toolButtons;
   }
   getEditor() {
-    return <EditBar candidateId={this.candidateId}/>
+    return <EditBar candidateId={this.candidateId} />
   }
   render() {
     return (

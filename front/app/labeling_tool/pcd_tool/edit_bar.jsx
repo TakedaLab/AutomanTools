@@ -6,6 +6,8 @@ import Grid from '@material-ui/core/Grid';
 import Button from '@material-ui/core/Button';
 import { RotateLeft, RotateRight } from '@material-ui/icons';
 
+import { setAnnotation } from '../actions/tool_action';
+
 import { compose } from 'redux';
 import { connect } from 'react-redux';
 
@@ -17,32 +19,33 @@ class PCDEditBar extends React.Component {
     this.state = {
       disabled: false,
     };
+    props.dispatchSetAnnotation(this);
   }
   setBboxParams = (box_new) => {
-    // const label = this.props.targetLabel;
-    // if (label == null) {
-    //   return null;
-    // }
-    // const bbox = label.bbox[this.props.candidateId];
-    // if (bbox == null) {
-    //   return null;
-    // }
     const bbox = this.props.bbox;
     bbox.setBboxParams(box_new)
     bbox.updateSelected(true)
   }
+  getTarget = () => {
+    // return oldLabel
+    return null 
+  }
+  setTarget = (label) => {
+    // return newLabel
+    return null
+  }
+  create = (klass, param) => {
+    // return newLabel
+    return null
+  }
+  remove = (label) => {
+    // return nothing
+  }
+  save = () => {
+    // return savePromise
+    return(true)
+  }
   render() {
-    // const label = this.props.targetLabel;
-    // if (label == null) {
-    //   return null;
-    // }
-    // const bbox = label.bbox[this.props.candidateId];
-    // if (bbox == null) {
-    //   return null;
-    // }
-    // console.log("label", label)
-    // console.log("bbox", bbox)
-    // console.log("props.bbox", this.props.bbox)
     const bbox = this.props.bbox;
     if(bbox == null){
       return null
@@ -99,9 +102,12 @@ const mapStateToProps = (state, ownProps) => {
     bbox: bbox,
   }
 };
+const mapDispatchToProps = dispatch => ({
+  dispatchSetAnnotation: target => dispatch(setAnnotation(target))
+});
 export default compose(
   connect(
     mapStateToProps,
-    null
+    mapDispatchToProps
   )
 )(PCDEditBar);
