@@ -286,8 +286,6 @@ class PCDLabelTool extends React.Component {
   disposeBBox(bbox) {
     bbox.remove();
   }
-  updateBBox(label) {
-  }
   updateTarget(prev, next) {
     const id = this.candidateId;
     if (prev != null && prev.has(id)) {
@@ -358,7 +356,7 @@ class PCDLabelTool extends React.Component {
     return this._modeStatus.mode;
   }
   changeMode() {
-    let idx = modeNames.indexOf(this._modeStatus.mode); 
+    let idx = modeNames.indexOf(this._modeStatus.mode);
     if (idx < 0) { return; }
     idx = (idx + 1) % modeNames.length;
     this.modeChange(modeNames[idx]);
@@ -382,7 +380,7 @@ class PCDLabelTool extends React.Component {
     this._gridPlane = gridPlane;
     this._scene.add(gridPlane);
 
-    
+
 
     const pcdLoader = new THREE.PCDLoader();
     this._pcdLoader = pcdLoader;
@@ -464,7 +462,7 @@ class PCDLabelTool extends React.Component {
     this._zPlane = zPlane;
 
 
-    
+
     // mouse events
     this._main.contextmenu((e) => {
       e.preventDefault();
@@ -556,7 +554,7 @@ class PCDLabelTool extends React.Component {
   resetMouseType() {
     this._main.css('cursor', 'crosshair');
   }
-  
+
 
   // mode methods
   getModeMethod(){
@@ -1112,7 +1110,7 @@ function createModeMethods(pcdTool) {
                 'length_3d': boxSize.z,
                 'rotation_y': boxYaw,
               });
-          // TODO: add branch use selecting label 
+          // TODO: add branch use selecting label
           const label = pcdTool.props.controls.createLabel(
             pcdTool.props.controls.getTargetKlass(),
             {[pcdTool.candidateId]: pcdBBox}

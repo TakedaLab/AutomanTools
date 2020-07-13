@@ -4,7 +4,7 @@ import blue from '@material-ui/core/colors/blue';
 import green from '@material-ui/core/colors/green';
 import grey from '@material-ui/core/colors/grey';
 
- 
+
 // toolbar status
 export const appBarHeight = 54;
 // sidebar status
@@ -66,7 +66,7 @@ export const toolStyle = theme => ({
     textAlign: 'center'
   },
   activeTool: {
-    border: 'solid 1px #000'
+    backgroundColor: 'rgba(0, 0, 0, 0.2)'
   },
   labelList: {
     height: `calc(100% - ${toolHeight})`
