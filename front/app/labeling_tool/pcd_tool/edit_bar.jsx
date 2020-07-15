@@ -11,38 +11,38 @@ import { connect } from 'react-redux';
 
 import BasePCDEditBar from './base_edit_bar'
 
+import { setAnnotation } from '../actions/tool_action';
+
 class PCDEditBar extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
       disabled: false,
     };
+    props.dispatchSetAnnotation(this);
   }
   setBboxParams = (box_new) => {
-    // const label = this.props.targetLabel;
-    // if (label == null) {
-    //   return null;
-    // }
-    // const bbox = label.bbox[this.props.candidateId];
-    // if (bbox == null) {
-    //   return null;
-    // }
+    console.log("controls", this.props.controls)
     const bbox = this.props.bbox;
     bbox.setBboxParams(box_new)
     bbox.updateSelected(true)
   }
+  getTarget() {
+    return this.props.targetLabel;
+  }
+  setTarget(val) {
+    this.isTarget = val;
+    if (this.labelItem != null) {
+      this.labelItem.updateTarget();
+    }
+    if (this.prevLabel) {
+      this.prevLabel.select(val);
+    }
+  }
   render() {
-    // const label = this.props.targetLabel;
-    // if (label == null) {
-    //   return null;
-    // }
-    // const bbox = label.bbox[this.props.candidateId];
-    // if (bbox == null) {
-    //   return null;
-    // }
-    // console.log("label", label)
-    // console.log("bbox", bbox)
-    // console.log("props.bbox", this.props.bbox)
+    console.log("this.props.annotation", this.props.annotation)
+    console.log("this.props.labelTool", this.props.labelTool)
+    console.log("this.props.controls", this.props.controls)
     const bbox = this.props.bbox;
     if(bbox == null){
       return null
@@ -79,29 +79,38 @@ class PCDEditBar extends React.Component {
   }
 }
 const mapStateToProps = (state, ownProps) => {
-  const { targetLabel } = state.annotation
+  const { targetLabel } = state.tool.annotation
   const { candidateId } = ownProps
   if(targetLabel == null){
     return {
-      targetLabel: targetLabel,
       bbox: null,
+      labelTool: state.tool.labelTool,
+      controls: state.tool.controls,
+      annotation: state.tool.annotation,
     }
   }
   const bbox = targetLabel.bbox[candidateId];
   if(bbox == null){
     return {
-      targetLabel: targetLabel,
       bbox: null,
+      labelTool: state.tool.labelTool,
+      controls: state.tool.controls,
+      annotation: state.tool.annotation,
     }
   }
   return {
-    targetLabel: targetLabel,
     bbox: bbox,
+    labelTool: state.tool.labelTool,
+    controls: state.tool.controls,
+    annotation: state.tool.annotation,
   }
 };
+const mapDispatchToProps = dispatch => ({
+  dispatchSetAnnotation: target => dispatch(setAnnotation(target))
+});
 export default compose(
   connect(
     mapStateToProps,
-    null
+    mapDispatchToProps
   )
 )(PCDEditBar);

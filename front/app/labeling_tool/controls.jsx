@@ -558,6 +558,7 @@ class Controls extends React.Component {
         classes={{
           paper: classes.drawer
         }}
+        controls={this}
       >
         {editor}
       </Drawer>
