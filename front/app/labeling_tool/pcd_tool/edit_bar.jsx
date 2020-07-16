@@ -16,8 +16,10 @@ class PCDEditBar extends React.Component {
     super(props);
     this.state = {
       disabled: false,
+      bbox_busy: false,
     };
   }
+  bbox_timer = null
   setBboxParams = (box_new) => {
     // const label = this.props.targetLabel;
     // if (label == null) {
@@ -30,6 +32,17 @@ class PCDEditBar extends React.Component {
     const bbox = this.props.bbox;
     bbox.setBboxParams(box_new)
     bbox.updateSelected(true)
+    var changedLabel = bbox.label.createHistory(null)
+
+    this.setState({
+      bbox_busy: true,
+    }, () => {
+      clearTimeout(this.bbox_timer)
+      this.bbox_timer = setTimeout(() => {
+        changedLabel.addHistory()
+      }, 500)
+    })
+
   }
   render() {
     // const label = this.props.targetLabel;
