@@ -59,7 +59,7 @@ export const toolStyle = theme => ({
     width: 50
   },
   toolControlsWrapper: {
-    height: toolHeight,
+    height: '100%',
     overflowY: 'scroll'
   },
   toolControls: {
@@ -69,7 +69,6 @@ export const toolStyle = theme => ({
     backgroundColor: 'rgba(0, 0, 0, 0.2)'
   },
   labelList: {
-    height: `calc(100% - ${toolHeight})`
   },
   klassSetList: {
     textAlign: 'center',
