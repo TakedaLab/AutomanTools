@@ -632,7 +632,6 @@ class Controls extends React.Component {
               </Grid>
             </Grid>
           </div>
-          <Divider />
           <div className={classes.labelList}>
             {this.renderLabels(classes)}
           </div>
