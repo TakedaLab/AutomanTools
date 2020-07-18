@@ -9,7 +9,7 @@ import grey from '@material-ui/core/colors/grey';
 export const appBarHeight = 54;
 // sidebar status
 export const drawerWidth = 160;
-const toolHeight = 400;
+const toolHeight = 350;
 const listHead = 20;
 export const toolStyle = theme => ({
   drawer: {
@@ -59,17 +59,16 @@ export const toolStyle = theme => ({
     width: 50
   },
   toolControlsWrapper: {
-    height: toolHeight,
-    overflowY: 'scroll'
   },
   toolControls: {
+    height: toolHeight,
     textAlign: 'center'
   },
   activeTool: {
     backgroundColor: 'rgba(0, 0, 0, 0.2)'
   },
   labelList: {
-    height: `calc(100% - ${toolHeight})`
+    height: `calc(100vh - ${appBarHeight}px - ${toolHeight}px)`
   },
   klassSetList: {
     textAlign: 'center',
