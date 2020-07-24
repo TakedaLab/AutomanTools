@@ -30,6 +30,6 @@ services:
         command: >
             bash -c "\
               cd /opt/automan/automan && uwsgi --ini conf/app.ini & \
-              cd /opt/automan/front && yarn watch \
+              cd /opt/automan/front && yarn install && yarn watch \
             "
         tty: true
