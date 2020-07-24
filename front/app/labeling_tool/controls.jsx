@@ -7,8 +7,6 @@ import TextField from '@material-ui/core/TextField';
 import Drawer from '@material-ui/core/Drawer';
 import Divider from '@material-ui/core/Divider';
 import Grid from '@material-ui/core/Grid';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
 import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
 import { NavigateNext, NavigateBefore, ExitToApp } from '@material-ui/icons';
@@ -29,6 +27,8 @@ import PCDLabelTool from 'automan/labeling_tool/pcd_label_tool';
 
 
 import {toolStyle, appBarHeight, drawerWidth} from 'automan/labeling_tool/tool-style';
+
+import { addKeyCommand, execKeyCommand } from './key_control/index'
 
 import RequestClient from 'automan/services/request-client'
 
@@ -74,7 +74,6 @@ class Controls extends React.Component {
       return;
     }
     this.toolNames = type.names;
-    this.pcdToolIndex = type.pcdIndex;
     this.toolComponents = type.tools.map((tool, idx) => {
       const Component = tool;
       const component = (
@@ -115,38 +114,25 @@ class Controls extends React.Component {
         if (this.isLoading) {
           return;
         }
-        if (e.keyCode == 8 || e.keyCode == 46) {
-          // Backspace or Delete
+        // history
+        execKeyCommand("history_undo", e.originalEvent, () => this.props.history.undo())
+        execKeyCommand("history_redo", e.originalEvent, () => this.props.history.redo())
+
+        // frame
+        execKeyCommand("frame_next", e.originalEvent, () => this.nextFrame())
+        execKeyCommand("frame_prev", e.originalEvent, () => this.previousFrame())
+        
+        // bbx
+        execKeyCommand("bbox_remove", e.originalEvent, () => {
           const label = this.getTargetLabel();
           if (label != null) {
             this.removeLabel(label);
           }
-        } else if (e.keyCode == 39) {
-          this.nextFrame();
-        } else if (e.keyCode == 37) {
-          this.previousFrame();
-        } else if (e.keyCode == 90) {
-          // Z key
-          if (e.ctrlKey) {
-            if (e.shiftKey) {
-              this.props.history.redo();
-            } else {
-              this.props.history.undo();
-            }
-          }
-        } else if (e.keyCode == 67) {
-          // C key
-          if (e.ctrlKey) {
-            this.props.clipboard.copy(null);
-          }
-        } else if (e.keyCode == 86) {
-          // V key
-          if (e.ctrlKey) {
-            this.props.clipboard.paste();
-          }
-        } else {
-          this.getTool().handles.keydown(e);
-        }
+        })
+        execKeyCommand("bbox_copy", e.originalEvent, () => this.props.clipboard.copy(null))
+        execKeyCommand("bbox_paste", e.originalEvent, () => this.props.clipboard.paste())
+
+        this.getTool().handles.keydown(e);
       })
       .keyup(e => {
         if (this.isLoading) {
@@ -237,28 +223,8 @@ class Controls extends React.Component {
   getTools() {
     return this.props.tools;
   }
-  setPCDActive(isActive) {
-    const prevState = this.state.isActivePCD;
-    const pcdIndex = this.pcdToolIndex;
-    if (pcdIndex < 0 || prevState === isActive) {
-      return;
-    }
-    let prevTool, nextTool;
-    const activeTool = this.state.activeTool;
-    const imageTool = this.props.tools[activeTool];
-    const pcdTool = this.props.tools[pcdIndex];
-    this.setState({isActivePCD: isActive});
-    if (prevState) {
-      pcdTool.setActive(false);
-      imageTool.setActive(true);
-    } else {
-      imageTool.setActive(true, true);
-      pcdTool.setActive(true);
-    }
-  }
   setTool(idx) {
-    const isActivePCD = this.state.isActivePCD;
-    const activeTool = this.state.activeTool;
+    const activeTool = this.state.activeTool
     if (activeTool === idx) {
       return;
     }
@@ -266,12 +232,11 @@ class Controls extends React.Component {
     const nextTool = this.props.tools[idx];
     this.setState({activeTool: idx});
     prevTool.setActive(false);
-    nextTool.setActive(true, isActivePCD);
+    nextTool.setActive(true);
+    // update ??
+    // *********
   }
   getTool() {
-    if (this.state.isActivePCD) {
-      return this.props.tools[this.pcdToolIndex];
-    }
     return this.props.tools[this.state.activeTool];
   }
   getToolFromCandidateId(id) {
@@ -518,41 +483,18 @@ class Controls extends React.Component {
   renderLeftBar(classes) {
     const toolButtons = [];
     this.toolNames.forEach((name, idx) => {
-      if (idx === this.pcdToolIndex) {
-        return;
-      }
-      const isActive = this.state.activeTool === idx;
-      const cls = isActive ? classes.activeTool : '';
+      const cls = this.state.activeTool === idx ? classes.activeTool : '';
       const button = (
-        <ListItem
+        <Button
           onClick={() => this.setTool(idx)}
-          button={!isActive}
           key={idx}
           className={cls}
         >
           {name}
-        </ListItem>
+        </Button>
       );
       toolButtons.push(button);
     });
-    let pcdButton;
-    if (this.pcdToolIndex >= 0) {
-      pcdButton = (
-        <Button
-          onClick={
-            () => this.setPCDActive(
-              !this.state.isActivePCD
-            )
-          }
-          variant={
-            this.state.isActivePCD ?
-              'contained' : 'outlined'
-          }
-        >
-          3D
-        </Button>
-      );
-    }
     const tool = this.getTool();
     const buttons  = tool == null ? null : tool.getButtons();
     return (
@@ -566,15 +508,11 @@ class Controls extends React.Component {
       >
         <div className={classes.toolControlsWrapper}>
           <div className={classes.toolControls}>
+            Tools
+            <Divider />
             <Grid container alignItems="center">
               <Grid item xs={12}>
-                Cameras {pcdButton}
-                <Divider />
-                <List>
-                  {toolButtons}
-                </List>
-                <Divider />
-                Tools
+                {toolButtons}
                 <Divider />
               </Grid>
               <Grid item xs={12}>
