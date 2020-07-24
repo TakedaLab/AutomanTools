@@ -9,20 +9,28 @@ import { RotateLeft, RotateRight } from '@material-ui/icons';
 import { compose } from 'redux';
 import { connect } from 'react-redux';
 
+import BasePCDEditBar from './base_edit_bar'
+
 class PCDEditBar extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
+      disabled: false,
+      bbox_busy: false,
     };
   }
+  setBboxParams = (box_new) => {
+    const bbox = this.props.bbox;
+    bbox.setBboxParams(box_new)
+    bbox.updateSelected(true)
+    var changedLabel = bbox.label.createHistory(null)
+    changedLabel.addHistory()
+
+  }
   render() {
-    const label = this.props.targetLabel;
-    if (label == null) {
-      return null;
-    }
-    const bbox = label.bbox[this.props.candidateId];
-    if (bbox == null) {
-      return null;
+    const bbox = this.props.bbox;
+    if(bbox == null){
+      return null
     }
     return (
       <div>
@@ -46,17 +54,35 @@ class PCDEditBar extends React.Component {
             </Button>
           </Grid>
         </Grid>
+        <BasePCDEditBar
+          box={bbox.box}
+          setBboxParams={this.setBboxParams}
+        />
       </div>
     );
   }
 }
-const mapStateToProps = state => ({
-  targetLabel: state.annotation.targetLabel,
-});
+const mapStateToProps = (state, ownProps) => {
+  const { targetLabel } = state.annotation
+  const { candidateId } = ownProps
+  if(targetLabel == null){
+    return {
+      bbox: null,
+    }
+  }
+  const bbox = targetLabel.bbox[candidateId];
+  if(bbox == null){
+    return {
+      bbox: null,
+    }
+  }
+  return {
+    bbox: bbox,
+  }
+};
 export default compose(
   connect(
     mapStateToProps,
     null
   )
 )(PCDEditBar);
-

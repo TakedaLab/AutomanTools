@@ -1,6 +1,11 @@
 const custom = require('../webpack.dev.js')
 module.exports = {
-  stories: ['../app/**/*.stories.jsx'],
+  addons: [
+    '@storybook/addon-knobs/register',
+    '@storybook/addon-viewport/register',
+    '@storybook/addon-actions/register',
+  ],
+  stories: ['../app/**/*.stories.(jsx|js|mdx)'],
   webpackFinal: (config) => {
     return { ...config, resolve: custom.resolve};
   },

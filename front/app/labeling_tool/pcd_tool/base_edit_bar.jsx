@@ -1,49 +1,125 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
 
-import Divider from '@material-ui/core/Divider';
-import Grid from '@material-ui/core/Grid';
-import Button from '@material-ui/core/Button';
-import { RotateLeft, RotateRight } from '@material-ui/icons';
+import {
+  Button,
+  Divider,
+  ExpansionPanel,
+  ExpansionPanelSummary,
+  ExpansionPanelDetails,
+  Input,
+  Grid,
+  Slider,
+  Typography
+} from '@material-ui/core';
 
-import { compose } from 'redux';
-import { connect } from 'react-redux';
-
-import { theme } from 'automan/assets/theme';
-import { mainStyle } from 'automan/assets/main-style';
+import { RotateLeft, RotateRight, ExpandMore } from '@material-ui/icons';
+import InputSlider from './input_slider'
+import InputIncremental from './input_incremental'
 
 export default class BasePCDEditBar extends React.Component {
+  setPos = (label, value) => {
+    const { box, setBboxParams } = this.props;
+    var box_new = {...box}
+    box_new.pos[label] = value
+    setBboxParams(box_new)
+  }
+  setSize = (label, value) => {
+    const { box, setBboxParams } = this.props;
+    var box_new = {...box}
+    box_new.size[label] = value
+    setBboxParams(box_new)
+  }
+  setYaw= (label, value) => {
+    const { box, setBboxParams } = this.props;
+    var box_new = {...box}
+    box_new.yaw = value
+    setBboxParams(box_new)
+  }
+  incrementPos = (label, d) => {
+    console.log(label, d)
+    const { box, setBboxParams } = this.props;
+    var box_new = {...box}
+    box_new.pos[label] += d
+    setBboxParams(box_new)
+  }
+  incrementSize = (label, d) => {
+    console.log(label, d)
+    const { box, setBboxParams } = this.props;
+    var box_new = {...box}
+    box_new.size[label] += d
+    setBboxParams(box_new)
+  }
+  incrementYaw= (d) => {
+    console.log("yaw", d)
+    const { box, setBboxParams } = this.props;
+    var box_new = {...box}
+    box_new.yaw += d
+    setBboxParams(box_new)
+  }
+
   render() {
-    // const label = this.props.targetLabel;
-    // if (label == null) {
-    //   return null;
-    // }
-    // const bbox = label.bbox[this.props.candidateId];
-    // if (bbox == null) {
-    //   return null;
-    // }
+    const {
+      rotateFront,
+      disabled = false,
+      moveSelectedCube = () => {},
+      box = {
+        pos: {
+          x: 0, y: 0, z: 0,
+        },
+        size: {
+          x: 0, y: 0, z: 0,
+        },
+        yaw: 0,
+      }
+    } = this.props;
     return (
       <div>
-        <Divider />
-        <Grid container>
-          <Grid item xs={12}>
-            Rotate Front
-          </Grid>
-          <Grid item xs={6}>
-            <Button
-              onClick={() => bbox.rotateFront(1)}
-            >
-              <RotateLeft />
-            </Button>
-          </Grid>
-          <Grid item xs={6}>
-            <Button
-              onClick={() => bbox.rotateFront(-1)}
-            >
-              <RotateRight />
-            </Button>
-          </Grid>
-        </Grid>
+        <ExpansionPanel defaultExpanded={true}>
+          <ExpansionPanelSummary
+            expandIcon={<ExpandMore />}
+          >
+            <Typography component="h3" variant="body1">
+              Bounding Box
+            </Typography>
+          </ExpansionPanelSummary>
+          <ExpansionPanelDetails>
+            <div style={{width: "100%"}}>
+              <div style={{marginBottom: "32px"}}>
+                <Typography component="h4" variant="body1">
+                  Position
+                </Typography>
+                {["x", "y", "z"].map((item) => 
+                  <InputIncremental
+                    label={item}
+                    incrementValue={(d) => this.incrementPos(item, d)}
+                  />
+                )}
+              </div>
+              <div style={{marginBottom: "32px"}}>
+                <Typography component="h4" variant="body1">
+                  Size
+                </Typography>
+                {["x", "y", "z"].map((item) => 
+                  <InputIncremental
+                    label={item}
+                    incrementValue={(d) => this.incrementSize(item, d)}
+                  />
+                )}
+              </div>
+              <div style={{marginBottom: "32px"}}>
+                <Typography component="h4" variant="body1">
+                  Yaw
+                </Typography>
+                {["yaw"].map((item) => 
+                  <InputIncremental
+                    label={item}
+                    incrementValue={(d) => this.incrementYaw(d)}
+                  />
+                )}
+              </div>
+            </div>
+          </ExpansionPanelDetails>
+        </ExpansionPanel>
       </div>
     );
   }
