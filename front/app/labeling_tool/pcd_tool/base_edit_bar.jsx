@@ -14,6 +14,7 @@ import {
 
 import { RotateLeft, RotateRight, ExpandMore } from '@material-ui/icons';
 import InputSlider from './input_slider'
+import InputIncremental from './input_incremental'
 
 export default class BasePCDEditBar extends React.Component {
   setPos = (label, value) => {
@@ -32,6 +33,27 @@ export default class BasePCDEditBar extends React.Component {
     const { box, setBboxParams } = this.props;
     var box_new = {...box}
     box_new.yaw = value
+    setBboxParams(box_new)
+  }
+  incrementPos = (label, d) => {
+    console.log(label, d)
+    const { box, setBboxParams } = this.props;
+    var box_new = {...box}
+    box_new.pos[label] += d
+    setBboxParams(box_new)
+  }
+  incrementSize = (label, d) => {
+    console.log(label, d)
+    const { box, setBboxParams } = this.props;
+    var box_new = {...box}
+    box_new.size[label] += d
+    setBboxParams(box_new)
+  }
+  incrementYaw= (d) => {
+    console.log("yaw", d)
+    const { box, setBboxParams } = this.props;
+    var box_new = {...box}
+    box_new.yaw += d
     setBboxParams(box_new)
   }
 
@@ -67,12 +89,9 @@ export default class BasePCDEditBar extends React.Component {
                   Position
                 </Typography>
                 {["x", "y", "z"].map((item) => 
-                  <InputSlider
-                    key={item}
+                  <InputIncremental
                     label={item}
-                    disabled={disabled}
-                    value={box.pos[item]}
-                    setParam={this.setPos}
+                    incrementValue={(d) => this.incrementPos(item, d)}
                   />
                 )}
               </div>
@@ -81,12 +100,9 @@ export default class BasePCDEditBar extends React.Component {
                   Size
                 </Typography>
                 {["x", "y", "z"].map((item) => 
-                  <InputSlider
-                    key={item}
+                  <InputIncremental
                     label={item}
-                    disabled={disabled}
-                    value={box.size[item]}
-                    setParam={this.setSize}
+                    incrementValue={(d) => this.incrementSize(item, d)}
                   />
                 )}
               </div>
@@ -95,12 +111,9 @@ export default class BasePCDEditBar extends React.Component {
                   Yaw
                 </Typography>
                 {["yaw"].map((item) => 
-                  <InputSlider
-                    key={item}
+                  <InputIncremental
                     label={item}
-                    disabled={disabled}
-                    value={box[item]}
-                    setParam={this.setYaw}
+                    incrementValue={(d) => this.incrementYaw(d)}
                   />
                 )}
               </div>
