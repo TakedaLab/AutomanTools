@@ -11,6 +11,12 @@
 // https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/keyCode
 
 export const default_key_map = [
+  //view
+  {
+    "keys": ["shift"],
+    "command": "change_edit_mode"
+  },
+
   // history
   {
     "keys": ["ctrl+KeyZ", "meta+KeyZ"],
