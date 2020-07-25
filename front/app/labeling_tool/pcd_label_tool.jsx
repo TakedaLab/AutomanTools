@@ -243,14 +243,14 @@ class PCDLabelTool extends React.Component {
     keydown: (e) => {
       execKeyCommand("change_edit_mode", e.originalEvent, () => {
         this.modeChangeRequest('view');
-      }))
+      })
     },
     keyup: (e) => {
       execKeyCommand("change_edit_mode", e.originalEvent, () => {
         if (this._modeStatus.mode === 'view') {
           this.modeChangeRequest('edit');
         }
-      }))
+      })
     }
   };
   setActive(isActive) {

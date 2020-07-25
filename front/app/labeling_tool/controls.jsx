@@ -134,6 +134,63 @@ class Controls extends React.Component {
         if (this.state.isLoading) {
           return;
         }
+        const targetLabel = this.props.annotation.getTarget()
+        if(targetLabel){
+          if(targetLabel.bbox){
+            Object.keys(targetLabel.bbox).forEach((bkey) => {
+              const bbox = targetLabel.bbox[bkey]
+              if(bbox){
+                const box_d = {
+                  pos: {
+                    x: 0, y: 0, z: 0,
+                  },
+                  size: {
+                    x: 0, y: 0, z: 0,
+                  },
+                  yaw: 0,
+                }
+                const shiftBboxParams = (bbox, box_d) => {
+                  bbox.shiftBboxParams(box_d);
+                  var changedLabel = bbox.label.createHistory(null)
+                  changedLabel.addHistory()
+                }
+                execKeyCommand("bbox_shift_left", e.originalEvent, () => {
+                  box_d.pos.y = 0.5
+                  shiftBboxParams(bbox, box_d)
+                })
+                execKeyCommand("bbox_shift_left_big", e.originalEvent, () => {
+                  box_d.pos.y = 5
+                  shiftBboxParams(bbox, box_d)
+                })
+                execKeyCommand("bbox_shift_right", e.originalEvent, () => {
+                  box_d.pos.y = -0.5
+                  shiftBboxParams(bbox, box_d)
+                })
+                execKeyCommand("bbox_shift_right_big", e.originalEvent, () => {
+                  box_d.pos.y = -5
+                  shiftBboxParams(bbox, box_d)
+                })
+                execKeyCommand("bbox_shift_top", e.originalEvent, () => {
+                  box_d.pos.x = 0.5
+                  shiftBboxParams(bbox, box_d)
+                })
+                execKeyCommand("bbox_shift_top_big", e.originalEvent, () => {
+                  box_d.pos.x = 5
+                  shiftBboxParams(bbox, box_d)
+                })
+                execKeyCommand("bbox_shift_bottom", e.originalEvent, () => {
+                  box_d.pos.x = -0.5
+                  shiftBboxParams(bbox, box_d)
+                })
+                execKeyCommand("bbox_shift_bottom_big", e.originalEvent, () => {
+                  box_d.pos.x = -5
+                  shiftBboxParams(bbox, box_d)
+                })
+
+              }
+            })
+          }
+        }
 
         // history
         execKeyCommand("history_undo", e.originalEvent, () => this.props.history.undo())
@@ -143,7 +200,7 @@ class Controls extends React.Component {
         execKeyCommand("frame_next", e.originalEvent, () => this.nextFrame())
         execKeyCommand("frame_prev", e.originalEvent, () => this.previousFrame())
 
-        // bbx
+        // bbox
         execKeyCommand("bbox_remove", e.originalEvent, () => {
           const label = this.getTargetLabel();
           if (label != null) {

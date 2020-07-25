@@ -16,7 +16,6 @@ class PCDEditBar extends React.Component {
     super(props);
     this.state = {
       disabled: false,
-      bbox_busy: false,
     };
   }
   setBboxParams = (box_new) => {
@@ -25,7 +24,6 @@ class PCDEditBar extends React.Component {
     bbox.updateSelected(true)
     var changedLabel = bbox.label.createHistory(null)
     changedLabel.addHistory()
-
   }
   render() {
     const bbox = this.props.bbox;

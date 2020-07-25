@@ -215,6 +215,21 @@ export default class PCDBBox {
       this.pcdTool.setArrow(this);
     }
   }
+  shiftBboxParams(box_d){
+    const box = this.box;
+    box.size.set(
+      box.size.x + box_d.size.x,
+      box.size.y + box_d.size.y,
+      box.size.z + box_d.size.z,
+    )
+    box.pos.set(
+      box.pos.x + box_d.pos.x,
+      box.pos.y + box_d.pos.y,
+      box.pos.z + box_d.pos.z,
+    )
+    box.yaw = box.yaw + box_d.yaw
+    this.updateParam();
+  }
   setBboxParams(new_box){
     const box = this.box;
     box.size.set(

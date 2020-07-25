@@ -8,6 +8,7 @@ export const addKeyCommand = (command, callback) => {
     }else{
       obj_bind.keys.forEach((obj_key) => {
         const lits = obj_key.split("+")
+        // TODO: only shift
         const m = {
           altKey:   lits.includes("alt"),
           ctrlKey:  lits.includes("ctrl"),
