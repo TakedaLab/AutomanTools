@@ -54,69 +54,102 @@ export const default_key_map = [
 
   // move
   {
-    "keys": ["KeyH"],
-    "command": "bbox_shift_left",
-  },
-  {
-    "keys": ["shift+KeyH"],
-    "command": "bbox_shift_left_big",
-  },
-  {
-    "keys": ["KeyL"],
-    "command": "bbox_shift_right",
-  },
-  {
-    "keys": ["shift+KeyL"],
-    "command": "bbox_shift_right_big",
-  },
-  {
     "keys": ["KeyK"],
-    "command": "bbox_shift_top",
+    "command": "bbox_x_pos_increment",
   },
   {
     "keys": ["shift+KeyK"],
-    "command": "bbox_shift_top_big",
+    "command": "bbox_x_pos_increment_big",
   },
   {
     "keys": ["KeyJ"],
-    "command": "bbox_shift_bottom",
+    "command": "bbox_x_pos_decrement",
   },
   {
     "keys": ["shift+KeyJ"],
-    "command": "bbox_shift_bottom_big",
+    "command": "bbox_x_pos_decrement_big",
+  },
+  {
+    "keys": ["KeyH"],
+    "command": "bbox_y_pos_increment",
+  },
+  {
+    "keys": ["shift+KeyH"],
+    "command": "bbox_y_pos_increment_big",
+  },
+  {
+    "keys": ["KeyL"],
+    "command": "bbox_y_pos_decrement",
+  },
+  {
+    "keys": ["shift+KeyL"],
+    "command": "bbox_y_pos_decrement_big",
+  },
+  {
+    "keys": ["KeyP"],
+    "command": "bbox_z_pos_increment",
+  },
+  {
+    "keys": ["shift+KeyP"],
+    "command": "bbox_z_pos_increment_big",
+  },
+  {
+    "keys": ["KeyN"],
+    "command": "bbox_z_pos_decrement",
+  },
+  {
+    "keys": ["shift+KeyN"],
+    "command": "bbox_z_pos_decrement_big",
   },
 
-  // size
-  {
-    "keys": ["alt+KeyH"],
-    "command": "bbox_width_decrease",
-  },
-  {
-    "keys": ["alt+shift+KeyH"],
-    "command": "bbox_width_decrease_big",
-  },
-  {
-    "keys": ["alt+KeyL"],
-    "command": "bbox_width_increase",
-  },
-  {
-    "keys": ["alt+shift+KeyL"],
-    "command": "bbox_width_increase_big",
-  },
+
+    // size
   {
     "keys": ["alt+KeyK"],
-    "command": "bbox_height_increase",
+    "command": "bbox_x_size_increment",
   },
   {
     "keys": ["alt+shift+KeyK"],
-    "command": "bbox_height_increase_big",
+    "command": "bbox_x_size_increment_big",
   },
   {
     "keys": ["alt+KeyJ"],
-    "command": "bbox_height_decrease",
+    "command": "bbox_x_size_decrement",
   },
   {
     "keys": ["alt+shift+KeyJ"],
-    "command": "bbox_height_decrease_big",
+    "command": "bbox_x_size_decrement_big",
+  },
+  {
+    "keys": ["alt+KeyH"],
+    "command": "bbox_y_size_increment",
+  },
+  {
+    "keys": ["alt+shift+KeyH"],
+    "command": "bbox_y_size_increment_big",
+  },
+  {
+    "keys": ["alt+KeyL"],
+    "command": "bbox_y_size_decrement",
+  },
+  {
+    "keys": ["alt+shift+KeyL"],
+    "command": "bbox_y_size_decrement_big",
+  },
+  {
+    "keys": ["alt+KeyP"],
+    "command": "bbox_z_size_increment",
+  },
+  {
+    "keys": ["alt+shift+KeyP"],
+    "command": "bbox_z_size_increment_big",
+  },
+  {
+    "keys": ["alt+KeyN"],
+    "command": "bbox_z_size_decrement",
+  },
+  {
+    "keys": ["alt+shift+KeyN"],
+    "command": "bbox_z_size_decrement_big",
   },
 ]

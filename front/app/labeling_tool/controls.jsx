@@ -138,55 +138,47 @@ class Controls extends React.Component {
         if(targetLabel){
           if(targetLabel.bbox){
             Object.keys(targetLabel.bbox).forEach((bkey) => {
+              // loop bbox object
               const bbox = targetLabel.bbox[bkey]
               if(bbox){
-                const box_d = {
-                  pos: {
-                    x: 0, y: 0, z: 0,
-                  },
-                  size: {
-                    x: 0, y: 0, z: 0,
-                  },
-                  yaw: 0,
-                }
                 const shiftBboxParams = (bbox, box_d) => {
                   bbox.shiftBboxParams(box_d);
                   var changedLabel = bbox.label.createHistory(null)
                   changedLabel.addHistory()
                 }
-                execKeyCommand("bbox_shift_left", e.originalEvent, () => {
-                  box_d.pos.y = 0.5
-                  shiftBboxParams(bbox, box_d)
+                ["x", "y", "z"].forEach(axis => {
+                  ["pos", "size"].forEach(param => {
+                    [
+                      "increment", "increment_big",
+                      "decrement", "decrement_big"
+                    ].forEach(action => {
+                      const command = "bbox_"+axis+"_"+param+"_"+action
+                      const box_d = {
+                        pos: { x: 0, y: 0, z: 0 },
+                        size: { x: 0, y: 0, z: 0 },
+                        yaw: 0,
+                      }
+                      switch(action){
+                        case "increment":
+                          box_d[param][axis] = 0.5
+                          break
+                        case "decrement":
+                          box_d[param][axis] = -0.5
+                          break
+                        case "increment_big":
+                          box_d[param][axis] = 5
+                          break
+                        case "decrement_big":
+                          box_d[param][axis] = -5
+                          break
+                      }
+                      execKeyCommand(command, e.originalEvent, () => {
+                        console.log("command", command)
+                        shiftBboxParams(bbox, box_d)
+                      })
+                    })
+                  })
                 })
-                execKeyCommand("bbox_shift_left_big", e.originalEvent, () => {
-                  box_d.pos.y = 5
-                  shiftBboxParams(bbox, box_d)
-                })
-                execKeyCommand("bbox_shift_right", e.originalEvent, () => {
-                  box_d.pos.y = -0.5
-                  shiftBboxParams(bbox, box_d)
-                })
-                execKeyCommand("bbox_shift_right_big", e.originalEvent, () => {
-                  box_d.pos.y = -5
-                  shiftBboxParams(bbox, box_d)
-                })
-                execKeyCommand("bbox_shift_top", e.originalEvent, () => {
-                  box_d.pos.x = 0.5
-                  shiftBboxParams(bbox, box_d)
-                })
-                execKeyCommand("bbox_shift_top_big", e.originalEvent, () => {
-                  box_d.pos.x = 5
-                  shiftBboxParams(bbox, box_d)
-                })
-                execKeyCommand("bbox_shift_bottom", e.originalEvent, () => {
-                  box_d.pos.x = -0.5
-                  shiftBboxParams(bbox, box_d)
-                })
-                execKeyCommand("bbox_shift_bottom_big", e.originalEvent, () => {
-                  box_d.pos.x = -5
-                  shiftBboxParams(bbox, box_d)
-                })
-
               }
             })
           }
