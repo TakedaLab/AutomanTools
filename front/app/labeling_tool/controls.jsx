@@ -31,6 +31,7 @@ import PCDLabelTool from 'automan/labeling_tool/pcd_label_tool';
 import {toolStyle, appBarHeight, drawerWidth} from 'automan/labeling_tool/tool-style';
 
 import RequestClient from 'automan/services/request-client'
+import { addKeyCommand, execKeyCommand } from './key_control/index'
 
 
 class Controls extends React.Component {
@@ -133,38 +134,26 @@ class Controls extends React.Component {
         if (this.state.isLoading) {
           return;
         }
-        if (e.keyCode == 8 || e.keyCode == 46) {
-          // Backspace or Delete
+
+        // history
+        execKeyCommand("history_undo", e.originalEvent, () => this.props.history.undo())
+        execKeyCommand("history_redo", e.originalEvent, () => this.props.history.redo())
+
+        // frame
+        execKeyCommand("frame_next", e.originalEvent, () => this.nextFrame())
+        execKeyCommand("frame_prev", e.originalEvent, () => this.previousFrame())
+
+        // bbx
+        execKeyCommand("bbox_remove", e.originalEvent, () => {
           const label = this.getTargetLabel();
           if (label != null) {
             this.removeLabel(label);
           }
-        } else if (e.keyCode == 39) {
-          this.nextFrame();
-        } else if (e.keyCode == 37) {
-          this.previousFrame();
-        } else if (e.keyCode == 90) {
-          // Z key
-          if (e.ctrlKey) {
-            if (e.shiftKey) {
-              this.props.history.redo();
-            } else {
-              this.props.history.undo();
-            }
-          }
-        } else if (e.keyCode == 67) {
-          // C key
-          if (e.ctrlKey) {
-            this.props.clipboard.copy(null);
-          }
-        } else if (e.keyCode == 86) {
-          // V key
-          if (e.ctrlKey) {
-            this.props.clipboard.paste();
-          }
-        } else {
-          this.getTool().handles.keydown(e);
-        }
+        })
+        execKeyCommand("bbox_copy", e.originalEvent, () => this.props.clipboard.copy(null))
+        execKeyCommand("bbox_paste", e.originalEvent, () => this.props.clipboard.paste())
+
+        this.getTool().handles.keydown(e);
       })
       .keyup(e => {
         if (this.state.isLoading) {
