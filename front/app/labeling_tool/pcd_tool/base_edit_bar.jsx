@@ -107,12 +107,10 @@ export default class BasePCDEditBar extends React.Component {
                 <Typography component="h4" variant="body1">
                   Yaw
                 </Typography>
-                {["yaw"].map((item) => 
-                  <InputIncremental
-                    label={item}
-                    incrementValue={(d) => this.incrementYaw(d)}
-                  />
-                )}
+                <InputIncremental
+                  label={"D"}
+                  incrementValue={(d) => this.incrementYaw(d)}
+                />
               </div>
             </div>
           </ExpansionPanelDetails>

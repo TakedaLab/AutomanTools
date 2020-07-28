@@ -1,5 +1,4 @@
-
-export const keymap_vimlike = [
+export const keymapVimlike = [
   //view
   {
     "keys": ["shift+ShiftLeft", "shift+ShiftRight", "ShiftLeft", "ShiftRight"],

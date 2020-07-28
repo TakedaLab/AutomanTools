@@ -3,8 +3,7 @@ import { storiesOf } from '@storybook/react';
 import { withKnobs, text, boolean, button } from "@storybook/addon-knobs";
 import { action } from '@storybook/addon-actions'
 
-import { keymap_default } from './key_map/default'
-import { keymap_vimlike } from './key_map/vimlike'
+import { keymap as keymapObject } from './key_map/index'
 import { addKeyCommand, execKeyCommand } from './index'
 
 import {
@@ -24,23 +23,23 @@ class Example extends React.Component{
   state = {
     undo: 0,
     redo: 0,
-    edit_mode: "edit"
+    editMode: "edit"
   }
   componentDidMount(){
     addKeyCommand("history_undo", () => this.setState({undo: this.state.undo + 1}))
     document.addEventListener("keydown", (e) => {
       execKeyCommand("history_redo", e, () => this.setState({redo: this.state.redo + 1}))
-      execKeyCommand("change_edit_mode", e, () => this.setState({edit_mode: "view"}))
+      execKeyCommand("change_editMode", e, () => this.setState({editMode: "view"}))
     })
     document.addEventListener("keyup", (e) => {
-      execKeyCommand("change_edit_mode", e, () => {
-        this.setState({edit_mode: "edit"})
+      execKeyCommand("change_editMode", e, () => {
+        this.setState({editMode: "edit"})
         })
     })
   }
   render(){
     const {
-      undo, redo, edit_mode
+      undo, redo, editMode
     } = this.state
     return(
       <div>
@@ -56,9 +55,9 @@ class Example extends React.Component{
             <td>{redo}</td>
           </tr>
           <tr>
-            <th>edit_mode</th>
+            <th>editMode</th>
             <td>shift</td>
-            <td>{edit_mode}</td>
+            <td>{editMode}</td>
           </tr>
         </table>
       </div>
@@ -126,13 +125,8 @@ storiesOf('pcd_tool/key_control', module)
       <Example />
     )
   })
-  .add('default bind', () => {
+  .add('sandbox', () => {
     return(
-      <Sandbox keymap={keymap_default} />
-    )
-  })
-  .add('vim-like bind', () => {
-    return(
-      <Sandbox keymap={keymap_vimlike} />
+      <Sandbox keymap={keymapObject} />
     )
   })

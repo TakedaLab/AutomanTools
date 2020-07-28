@@ -21,7 +21,7 @@
 // https://www.sublimetext.com/docs/3/key_bindings.html
 //
 
-export const keymap_default = [
+export const keymapDefault = [
   //view
   {
     "keys": ["shift+ShiftLeft", "shift+ShiftRight", "ShiftLeft", "ShiftRight"],
@@ -40,11 +40,11 @@ export const keymap_default = [
   
   // frame
   {
-    "keys": ["ArrowRight"],
+    "keys": ["KeyN"],
     "command": "frame_next",
   },
   {
-    "keys": ["ArrowLeft"],
+    "keys": ["KeyB"],
     "command": "frame_prev",
   },
 
@@ -65,102 +65,102 @@ export const keymap_default = [
 
   // move
   {
-    "keys": ["KeyK"],
+    "keys": ["shift+ArrowUp"],
     "command": "bbox_x_pos_increment",
   },
   {
-    "keys": ["shift+KeyK"],
+    "keys": ["ArrowUp"],
     "command": "bbox_x_pos_increment_big",
   },
   {
-    "keys": ["KeyJ"],
+    "keys": ["shift+ArrowDown"],
     "command": "bbox_x_pos_decrement",
   },
   {
-    "keys": ["shift+KeyJ"],
+    "keys": ["ArrowDown"],
     "command": "bbox_x_pos_decrement_big",
   },
   {
-    "keys": ["KeyH"],
+    "keys": ["shift+ArrowLeft"],
     "command": "bbox_y_pos_increment",
   },
   {
-    "keys": ["shift+KeyH"],
+    "keys": ["ArrowLeft"],
     "command": "bbox_y_pos_increment_big",
   },
   {
-    "keys": ["KeyL"],
+    "keys": ["shift+ArrowRight"],
     "command": "bbox_y_pos_decrement",
   },
   {
-    "keys": ["shift+KeyL"],
+    "keys": ["ArrowRight"],
     "command": "bbox_y_pos_decrement_big",
   },
   {
-    "keys": ["KeyP"],
+    "keys": [],
     "command": "bbox_z_pos_increment",
   },
   {
-    "keys": ["shift+KeyP"],
+    "keys": [],
     "command": "bbox_z_pos_increment_big",
   },
   {
-    "keys": ["KeyN"],
+    "keys": [],
     "command": "bbox_z_pos_decrement",
   },
   {
-    "keys": ["shift+KeyN"],
+    "keys": [],
     "command": "bbox_z_pos_decrement_big",
   },
 
 
     // size
   {
-    "keys": ["alt+KeyK"],
+    "keys": ["alt+ArrowUp"],
     "command": "bbox_x_size_increment",
   },
   {
-    "keys": ["alt+shift+KeyK"],
+    "keys": ["alt+shift+ArrowUp"],
     "command": "bbox_x_size_increment_big",
   },
   {
-    "keys": ["alt+KeyJ"],
+    "keys": ["alt+ArrowDown"],
     "command": "bbox_x_size_decrement",
   },
   {
-    "keys": ["alt+shift+KeyJ"],
+    "keys": ["alt+shift+ArrowDown"],
     "command": "bbox_x_size_decrement_big",
   },
   {
-    "keys": ["alt+KeyH"],
+    "keys": ["alt+ArrowLeft"],
     "command": "bbox_y_size_increment",
   },
   {
-    "keys": ["alt+shift+KeyH"],
+    "keys": ["alt+shift+ArrowLeft"],
     "command": "bbox_y_size_increment_big",
   },
   {
-    "keys": ["alt+KeyL"],
+    "keys": ["alt+ArrowRight"],
     "command": "bbox_y_size_decrement",
   },
   {
-    "keys": ["alt+shift+KeyL"],
+    "keys": ["alt+shift+ArrowRight"],
     "command": "bbox_y_size_decrement_big",
   },
   {
-    "keys": ["alt+KeyP"],
+    "keys": [],
     "command": "bbox_z_size_increment",
   },
   {
-    "keys": ["alt+shift+KeyP"],
+    "keys": [],
     "command": "bbox_z_size_increment_big",
   },
   {
-    "keys": ["alt+KeyN"],
+    "keys": [],
     "command": "bbox_z_size_decrement",
   },
   {
-    "keys": ["alt+shift+KeyN"],
+    "keys": [],
     "command": "bbox_z_size_decrement_big",
   },
 ]

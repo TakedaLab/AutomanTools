@@ -22,6 +22,7 @@ const IncrementButton = props => {
       size="small"
       color="primary"
       onClick={() => incrementValue(d)}
+      style={{padding: "3px", minWidth: "16px"}}
       {...otherProps}
     >
       {d < 0 ? d : "+" + d}
@@ -40,40 +41,27 @@ const InputIncremental = props => {
 
   return (
     <div {...otherProps}>
-      <Grid container spacing={0} alignItems="center">
-        <Grid item>
-          <ButtonGroup>
-            <IncrementButton
-              d={increment_large * -1}
-              incrementValue={incrementValue}
-            />
-            <IncrementButton
-              d={increment_small * -1}
-              incrementValue={incrementValue}
-            />
-            />
-          </ButtonGroup>
-        </Grid>
-        <Grid item>
-          <Button disabled size="small">
-            {label}
-          </Button>
-        </Grid>
-        <Grid item>
-          <ButtonGroup>
-            <IncrementButton
-              d={increment_small}
-              incrementValue={incrementValue}
-            />
-            />
-            <IncrementButton
-              d={increment_large}
-              incrementValue={incrementValue}
-            />
-            />
-          </ButtonGroup>
-        </Grid>
-      </Grid>
+      <ButtonGroup>
+        <IncrementButton
+          d={increment_large * -1}
+          incrementValue={incrementValue}
+        />
+        <IncrementButton
+          d={increment_small * -1}
+          incrementValue={incrementValue}
+        />
+        <Button disabled size="small">
+          {label}
+        </Button>
+        <IncrementButton
+          d={increment_small}
+          incrementValue={incrementValue}
+        />
+        <IncrementButton
+          d={increment_large}
+          incrementValue={incrementValue}
+        />
+      </ButtonGroup>
       <div
         style={{margin: "0 16px"}}
       >
