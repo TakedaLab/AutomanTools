@@ -1,8 +1,15 @@
-import { default_key_map as key_map } from './key_map/default'
+import { keymap_default as keymap } from './key_map/default'
+
+const modifiers = {
+  altKey: "alt",
+  ctrlKey: "ctrl",
+  shiftKey: "shift",
+  metaKey: "meta"
+}
 
 export const addKeyCommand = (command, callback) => {
   // add event listner to document
-  key_map.forEach((obj_bind) => {
+  keymap.forEach((obj_bind) => {
     if(obj_bind.command !== command){
       
     }else{
@@ -10,10 +17,10 @@ export const addKeyCommand = (command, callback) => {
         const lits = obj_key.split("+")
         // TODO: only shift
         const m = {
-          altKey:   lits.includes("alt"),
-          ctrlKey:  lits.includes("ctrl"),
-          shiftKey: lits.includes("shift"),
-          metaKey:  lits.includes("meta"),
+          altKey:   lits.includes(modifiers.altKey),
+          ctrlKey:  lits.includes(modifiers.ctrlKey),
+          shiftKey: lits.includes(modifiers.shiftKey),
+          metaKey:  lits.includes(modifiers.metaKey),
           code:     lits[lits.length - 1]
         }
         document.addEventListener("keydown", (e) => {
@@ -26,17 +33,17 @@ export const addKeyCommand = (command, callback) => {
 
 export const execKeyCommand = (command, e, callback) => {
   // exec key command
-  key_map.forEach((obj_bind) => {
+  keymap.forEach((obj_bind) => {
     if(obj_bind.command !== command){
       
     }else{
       obj_bind.keys.forEach((obj_key) => {
         const lits = obj_key.split("+")
         const m = {
-          altKey:   lits.includes("alt"),
-          ctrlKey:  lits.includes("ctrl"),
-          shiftKey: lits.includes("shift"),
-          metaKey:  lits.includes("meta"),
+          altKey:   lits.includes(modifiers.altKey),
+          ctrlKey:  lits.includes(modifiers.ctrlKey),
+          shiftKey: lits.includes(modifiers.shiftKey),
+          metaKey:  lits.includes(modifiers.metaKey),
           code:     lits[lits.length - 1]
         }
         execCommand(e, m, callback)

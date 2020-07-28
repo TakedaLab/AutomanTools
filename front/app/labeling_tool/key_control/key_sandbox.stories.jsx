@@ -11,26 +11,45 @@ class KeySandbox extends React.Component{
   state = {
     undo: 0,
     redo: 0,
+    edit_mode: "edit"
   }
   componentDidMount(){
     addKeyCommand("history_undo", () => this.setState({undo: this.state.undo + 1}))
     document.addEventListener("keydown", (e) => {
       execKeyCommand("history_redo", e, () => this.setState({redo: this.state.redo + 1}))
+      execKeyCommand("change_edit_mode", e, () => this.setState({edit_mode: "view"}))
+    })
+    document.addEventListener("keyup", (e) => {
+      console.log(e)
+      execKeyCommand("change_edit_mode", e, () => {
+        this.setState({edit_mode: "edit"})
+        })
     })
   }
 
   render(){
     const {
-      undo, redo
+      undo, redo, edit_mode
     } = this.state
     return(
       <div>
-        <p>
-          undo: {undo}
-        </p>
-        <p>
-          redo: {redo}
-        </p>
+        <table>
+          <tr>
+            <th>undo</th>
+            <td>ctrl+z | command+z</td>
+            <td>{undo}</td>
+          </tr>
+          <tr>
+            <th>redo</th>
+            <td>shift+ctrl+z | shift+command+z</td>
+            <td>{redo}</td>
+          </tr>
+          <tr>
+            <th>eidt_mode</th>
+            <td>shift</td>
+            <td>{edit_mode}</td>
+          </tr>
+        </table>
       </div>
     )
   }

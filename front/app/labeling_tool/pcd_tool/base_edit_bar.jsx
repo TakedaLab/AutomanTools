@@ -36,21 +36,18 @@ export default class BasePCDEditBar extends React.Component {
     setBboxParams(box_new)
   }
   incrementPos = (label, d) => {
-    console.log(label, d)
     const { box, setBboxParams } = this.props;
     var box_new = {...box}
     box_new.pos[label] += d
     setBboxParams(box_new)
   }
   incrementSize = (label, d) => {
-    console.log(label, d)
     const { box, setBboxParams } = this.props;
     var box_new = {...box}
     box_new.size[label] += d
     setBboxParams(box_new)
   }
   incrementYaw= (d) => {
-    console.log("yaw", d)
     const { box, setBboxParams } = this.props;
     var box_new = {...box}
     box_new.yaw += d

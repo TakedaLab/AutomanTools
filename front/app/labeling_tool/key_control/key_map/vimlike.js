@@ -1,27 +1,5 @@
-// MODIFIERS
-// ---------
-// - alt
-// - ctrl
-// - meta
-// - shift
-//
-// KEY NAMES
-// ---------
-// Refer keyCode definition
-// https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/keyCode
-//
-// KEY MAPPING
-// -----------
-// `keys` accepts:
-// ((alt|ctrl|meta|shift)\+)*(<keyCode>)
-//
-// MISC
-// ----
-// This key map definition was designed based on Sublime Text Key Bindings:
-// https://www.sublimetext.com/docs/3/key_bindings.html
-//
 
-export const keymap_default = [
+export const keymap_vimlike = [
   //view
   {
     "keys": ["shift+ShiftLeft", "shift+ShiftRight", "ShiftLeft", "ShiftRight"],

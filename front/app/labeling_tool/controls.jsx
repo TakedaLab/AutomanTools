@@ -173,7 +173,6 @@ class Controls extends React.Component {
                           break
                       }
                       execKeyCommand(command, e.originalEvent, () => {
-                        console.log("command", command)
                         shiftBboxParams(bbox, box_d)
                       })
                     })
