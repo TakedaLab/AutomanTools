@@ -241,6 +241,10 @@ class Controls extends React.Component {
     // *********
   }
 
+  getFixedSkipFrameCount() {
+    return Math.max(1, this.state.skipFrameCount);
+  }
+
   getTools() {
     return this.props.tools;
   }
