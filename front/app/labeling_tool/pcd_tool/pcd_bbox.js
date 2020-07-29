@@ -215,6 +215,36 @@ export default class PCDBBox {
       this.pcdTool.setArrow(this);
     }
   }
+  shiftBboxParams(box_d){
+    const box = this.box;
+    box.size.set(
+      box.size.x + box_d.size.x,
+      box.size.y + box_d.size.y,
+      box.size.z + box_d.size.z,
+    )
+    box.pos.set(
+      box.pos.x + box_d.pos.x,
+      box.pos.y + box_d.pos.y,
+      box.pos.z + box_d.pos.z,
+    )
+    box.yaw = box.yaw + box_d.yaw
+    this.updateParam();
+  }
+  setBboxParams(new_box){
+    const box = this.box;
+    box.size.set(
+      new_box.size.x,
+      new_box.size.y,
+      new_box.size.z,
+    )
+    box.pos.set(
+      new_box.pos.x,
+      new_box.pos.y,
+      new_box.pos.z,
+    )
+    box.yaw = new_box.yaw
+    this.updateParam();
+  }
   rotateFront(n) {
     const box = this.box;
     let cnt = n % 4;
@@ -228,7 +258,7 @@ export default class PCDBBox {
     }
     box.yaw = (box.yaw + Math.PI / 2 * n) % (Math.PI * 2)
 
-    this.updateParam(true);
+    this.updateParam();
   }
 }
 

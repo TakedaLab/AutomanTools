@@ -12,6 +12,8 @@ import BoxFrameObject from './pcd_tool/box_frame_object';
 import PCDBBox from './pcd_tool/pcd_bbox';
 import EditBar from './pcd_tool/edit_bar';
 
+import { addKeyCommand, execKeyCommand } from './key_control/index'
+
 // 3d eidt arrow
 const arrowColors = [0xff0000, 0x00ff00, 0x0000ff],
       AXES = [new THREE.Vector3(1,0,0), new THREE.Vector3(0,1,0), new THREE.Vector3(0,0,1)];
@@ -239,16 +241,16 @@ class PCDLabelTool extends React.Component {
       this._redrawFlag = true;
     },
     keydown: (e) => {
-      if (e.keyCode === 16) { // shift
+      execKeyCommand("change_edit_mode", e.originalEvent, () => {
         this.modeChangeRequest('view');
-      }
+      })
     },
     keyup: (e) => {
-      if (e.keyCode === 16) { // shift
+      execKeyCommand("change_edit_mode", e.originalEvent, () => {
         if (this._modeStatus.mode === 'view') {
           this.modeChangeRequest('edit');
         }
-      }
+      })
     }
   };
   setActive(isActive) {

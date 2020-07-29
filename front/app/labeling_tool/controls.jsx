@@ -134,6 +134,54 @@ class Controls extends React.Component {
         if (this.state.isLoading) {
           return;
         }
+        const targetLabel = this.props.annotation.getTarget()
+        if(targetLabel){
+          if(targetLabel.bbox){
+            Object.keys(targetLabel.bbox).forEach((bkey) => {
+              // loop bbox object
+              const bbox = targetLabel.bbox[bkey]
+              if(bbox){
+                const shiftBboxParams = (bbox, box_d) => {
+                  bbox.shiftBboxParams(box_d);
+                  var changedLabel = bbox.label.createHistory(null)
+                  changedLabel.addHistory()
+                }
+                ["x", "y", "z"].forEach(axis => {
+                  ["pos", "size"].forEach(param => {
+                    [
+                      "increment", "increment_big",
+                      "decrement", "decrement_big"
+                    ].forEach(action => {
+                      const command = "bbox_"+axis+"_"+param+"_"+action
+                      const box_d = {
+                        pos: { x: 0, y: 0, z: 0 },
+                        size: { x: 0, y: 0, z: 0 },
+                        yaw: 0,
+                      }
+                      switch(action){
+                        case "increment":
+                          box_d[param][axis] = 0.5
+                          break
+                        case "decrement":
+                          box_d[param][axis] = -0.5
+                          break
+                        case "increment_big":
+                          box_d[param][axis] = 5
+                          break
+                        case "decrement_big":
+                          box_d[param][axis] = -5
+                          break
+                      }
+                      execKeyCommand(command, e.originalEvent, () => {
+                        shiftBboxParams(bbox, box_d)
+                      })
+                    })
+                  })
+                })
+              }
+            })
+          }
+        }
 
         // history
         execKeyCommand("history_undo", e.originalEvent, () => this.props.history.undo())
@@ -143,7 +191,7 @@ class Controls extends React.Component {
         execKeyCommand("frame_next", e.originalEvent, () => this.nextFrame())
         execKeyCommand("frame_prev", e.originalEvent, () => this.previousFrame())
 
-        // bbx
+        // bbox
         execKeyCommand("bbox_remove", e.originalEvent, () => {
           const label = this.getTargetLabel();
           if (label != null) {
