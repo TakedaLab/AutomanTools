@@ -1,27 +1,4 @@
-// MODIFIERS
-// ---------
-// - alt
-// - ctrl
-// - meta
-// - shift
-//
-// KEY NAMES
-// ---------
-// Refer keyCode definition
-// https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/keyCode
-//
-// KEY MAPPING
-// -----------
-// `keys` accepts:
-// ((alt|ctrl|meta|shift)\+)*(<keyCode>)
-//
-// MISC
-// ----
-// This key map definition was designed based on Sublime Text Key Bindings:
-// https://www.sublimetext.com/docs/3/key_bindings.html
-//
-
-export const keymapDefault = [
+export const keymapVimlike = [
   //view
   {
     "keys": ["shift+ShiftLeft", "shift+ShiftRight", "ShiftLeft", "ShiftRight"],
@@ -40,11 +17,11 @@ export const keymapDefault = [
   
   // frame
   {
-    "keys": ["KeyN"],
+    "keys": ["ArrowRight"],
     "command": "frame_next",
   },
   {
-    "keys": ["KeyB"],
+    "keys": ["ArrowLeft"],
     "command": "frame_prev",
   },
 
@@ -65,102 +42,102 @@ export const keymapDefault = [
 
   // move
   {
-    "keys": ["shift+ArrowUp"],
+    "keys": ["KeyK"],
     "command": "bbox_x_pos_increment",
   },
   {
-    "keys": ["ArrowUp"],
+    "keys": ["shift+KeyK"],
     "command": "bbox_x_pos_increment_big",
   },
   {
-    "keys": ["shift+ArrowDown"],
+    "keys": ["KeyJ"],
     "command": "bbox_x_pos_decrement",
   },
   {
-    "keys": ["ArrowDown"],
+    "keys": ["shift+KeyJ"],
     "command": "bbox_x_pos_decrement_big",
   },
   {
-    "keys": ["shift+ArrowLeft"],
+    "keys": ["KeyH"],
     "command": "bbox_y_pos_increment",
   },
   {
-    "keys": ["ArrowLeft"],
+    "keys": ["shift+KeyH"],
     "command": "bbox_y_pos_increment_big",
   },
   {
-    "keys": ["shift+ArrowRight"],
+    "keys": ["KeyL"],
     "command": "bbox_y_pos_decrement",
   },
   {
-    "keys": ["ArrowRight"],
+    "keys": ["shift+KeyL"],
     "command": "bbox_y_pos_decrement_big",
   },
   {
-    "keys": [],
+    "keys": ["KeyP"],
     "command": "bbox_z_pos_increment",
   },
   {
-    "keys": [],
+    "keys": ["shift+KeyP"],
     "command": "bbox_z_pos_increment_big",
   },
   {
-    "keys": [],
+    "keys": ["KeyN"],
     "command": "bbox_z_pos_decrement",
   },
   {
-    "keys": [],
+    "keys": ["shift+KeyN"],
     "command": "bbox_z_pos_decrement_big",
   },
 
 
     // size
   {
-    "keys": ["alt+ArrowUp"],
+    "keys": ["alt+KeyK"],
     "command": "bbox_x_size_increment",
   },
   {
-    "keys": ["alt+shift+ArrowUp"],
+    "keys": ["alt+shift+KeyK"],
     "command": "bbox_x_size_increment_big",
   },
   {
-    "keys": ["alt+ArrowDown"],
+    "keys": ["alt+KeyJ"],
     "command": "bbox_x_size_decrement",
   },
   {
-    "keys": ["alt+shift+ArrowDown"],
+    "keys": ["alt+shift+KeyJ"],
     "command": "bbox_x_size_decrement_big",
   },
   {
-    "keys": ["alt+ArrowLeft"],
+    "keys": ["alt+KeyH"],
     "command": "bbox_y_size_increment",
   },
   {
-    "keys": ["alt+shift+ArrowLeft"],
+    "keys": ["alt+shift+KeyH"],
     "command": "bbox_y_size_increment_big",
   },
   {
-    "keys": ["alt+ArrowRight"],
+    "keys": ["alt+KeyL"],
     "command": "bbox_y_size_decrement",
   },
   {
-    "keys": ["alt+shift+ArrowRight"],
+    "keys": ["alt+shift+KeyL"],
     "command": "bbox_y_size_decrement_big",
   },
   {
-    "keys": [],
+    "keys": ["alt+KeyP"],
     "command": "bbox_z_size_increment",
   },
   {
-    "keys": [],
+    "keys": ["alt+shift+KeyP"],
     "command": "bbox_z_size_increment_big",
   },
   {
-    "keys": [],
+    "keys": ["alt+KeyN"],
     "command": "bbox_z_size_decrement",
   },
   {
-    "keys": [],
+    "keys": ["alt+shift+KeyN"],
     "command": "bbox_z_size_decrement_big",
   },
 ]
