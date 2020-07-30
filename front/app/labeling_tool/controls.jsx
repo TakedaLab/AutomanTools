@@ -422,6 +422,12 @@ class Controls extends React.Component {
         }
       );
   }
+
+  // Validate number of frame
+  validateFrameNumber(frameNumber) {
+    return !isNaN(frameNumber) && 0 < frameNumber && frameNumber < this.frameLength;
+  }
+
   loadFrame(num) {
     if (this.state.isLoading) {
       return Promise.reject('duplicate loading');
@@ -432,6 +438,12 @@ class Controls extends React.Component {
       num = this.state.frameNumber;
     }
 
+    // Prefetch next frame if exists
+    const nextFrameNumber = num + Math.max(1, this.state.skipFrameCount);
+    if (this.validateFrameNumber(nextFrameNumber)) {
+      this.props.labelTool.loadBlobURL(nextFrameNumber);
+    }
+
     this.setState({ isLoading: true });
     return this.props.labelTool.loadBlobURL(num)
       .then(() => {
@@ -439,6 +451,11 @@ class Controls extends React.Component {
       })
       // Load previous frame data for wipe
       .then(() => {
+        // FIXME: Load previous frame with skip step like below, but need to fix the previous frame wipe bug first
+        // const previousFrameNumber = num - Math.max(1, this.state.skipFrameCount);
+        // if (this.validateFrameNumber(previousFrameNumber)) {
+        //   return this.props.labelTool.loadBlobURL(previousFrameNumber);
+        // }
         if (num > 1) {
           return this.props.labelTool.loadBlobURL(num - 1);
         }
