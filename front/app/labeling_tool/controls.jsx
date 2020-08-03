@@ -289,6 +289,10 @@ class Controls extends React.Component {
     // *********
   }
 
+  getFixedSkipFrameCount() {
+    return Math.max(1, this.state.skipFrameCount);
+  }
+
   getTools() {
     return this.props.tools;
   }
@@ -451,13 +455,9 @@ class Controls extends React.Component {
       })
       // Load previous frame data for wipe
       .then(() => {
-        // FIXME: Load previous frame with skip step like below, but need to fix the previous frame wipe bug first
-        // const previousFrameNumber = num - Math.max(1, this.state.skipFrameCount);
-        // if (this.validateFrameNumber(previousFrameNumber)) {
-        //   return this.props.labelTool.loadBlobURL(previousFrameNumber);
-        // }
-        if (num > 1) {
-          return this.props.labelTool.loadBlobURL(num - 1);
+        const previousFrameNumber = num - Math.max(1, this.state.skipFrameCount);
+        if (this.validateFrameNumber(previousFrameNumber)) {
+          return this.props.labelTool.loadBlobURL(previousFrameNumber);
         }
       })
       .then(() => {
