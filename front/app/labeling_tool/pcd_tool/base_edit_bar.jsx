@@ -104,7 +104,7 @@ export default class BasePCDEditBar extends React.Component {
               Object ID
             </Typography>
             <TextField
-              onChange={(e) => setObjectId(e.target.value)}
+              onChange={(e) => setObjectId(parseInt(e.target.value))}
               label="Number"
               type="number"
               variant="outlined"
