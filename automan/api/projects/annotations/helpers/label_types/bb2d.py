@@ -38,11 +38,6 @@ class BB2D(object):
             'required': True,
             'empty': False,
         },
-        'object_id': {
-            'type': 'integer',
-            'required': True,
-            'empty': False,
-        },
     }
 
     @staticmethod
