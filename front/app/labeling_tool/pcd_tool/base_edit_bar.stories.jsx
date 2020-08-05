@@ -6,7 +6,7 @@ import { action } from '@storybook/addon-actions'
 import BasePCDEditBar from './base_edit_bar'
 
 const SamplePCDEditBar = (props) => {
-  const [bbox_params, setBboxParams] = React.useState({
+  const [bboxParams, setBboxParams] = React.useState({
         pos: {
           x: 111.111111, y: 111.111111, z: 111.11111,
         },
@@ -15,12 +15,15 @@ const SamplePCDEditBar = (props) => {
         },
         yaw: 111.1111111,
   });
+  const [objectId, setObjectId] = React.useState(10)
   return(
     <BasePCDEditBar
       disabled={props.disabled}
       rotateFront={action('button-click')}
-      box={bbox_params}
+      box={bboxParams}
       setBboxParams={setBboxParams}
+      objectId={objectId}
+      setObjectId={setObjectId}
     />
   )
 }

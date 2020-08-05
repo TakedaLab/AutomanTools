@@ -17,7 +17,8 @@ export default class PCDBBox {
     this.box = {
       pos: new THREE.Vector3(0,0,0),
       size: new THREE.Vector3(0,0,0),
-      yaw: 0
+      yaw: 0,
+      objectId: 0,
     };
     if (content != null) {
       // init parameters
@@ -95,6 +96,7 @@ export default class PCDBBox {
     obj['height_3d'] = this.box.size.y;
     obj['length_3d'] = this.box.size.z;
     obj['rotation_y'] = this.box.yaw;
+    obj['object_id'] = this.box.objectId;
   }
   static fromContentToObj(content) {
     const ret = {
@@ -109,6 +111,9 @@ export default class PCDBBox {
     ret.size.y = +content['height_3d'];
     ret.size.z = +content['length_3d'];
     ret.yaw    = +content['rotation_y'];
+    if(content['object_id']){
+      ret.objectId    = +content['object_id'];
+    }
     return ret;
   }
   fromContent(content) {
@@ -119,6 +124,9 @@ export default class PCDBBox {
     this.box.size.y = +content['height_3d'];
     this.box.size.z = +content['length_3d'];
     this.box.yaw    = +content['rotation_y'];
+    if(content['object_id']){
+      this.box.objectId    = +content['object_id'];
+    }
   }
   initCube() {
     const mesh = new THREE.Mesh(
@@ -214,6 +222,12 @@ export default class PCDBBox {
     if (this.selected) {
       this.pcdTool.setArrow(this);
     }
+  }
+
+  setObjectId(id){
+    const box = this.box;
+    box.objectId = id
+    this.updateParam();
   }
   shiftBboxParams(box_d){
     const box = this.box;
