@@ -70,8 +70,9 @@ export default class BasePCDEditBar extends React.Component {
             <Typography component="h4" variant="body2">
               Position
             </Typography>
-            {["x", "y", "z"].map((item) => 
+            {["x", "y", "z"].map((item, index) => 
             <InputIncremental
+              key={index}
               label={item}
               incrementValue={(d) => this.incrementPos(item, d)}
             />
@@ -81,8 +82,9 @@ export default class BasePCDEditBar extends React.Component {
             <Typography component="h4" variant="body2">
               Size
             </Typography>
-            {["x", "y", "z"].map((item) => 
+            {["x", "y", "z"].map((item, index) => 
             <InputIncremental
+              key={index}
               label={item}
               incrementValue={(d) => this.incrementSize(item, d)}
             />
