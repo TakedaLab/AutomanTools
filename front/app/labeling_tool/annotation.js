@@ -181,7 +181,6 @@ class Annotation extends React.Component {
           resolve();
         },
         e => {
-          console.log(e)
           reject('Annotation save error: ' + e);
         }
       );
