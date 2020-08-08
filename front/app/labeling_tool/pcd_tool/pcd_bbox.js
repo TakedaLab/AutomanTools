@@ -61,6 +61,8 @@ export default class PCDBBox {
     }
     this.label = label;
     this.cube.meshFrame.setColor(label.getColor());
+    this.updateText();
+    this.pcdTool.redrawRequest();
   }
   updateSelected(selected) {
     this.selected = selected;
@@ -74,6 +76,8 @@ export default class PCDBBox {
   }
   updateKlass() {
     this.cube.meshFrame.setColor(this.label.getColor());
+    this.updateText();
+    this.pcdTool.redrawRequest();
   }
   updateParam() {
     this.updateCube(true);
@@ -84,6 +88,7 @@ export default class PCDBBox {
     this.cube.meshFrame.removeFrom(this.pcdTool._scene);
     const group = this.cube.editGroup;
     this.pcdTool._scene.remove(group);
+    this.removeText();
     this.pcdTool.redrawRequest();
     this.pcdTool.pcdBBoxes.delete(this);
   }
@@ -183,7 +188,7 @@ export default class PCDBBox {
   }
   generateTextMesh() {
     // Generate THREE.Mesh from this.box.objectId
-    let color = "#FF3366";
+    let color = "#FFFFFF";
     if (this.label != null) {
       color = this.label.klass.color;
     }
@@ -260,7 +265,7 @@ export default class PCDBBox {
       this.pcdTool.setArrow(this);
     }
   }
-  updateText() {
+  removeText() {
     if (!("text" in this.cube)) {
       return
     }
@@ -273,6 +278,9 @@ export default class PCDBBox {
     this.pcdTool._scene.remove(text);
     text.geometry.dispose();
     text.material.dispose();
+  }
+  updateText() {
+    this.removeText();
     const newText = this.generateTextMesh();
     const box = this.box;
     this.pcdTool._scene.add(newText);
@@ -281,7 +289,6 @@ export default class PCDBBox {
     newText.updateMatrixWorld();
     this.cube.text = newText;
   }
-
   setObjectId(id){
     const box = this.box;
     box.objectId = id
