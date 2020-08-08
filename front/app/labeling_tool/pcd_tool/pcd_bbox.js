@@ -134,7 +134,7 @@ export default class PCDBBox {
 
     const meshFrame = new BoxFrameObject();
     meshFrame.addTo(this.pcdTool._scene);
-    
+
     const group = new THREE.Group();
     const corners = [
       new THREE.Mesh(
@@ -167,6 +167,8 @@ export default class PCDBBox {
     zFace.forEach(m => group.add(m));
     group.visible = false;
     this.pcdTool._scene.add(group);
+    const text = this.generateTextMesh();
+    this.pcdTool._scene.add(text);
 
     this.cube = {
       mesh: mesh,
@@ -174,9 +176,43 @@ export default class PCDBBox {
       corners: corners,
       edges: edges,
       zFace: zFace,
-      editGroup: group
+      editGroup: group,
+      text: text
     };
     this.updateCube(false);
+  }
+  generateTextMesh() {
+    // Generate THREE.Mesh from this.box.objectId
+    let color = "#FF3366";
+    if (this.label != null) {
+      color = this.label.klass.color;
+    }
+    let matDark = new THREE.LineBasicMaterial({
+      color: color,
+      side: THREE.DoubleSide
+    });
+    let matDarkBackSide = new THREE.LineBasicMaterial({
+      color: "#FFFFFF",
+      side: THREE.DoubleSide
+    });
+    matDarkBackSide.color.offsetHSL(0, 0, 0.4);
+    let message = this.box.objectId;
+    let shapes = this.pcdTool._font.generateShapes(message, 1.5);
+    let geometry = new THREE.ShapeBufferGeometry(shapes);
+    geometry.computeBoundingBox();
+    let xMid = -0.6 * (geometry.boundingBox.max.x - geometry.boundingBox.min.x);
+    let yMid = -0.5 * (geometry.boundingBox.max.y - geometry.boundingBox.min.y);
+    geometry.translate(xMid, yMid, 1.0);
+    let text = new THREE.Mesh(geometry, matDark);
+    text.visible = true;
+    let text_backside = new THREE.Mesh(geometry, matDarkBackSide);
+    text_backside.translateX(0.1);
+    text_backside.translateY(-0.12);
+    text_backside.translateZ(-0.01);
+    text.add(text_backside);
+    text.rotation.z = -1.57;
+    text.scale.set(1, 1, 1);
+    return text;
   }
   updateCube(changed) {
     const box = this.box;
@@ -216,12 +252,34 @@ export default class PCDBBox {
     zFace[0].scale.set(box.size.x, box.size.y, w);
     zFace[1].position.set(0, 0, -box.size.z/2-w/2);
     zFace[1].scale.set(box.size.x, box.size.y, w);
+    this.updateText();
     if ( changed ) {
       this.label.isChanged = true;
     }
     if (this.selected) {
       this.pcdTool.setArrow(this);
     }
+  }
+  updateText() {
+    if (!("text" in this.cube)) {
+      return
+    }
+    const text = this.cube.text;
+    text.children.forEach((child) => {
+      text.remove(child);
+      child.geometry.dispose();
+      child.material.dispose();
+    }, text)
+    this.pcdTool._scene.remove(text);
+    text.geometry.dispose();
+    text.material.dispose();
+    const newText = this.generateTextMesh();
+    const box = this.box;
+    this.pcdTool._scene.add(newText);
+    newText.position.set(box.pos.x, box.pos.y, box.pos.z);
+    newText.rotation.z = box.yaw - 1.57;
+    newText.updateMatrixWorld();
+    this.cube.text = newText;
   }
 
   setObjectId(id){
