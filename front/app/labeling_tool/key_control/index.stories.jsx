@@ -29,10 +29,10 @@ class Example extends React.Component{
     addKeyCommand("history_undo", () => this.setState({undo: this.state.undo + 1}))
     document.addEventListener("keydown", (e) => {
       execKeyCommand("history_redo", e, () => this.setState({redo: this.state.redo + 1}))
-      execKeyCommand("change_editMode", e, () => this.setState({editMode: "view"}))
+      execKeyCommand("change_edit_mode", e, () => this.setState({editMode: "view"}))
     })
     document.addEventListener("keyup", (e) => {
-      execKeyCommand("change_editMode", e, () => {
+      execKeyCommand("change_edit_mode", e, () => {
         this.setState({editMode: "edit"})
         })
     })
@@ -56,7 +56,7 @@ class Example extends React.Component{
           </tr>
           <tr>
             <th>editMode</th>
-            <td>shift</td>
+            <td>space</td>
             <td>{editMode}</td>
           </tr>
         </table>

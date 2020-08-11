@@ -1,30 +1,7 @@
-// MODIFIERS
-// ---------
-// - alt
-// - ctrl
-// - meta
-// - shift
-//
-// KEY NAMES
-// ---------
-// Refer keyCode definition
-// https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/keyCode
-//
-// KEY MAPPING
-// -----------
-// `keys` accepts:
-// ((alt|ctrl|meta|shift)\+)*(<keyCode>)
-//
-// MISC
-// ----
-// This key map definition was designed based on Sublime Text Key Bindings:
-// https://www.sublimetext.com/docs/3/key_bindings.html
-//
-
 export const keymapDefault = [
   //view
   {
-    "keys": ["shift+ShiftLeft", "shift+ShiftRight", "ShiftLeft", "ShiftRight"],
+    "keys": ["Space"],
     "command": "change_edit_mode"
   },
 
@@ -116,35 +93,35 @@ export const keymapDefault = [
 
     // size
   {
-    "keys": ["alt+ArrowUp"],
+    "keys": ["alt+shift+ArrowUp"],
     "command": "bbox_x_size_increment",
   },
   {
-    "keys": ["alt+shift+ArrowUp"],
+    "keys": ["alt+ArrowUp"],
     "command": "bbox_x_size_increment_big",
   },
   {
-    "keys": ["alt+ArrowDown"],
+    "keys": ["alt+shift+ArrowDown"],
     "command": "bbox_x_size_decrement",
   },
   {
-    "keys": ["alt+shift+ArrowDown"],
+    "keys": ["alt+ArrowDown"],
     "command": "bbox_x_size_decrement_big",
   },
   {
-    "keys": ["alt+ArrowLeft"],
+    "keys": ["alt+shift+ArrowLeft"],
     "command": "bbox_y_size_increment",
   },
   {
-    "keys": ["alt+shift+ArrowLeft"],
+    "keys": ["alt+ArrowLeft"],
     "command": "bbox_y_size_increment_big",
   },
   {
-    "keys": ["alt+ArrowRight"],
+    "keys": ["alt+shift+ArrowRight"],
     "command": "bbox_y_size_decrement",
   },
   {
-    "keys": ["alt+shift+ArrowRight"],
+    "keys": ["alt+ArrowRight"],
     "command": "bbox_y_size_decrement_big",
   },
   {
