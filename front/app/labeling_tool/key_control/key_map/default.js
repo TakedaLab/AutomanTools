@@ -1,7 +1,7 @@
 export const keymapDefault = [
   //view
   {
-    "keys": ["Space"],
+    "keys": ["shift+ShiftLeft", "shift+ShiftRight", "ShiftLeft", "ShiftRight"],
     "command": "change_edit_mode"
   },
 
@@ -14,7 +14,7 @@ export const keymapDefault = [
     "keys": ["ctrl+shift+KeyZ", "meta+shift+KeyZ"],
     "command": "history_redo"
   },
-  
+
   // frame
   {
     "keys": ["KeyN"],
@@ -28,7 +28,7 @@ export const keymapDefault = [
 
   // bbox control
   {
-    "keys": ["Delete", "Backspace"],
+    "keys": ["Delete", "Backspace", "KeyD"],
     "command": "bbox_remove",
   },
   {

@@ -33,8 +33,8 @@ const IncrementButton = props => {
 const InputIncremental = props => {
   const {
     label = "",
-    increment_small = 0.1,
-    increment_large = 1,
+    increment_small = 0.05,
+    increment_large = 0.5,
     incrementValue,
     ...otherProps
   } = props;
