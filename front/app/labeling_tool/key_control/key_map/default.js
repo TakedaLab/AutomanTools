@@ -1,7 +1,7 @@
 export const keymapDefault = [
   //view
   {
-    "keys": ["shift+ShiftLeft", "shift+ShiftRight", "ShiftLeft", "ShiftRight"],
+    "keys": ["shift+ShiftLeft", "shift+ShiftRight", "ShiftLeft", "ShiftRight", "Space"],
     "command": "change_edit_mode"
   },
 
