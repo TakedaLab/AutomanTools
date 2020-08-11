@@ -17,7 +17,8 @@ export default class PCDBBox {
     this.box = {
       pos: new THREE.Vector3(0,0,0),
       size: new THREE.Vector3(0,0,0),
-      yaw: 0
+      yaw: 0,
+      objectId: 0,
     };
     if (content != null) {
       // init parameters
@@ -60,6 +61,8 @@ export default class PCDBBox {
     }
     this.label = label;
     this.cube.meshFrame.setColor(label.getColor());
+    this.updateText();
+    this.pcdTool.redrawRequest();
   }
   updateSelected(selected) {
     this.selected = selected;
@@ -73,6 +76,8 @@ export default class PCDBBox {
   }
   updateKlass() {
     this.cube.meshFrame.setColor(this.label.getColor());
+    this.updateText();
+    this.pcdTool.redrawRequest();
   }
   updateParam() {
     this.updateCube(true);
@@ -83,6 +88,7 @@ export default class PCDBBox {
     this.cube.meshFrame.removeFrom(this.pcdTool._scene);
     const group = this.cube.editGroup;
     this.pcdTool._scene.remove(group);
+    this.removeText();
     this.pcdTool.redrawRequest();
     this.pcdTool.pcdBBoxes.delete(this);
   }
@@ -95,6 +101,7 @@ export default class PCDBBox {
     obj['height_3d'] = this.box.size.y;
     obj['length_3d'] = this.box.size.z;
     obj['rotation_y'] = this.box.yaw;
+    obj['object_id'] = this.box.objectId;
   }
   static fromContentToObj(content) {
     const ret = {
@@ -109,6 +116,9 @@ export default class PCDBBox {
     ret.size.y = +content['height_3d'];
     ret.size.z = +content['length_3d'];
     ret.yaw    = +content['rotation_y'];
+    if(content['object_id']){
+      ret.objectId    = +content['object_id'];
+    }
     return ret;
   }
   fromContent(content) {
@@ -119,6 +129,9 @@ export default class PCDBBox {
     this.box.size.y = +content['height_3d'];
     this.box.size.z = +content['length_3d'];
     this.box.yaw    = +content['rotation_y'];
+    if(content['object_id']){
+      this.box.objectId    = +content['object_id'];
+    }
   }
   initCube() {
     const mesh = new THREE.Mesh(
@@ -126,7 +139,7 @@ export default class PCDBBox {
 
     const meshFrame = new BoxFrameObject();
     meshFrame.addTo(this.pcdTool._scene);
-    
+
     const group = new THREE.Group();
     const corners = [
       new THREE.Mesh(
@@ -159,6 +172,8 @@ export default class PCDBBox {
     zFace.forEach(m => group.add(m));
     group.visible = false;
     this.pcdTool._scene.add(group);
+    const text = this.generateTextMesh();
+    this.pcdTool._scene.add(text);
 
     this.cube = {
       mesh: mesh,
@@ -166,9 +181,43 @@ export default class PCDBBox {
       corners: corners,
       edges: edges,
       zFace: zFace,
-      editGroup: group
+      editGroup: group,
+      text: text
     };
     this.updateCube(false);
+  }
+  generateTextMesh() {
+    // Generate THREE.Mesh from this.box.objectId
+    let color = "#FFFFFF";
+    if (this.label != null) {
+      color = this.label.klass.color;
+    }
+    let matDark = new THREE.LineBasicMaterial({
+      color: color,
+      side: THREE.DoubleSide
+    });
+    let matDarkBackSide = new THREE.LineBasicMaterial({
+      color: "#FFFFFF",
+      side: THREE.DoubleSide
+    });
+    matDarkBackSide.color.offsetHSL(0, 0, 0.4);
+    let message = this.box.objectId;
+    let shapes = this.pcdTool._font.generateShapes(message, 1.5);
+    let geometry = new THREE.ShapeBufferGeometry(shapes);
+    geometry.computeBoundingBox();
+    let xMid = -0.6 * (geometry.boundingBox.max.x - geometry.boundingBox.min.x);
+    let yMid = -0.5 * (geometry.boundingBox.max.y - geometry.boundingBox.min.y);
+    geometry.translate(xMid, yMid, 1.0);
+    let text = new THREE.Mesh(geometry, matDark);
+    text.visible = true;
+    let text_backside = new THREE.Mesh(geometry, matDarkBackSide);
+    text_backside.translateX(0.1);
+    text_backside.translateY(-0.12);
+    text_backside.translateZ(-0.01);
+    text.add(text_backside);
+    text.rotation.z = -1.57;
+    text.scale.set(1, 1, 1);
+    return text;
   }
   updateCube(changed) {
     const box = this.box;
@@ -208,12 +257,42 @@ export default class PCDBBox {
     zFace[0].scale.set(box.size.x, box.size.y, w);
     zFace[1].position.set(0, 0, -box.size.z/2-w/2);
     zFace[1].scale.set(box.size.x, box.size.y, w);
+    this.updateText();
     if ( changed ) {
       this.label.isChanged = true;
     }
     if (this.selected) {
       this.pcdTool.setArrow(this);
     }
+  }
+  removeText() {
+    if (!("text" in this.cube)) {
+      return
+    }
+    const text = this.cube.text;
+    text.children.forEach((child) => {
+      text.remove(child);
+      child.geometry.dispose();
+      child.material.dispose();
+    }, text)
+    this.pcdTool._scene.remove(text);
+    text.geometry.dispose();
+    text.material.dispose();
+  }
+  updateText() {
+    this.removeText();
+    const newText = this.generateTextMesh();
+    const box = this.box;
+    this.pcdTool._scene.add(newText);
+    newText.position.set(box.pos.x, box.pos.y, box.pos.z);
+    newText.rotation.z = box.yaw - 1.57;
+    newText.updateMatrixWorld();
+    this.cube.text = newText;
+  }
+  setObjectId(id){
+    const box = this.box;
+    box.objectId = id
+    this.updateParam();
   }
   shiftBboxParams(box_d){
     const box = this.box;

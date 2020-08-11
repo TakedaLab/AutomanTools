@@ -122,6 +122,7 @@ class PCDLabelTool extends React.Component {
     endPos: null,
     box: null
   };
+  _font = null;
 
   // public
   name = 'PCD';
@@ -147,6 +148,7 @@ class PCDLabelTool extends React.Component {
     this._initEvent();
     this._initArrow();
     this._initEditObj();
+    this._initFont();
 
     this._animate();
   }
@@ -515,6 +517,22 @@ class PCDLabelTool extends React.Component {
     group.visible = false;
     this._editArrowGroup = group;
     this._scene.add(group);
+  }
+  _initFont() {
+    let promises = [];
+    promises.push(
+      new Promise((resolve, reject) => {
+        $.getJSON('/static/fonts/helvetiker_regular.typeface.json', function(
+          data
+        ) {
+          resolve(data);
+        });
+      }).then(data => {
+        let font_loader = new THREE.FontLoader();
+        this._font = font_loader.parse(data);
+      })
+    );
+    return promises;
   }
   _animate() {
     const id = window.requestAnimationFrame(()=>{this._animate()});

@@ -9,6 +9,7 @@ import {
   Input,
   Grid,
   Slider,
+  TextField,
   Typography
 } from '@material-ui/core';
 
@@ -47,7 +48,7 @@ export default class BasePCDEditBar extends React.Component {
     box_new.size[label] += d
     setBboxParams(box_new)
   }
-  incrementYaw= (d) => {
+  incrementYaw = (d) => {
     const { box, setBboxParams } = this.props;
     var box_new = {...box}
     box_new.yaw += d
@@ -56,65 +57,63 @@ export default class BasePCDEditBar extends React.Component {
 
   render() {
     const {
-      rotateFront,
-      disabled = false,
-      moveSelectedCube = () => {},
-      box = {
-        pos: {
-          x: 0, y: 0, z: 0,
-        },
-        size: {
-          x: 0, y: 0, z: 0,
-        },
-        yaw: 0,
-      }
+      setObjectId,
+      objectId
     } = this.props;
     return (
       <div>
-        <ExpansionPanel defaultExpanded={true}>
-          <ExpansionPanelSummary
-            expandIcon={<ExpandMore />}
-          >
-            <Typography component="h3" variant="body1">
-              Bounding Box
+        <Typography component="h3" variant="body1">
+          Bounding Box
+        </Typography>
+        <div style={{width: "100%"}}>
+          <div style={{marginBottom: "32px"}}>
+            <Typography component="h4" variant="body2">
+              Position
             </Typography>
-          </ExpansionPanelSummary>
-          <ExpansionPanelDetails>
-            <div style={{width: "100%"}}>
-              <div style={{marginBottom: "32px"}}>
-                <Typography component="h4" variant="body1">
-                  Position
-                </Typography>
-                {["x", "y", "z"].map((item) => 
-                  <InputIncremental
-                    label={item}
-                    incrementValue={(d) => this.incrementPos(item, d)}
-                  />
-                )}
-              </div>
-              <div style={{marginBottom: "32px"}}>
-                <Typography component="h4" variant="body1">
-                  Size
-                </Typography>
-                {["x", "y", "z"].map((item) => 
-                  <InputIncremental
-                    label={item}
-                    incrementValue={(d) => this.incrementSize(item, d)}
-                  />
-                )}
-              </div>
-              <div style={{marginBottom: "32px"}}>
-                <Typography component="h4" variant="body1">
-                  Yaw
-                </Typography>
-                <InputIncremental
-                  label={"D"}
-                  incrementValue={(d) => this.incrementYaw(d)}
-                />
-              </div>
-            </div>
-          </ExpansionPanelDetails>
-        </ExpansionPanel>
+            {["x", "y", "z"].map((item, index) => 
+            <InputIncremental
+              key={index}
+              label={item}
+              incrementValue={(d) => this.incrementPos(item, d)}
+            />
+            )}
+          </div>
+          <div style={{marginBottom: "32px"}}>
+            <Typography component="h4" variant="body2">
+              Size
+            </Typography>
+            {["x", "y", "z"].map((item, index) => 
+            <InputIncremental
+              key={index}
+              label={item}
+              incrementValue={(d) => this.incrementSize(item, d)}
+            />
+            )}
+          </div>
+          <div style={{marginBottom: "32px"}}>
+            <Typography component="h4" variant="body2">
+              Yaw
+            </Typography>
+            <InputIncremental
+              label={"D"}
+              incrementValue={(d) => this.incrementYaw(d)}
+            />
+          </div>
+          <div style={{marginBottom: "32px"}}>
+            <Typography component="h4" variant="body2">
+              Object ID
+            </Typography>
+            <TextField
+              onChange={(e) => setObjectId(parseInt(e.target.value))}
+              label="Number"
+              type="number"
+              variant="outlined"
+              size="small"
+              value={objectId}
+            />
+
+          </div>
+        </div>
       </div>
     );
   }

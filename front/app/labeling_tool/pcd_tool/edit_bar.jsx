@@ -25,6 +25,14 @@ class PCDEditBar extends React.Component {
     var changedLabel = bbox.label.createHistory(null)
     changedLabel.addHistory()
   }
+  setObjectId = (id) => {
+    const bbox = this.props.bbox;
+    bbox.setObjectId(id)
+    bbox.updateSelected(true)
+    var changedLabel = bbox.label.createHistory(null)
+    changedLabel.addHistory()
+    this.forceUpdate() // necessary to update input value
+  }
   render() {
     const bbox = this.props.bbox;
     if(bbox == null){
@@ -33,28 +41,11 @@ class PCDEditBar extends React.Component {
     return (
       <div>
         <Divider />
-        <Grid container>
-          <Grid item xs={12}>
-            Rotate Front
-          </Grid>
-          <Grid item xs={6}>
-            <Button
-              onClick={() => bbox.rotateFront(1)}
-            >
-              <RotateLeft />
-            </Button>
-          </Grid>
-          <Grid item xs={6}>
-            <Button
-              onClick={() => bbox.rotateFront(-1)}
-            >
-              <RotateRight />
-            </Button>
-          </Grid>
-        </Grid>
         <BasePCDEditBar
           box={bbox.box}
           setBboxParams={this.setBboxParams}
+          setObjectId={this.setObjectId}
+          objectId={bbox.box.objectId}
         />
       </div>
     );

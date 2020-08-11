@@ -37,7 +37,7 @@ class BB2D(object):
             'type': 'integer',
             'required': True,
             'empty': False,
-        }
+        },
     }
 
     @staticmethod
