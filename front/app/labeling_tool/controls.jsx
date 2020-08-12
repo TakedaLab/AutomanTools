@@ -134,6 +134,7 @@ class Controls extends React.Component {
         if (this.state.isLoading) {
           return;
         }
+
         const targetLabel = this.props.annotation.getTarget()
         if(targetLabel){
           if(targetLabel.bbox){
@@ -200,6 +201,10 @@ class Controls extends React.Component {
         })
         execKeyCommand("bbox_copy", e.originalEvent, () => this.props.clipboard.copy(null))
         execKeyCommand("bbox_paste", e.originalEvent, () => this.props.clipboard.paste())
+
+        execKeyCommand("select_next_bbox", e.originalEvent, () => {
+          this.props.annotation.getNextTarget()
+        })
 
         this.getTool().handles.keydown(e);
       })

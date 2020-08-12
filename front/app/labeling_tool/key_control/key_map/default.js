@@ -39,6 +39,10 @@ export const keymapDefault = [
     "keys": ["ctrl+KeyV", "meta+KeyV"],
     "command": "bbox_paste",
   },
+  {
+    "keys": ["KeyJ"],
+    "command": "select_next_bbox",
+  },
 
   // move
   {

@@ -189,7 +189,13 @@ class Annotation extends React.Component {
   getTarget() {
     return this.props.targetLabel;
   }
-  setTarget(tgt) {
+  getNextTarget() {
+    if(this.props.targetLabel){
+      const curInstanceId = this.props.targetLabel.instanceId
+      console.log("curInstanceId", curInstanceId)
+    }
+  }
+  setTarget(tgt) { /** Label */ 
     let next = this.getLabel(tgt),
       prev = this.props.targetLabel;
     if (prev != null && next != null && next.id === prev.id) {
