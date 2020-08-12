@@ -465,7 +465,11 @@ class PCDLabelTool extends React.Component {
     zPlane.rotation.order = 'ZXY';
     this._zPlane = zPlane;
 
-
+    // Register key commands
+    addKeyCommand("reset_camera", () => {
+      this._initCamera();
+      this.redrawRequest();
+    });
 
     // mouse events
     this._main.contextmenu((e) => {
