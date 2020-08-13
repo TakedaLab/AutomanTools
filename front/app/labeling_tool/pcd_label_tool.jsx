@@ -247,7 +247,8 @@ class PCDLabelTool extends React.Component {
         this.modeChangeRequest('view');
       })
       execKeyCommand("reset_camera", e.originalEvent, () => {
-        this._initCamera();
+        // Reset camera potision to when saveState called
+        this._cameraControls.reset();
         this.redrawRequest();
       });
     },
@@ -439,6 +440,8 @@ class PCDLabelTool extends React.Component {
 
     this._camera = camera;
     this._cameraControls = controls;
+    // Save camera parameters for later reset
+    this._cameraControls.saveState();
   }
   _initDom() {
     const wrapper = $(this._wrapperElement.current);
