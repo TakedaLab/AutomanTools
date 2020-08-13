@@ -8,6 +8,10 @@ export const keymapDefault = [
     "keys": ["Digit0"],
     "command": "reset_camera",
   },
+  {
+    "keys": ["Digit9"],
+    "command": "rotate_camera",
+  },
 
   // history
   {
