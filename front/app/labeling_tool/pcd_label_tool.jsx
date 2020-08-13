@@ -12,7 +12,7 @@ import BoxFrameObject from './pcd_tool/box_frame_object';
 import PCDBBox from './pcd_tool/pcd_bbox';
 import EditBar from './pcd_tool/edit_bar';
 
-import { addKeyCommand, execKeyCommand } from './key_control/index'
+import { execKeyCommand } from './key_control/index'
 
 // 3d eidt arrow
 const arrowColors = [0xff0000, 0x00ff00, 0x0000ff],
@@ -246,6 +246,11 @@ class PCDLabelTool extends React.Component {
       execKeyCommand("change_edit_mode", e.originalEvent, () => {
         this.modeChangeRequest('view');
       })
+      execKeyCommand("reset_camera", e.originalEvent, () => {
+        // Reset camera potision to when saveState called
+        this._cameraControls.reset();
+        this.redrawRequest();
+      });
     },
     keyup: (e) => {
       execKeyCommand("change_edit_mode", e.originalEvent, () => {
@@ -435,6 +440,8 @@ class PCDLabelTool extends React.Component {
 
     this._camera = camera;
     this._cameraControls = controls;
+    // Save camera parameters for later reset
+    this._cameraControls.saveState();
   }
   _initDom() {
     const wrapper = $(this._wrapperElement.current);
@@ -464,8 +471,6 @@ class PCDLabelTool extends React.Component {
     zPlane.rotation.x = Math.PI / 2;
     zPlane.rotation.order = 'ZXY';
     this._zPlane = zPlane;
-
-
 
     // mouse events
     this._main.contextmenu((e) => {

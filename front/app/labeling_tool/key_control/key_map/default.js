@@ -4,6 +4,10 @@ export const keymapDefault = [
     "keys": ["shift+ShiftLeft", "shift+ShiftRight", "ShiftLeft", "ShiftRight", "Space"],
     "command": "change_edit_mode"
   },
+  {
+    "keys": ["Digit0"],
+    "command": "reset_camera",
+  },
 
   // history
   {
