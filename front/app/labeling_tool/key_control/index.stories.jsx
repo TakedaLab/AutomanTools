@@ -4,7 +4,7 @@ import { withKnobs, text, boolean, button } from "@storybook/addon-knobs";
 import { action } from '@storybook/addon-actions'
 
 import { keymap as keymapObject } from './key_map/index'
-import { addKeyCommand, execKeyCommand } from './index'
+import { execKeyCommand } from './index'
 
 import {
   Button,
@@ -26,8 +26,8 @@ class Example extends React.Component{
     editMode: "edit"
   }
   componentDidMount(){
-    addKeyCommand("history_undo", () => this.setState({undo: this.state.undo + 1}))
     document.addEventListener("keydown", (e) => {
+      execKeyCommand("history_undo", e, () => this.setState({undo: this.state.undo + 1}))
       execKeyCommand("history_redo", e, () => this.setState({redo: this.state.redo + 1}))
       execKeyCommand("change_edit_mode", e, () => this.setState({editMode: "view"}))
     })
