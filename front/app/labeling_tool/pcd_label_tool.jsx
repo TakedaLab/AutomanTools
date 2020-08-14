@@ -271,6 +271,21 @@ class PCDLabelTool extends React.Component {
         this._cameraControls.update();
         this.redrawRequest();
       });
+
+      // adding templates	
+      execKeyCommand("template_add_kcar", e.originalEvent, () => {	
+        const pcdBBox = this.createBBox({	
+          'x_3d': 0,	
+          'y_3d': 0,	
+          'z_3d': -1.35,	
+          'width_3d': 3.4,	
+          'height_3d': 1.5,	
+          'length_3d': 1.8,	
+          'rotation_y': 0,	
+        });	
+        this.addLabelOfBBox(pcdBBox);
+        this.redrawRequest();	
+      });
     },
     keyup: (e) => {
       execKeyCommand("change_edit_mode", e.originalEvent, () => {
@@ -307,6 +322,13 @@ class PCDLabelTool extends React.Component {
   }
   createBBox(content) {
     return new PCDBBox(this, content);
+  }
+  addLabelOfBBox(pcdBBox) {
+    const addedLabel = this.props.controls.createLabel(	
+      this.props.controls.getTargetKlass(),	
+      {[this.candidateId]: pcdBBox}	
+    );
+    return addedLabel;
   }
   disposeWipeBBox(bbox) {
     bbox.meshFrame.removeFrom(this._wipeScene);
