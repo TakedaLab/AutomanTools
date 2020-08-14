@@ -92,7 +92,6 @@ class PCDLabelTool extends React.Component {
   _renderer = null;
   _camera = null;
   _cameraControls = null;
-  _camera_rotate_state = 0;
   //cameraExMat = new THREE.Matrix4();
   // PCD objects
   _pcdLoader = null;
@@ -251,30 +250,24 @@ class PCDLabelTool extends React.Component {
         // Reset camera potision to when saveState called
         this._cameraControls.reset();
         this.redrawRequest();
-
-        // Reset camera rotate state
-        this._camera_rotate_state = 0;
       });
-      execKeyCommand("rotate_camera", e.originalEvent, () => {
-        switch (this._camera_rotate_state) {
-          case 0:
-            this._camera.position.set(-1000, 0, 0);
-            this._camera_rotate_state = 1;
-            break;
-          case 1:
-            this._camera.position.set(0, 1000, 0);
-            this._camera_rotate_state = 2;
-            break;
-          case 2:
-            this._camera.position.set(1000, 0, 0);
-            this._camera_rotate_state = 3;
-            break;
-          case 3:
-            this._camera.position.set(0, -1000, 0);
-            this._camera_rotate_state = 0;
-            break;
-        }
-
+      execKeyCommand("rotate_camera_rear", e.originalEvent, () => {
+        this._camera.position.set(-1000, 0, 0);
+        this._cameraControls.update();
+        this.redrawRequest();
+      });
+      execKeyCommand("rotate_camera_left", e.originalEvent, () => {
+        this._camera.position.set(0, 1000, 0);
+        this._cameraControls.update();
+        this.redrawRequest();
+      });
+      execKeyCommand("rotate_camera_front", e.originalEvent, () => {
+        this._camera.position.set(1000, 0, 0);
+        this._cameraControls.update();
+        this.redrawRequest();
+      });
+      execKeyCommand("rotate_camera_right", e.originalEvent, () => {
+        this._camera.position.set(0, -1000, 0);
         this._cameraControls.update();
         this.redrawRequest();
       });
