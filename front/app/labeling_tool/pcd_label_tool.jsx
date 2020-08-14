@@ -251,6 +251,26 @@ class PCDLabelTool extends React.Component {
         this._cameraControls.reset();
         this.redrawRequest();
       });
+      execKeyCommand("rotate_camera_rear", e.originalEvent, () => {
+        this._camera.position.set(-1000, 0, 0);
+        this._cameraControls.update();
+        this.redrawRequest();
+      });
+      execKeyCommand("rotate_camera_left", e.originalEvent, () => {
+        this._camera.position.set(0, 1000, 0);
+        this._cameraControls.update();
+        this.redrawRequest();
+      });
+      execKeyCommand("rotate_camera_front", e.originalEvent, () => {
+        this._camera.position.set(1000, 0, 0);
+        this._cameraControls.update();
+        this.redrawRequest();
+      });
+      execKeyCommand("rotate_camera_right", e.originalEvent, () => {
+        this._camera.position.set(0, -1000, 0);
+        this._cameraControls.update();
+        this.redrawRequest();
+      });
     },
     keyup: (e) => {
       execKeyCommand("change_edit_mode", e.originalEvent, () => {
