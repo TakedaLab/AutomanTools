@@ -25,12 +25,6 @@ export const keymapDefault = [
     "command": "rotate_camera_right",
   },
 
-  // templates
-  {
-    "keys": ["shift+Digit1"],
-    "command": "template_add_kcar",
-  },
-
   // history
   {
     "keys": ["ctrl+KeyZ", "meta+KeyZ"],

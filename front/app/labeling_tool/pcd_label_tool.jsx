@@ -271,24 +271,6 @@ class PCDLabelTool extends React.Component {
         this._cameraControls.update();
         this.redrawRequest();
       });
-
-      // adding templates
-      execKeyCommand("template_add_kcar", e.originalEvent, () => {
-        const pcdBBox = new PCDBBox(this, {
-          'x_3d': 0,
-          'y_3d': 0,
-          'z_3d': -1.35,
-          'width_3d': 3.4,
-          'height_3d': 1.5,
-          'length_3d': 1.8,
-          'rotation_y': 0,
-        });
-        this.props.controls.createLabel(
-          this.props.controls.getTargetKlass(),
-          {[this.candidateId]: pcdBBox}
-        );
-        this.redrawRequest();
-      });
     },
     keyup: (e) => {
       execKeyCommand("change_edit_mode", e.originalEvent, () => {
