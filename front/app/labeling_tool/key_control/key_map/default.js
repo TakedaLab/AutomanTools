@@ -30,6 +30,30 @@ export const keymapDefault = [
     "keys": ["alt+Digit1"],	
     "command": "template_add_kcar",	
   },
+  {	
+    "keys": ["alt+Digit2"],	
+    "command": "template_add_sedan",	
+  },
+  {	
+    "keys": ["alt+Digit3"],	
+    "command": "template_add_minivan",	
+  },
+  {	
+    "keys": ["alt+Digit4"],	
+    "command": "template_add_small_sized_track",	
+  },
+  {	
+    "keys": ["alt+Digit5"],	
+    "command": "template_add_middle_sized_track",	
+  },
+  {	
+    "keys": ["alt+Digit6"],	
+    "command": "template_add_large_sized_track",	
+  },
+  {	
+    "keys": ["alt+Digit7"],	
+    "command": "template_add_mortorcycle",	
+  },
 
   // history
   {
