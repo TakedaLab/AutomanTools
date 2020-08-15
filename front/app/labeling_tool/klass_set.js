@@ -106,7 +106,7 @@ class KlassSet extends React.Component {
             <div>
               <div
                 className={classes.colorPane}
-                style={{ backgroundColor: klass.color }}
+                style={{ backgroundColor: klass.color, margin: 'auto' }}
               />
               {klass.name}
             </div>
