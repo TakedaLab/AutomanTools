@@ -43,6 +43,10 @@ export const keymapDefault = [
     "keys": ["KeyJ"],
     "command": "select_next_bbox",
   },
+  {
+    "keys": ["KeyK"],
+    "command": "select_prev_bbox",
+  },
 
   // move
   {

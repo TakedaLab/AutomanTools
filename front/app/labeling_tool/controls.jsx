@@ -205,6 +205,9 @@ class Controls extends React.Component {
         execKeyCommand("select_next_bbox", e.originalEvent, () => {
           this.props.annotation.getNextTarget()
         })
+        execKeyCommand("select_prev_bbox", e.originalEvent, () => {
+          this.props.annotation.getPrevTarget()
+        })
 
         this.getTool().handles.keydown(e);
       })
