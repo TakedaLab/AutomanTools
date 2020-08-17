@@ -208,6 +208,9 @@ class Controls extends React.Component {
         execKeyCommand("select_prev_bbox", e.originalEvent, () => {
           this.props.annotation.getPrevTarget()
         })
+        execKeyCommand("deselect_bbox", e.originalEvent, () => {
+          this.props.annotation.setTarget(null)
+        })
 
         this.getTool().handles.keydown(e);
       })

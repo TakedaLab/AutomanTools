@@ -47,6 +47,10 @@ export const keymapDefault = [
     "keys": ["KeyK"],
     "command": "select_prev_bbox",
   },
+  {
+    "keys": ["Escape"],
+    "command": "deselect_bbox",
+  },
 
   // move
   {
