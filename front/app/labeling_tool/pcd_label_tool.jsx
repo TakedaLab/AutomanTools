@@ -12,7 +12,7 @@ import BoxFrameObject from './pcd_tool/box_frame_object';
 import PCDBBox from './pcd_tool/pcd_bbox';
 import EditBar from './pcd_tool/edit_bar';
 
-import { addKeyCommand, execKeyCommand } from './key_control/index'
+import { execKeyCommand } from './key_control/index'
 
 // 3d eidt arrow
 const arrowColors = [0xff0000, 0x00ff00, 0x0000ff],
@@ -246,6 +246,124 @@ class PCDLabelTool extends React.Component {
       execKeyCommand("change_edit_mode", e.originalEvent, () => {
         this.modeChangeRequest('view');
       })
+      execKeyCommand("reset_camera", e.originalEvent, () => {
+        // Reset camera potision to when saveState called
+        this._cameraControls.reset();
+        this.redrawRequest();
+      });
+      execKeyCommand("rotate_camera_rear", e.originalEvent, () => {
+        this._camera.position.set(-1000, 0, 0);
+        this._cameraControls.update();
+        this.redrawRequest();
+      });
+      execKeyCommand("rotate_camera_left", e.originalEvent, () => {
+        this._camera.position.set(0, 1000, 0);
+        this._cameraControls.update();
+        this.redrawRequest();
+      });
+      execKeyCommand("rotate_camera_front", e.originalEvent, () => {
+        this._camera.position.set(1000, 0, 0);
+        this._cameraControls.update();
+        this.redrawRequest();
+      });
+      execKeyCommand("rotate_camera_right", e.originalEvent, () => {
+        this._camera.position.set(0, -1000, 0);
+        this._cameraControls.update();
+        this.redrawRequest();
+      });
+
+      // adding templates	
+      execKeyCommand("template_add_kcar", e.originalEvent, () => {	
+        const pcdBBox = this.createBBox({	
+          'x_3d': 0,
+          'y_3d': 0,
+          'z_3d': -1.35,
+          'width_3d': 3.4,
+          'height_3d': 1.5,
+          'length_3d': 1.8,
+          'rotation_y': 0,
+        });	
+        this.addLabelOfBBox(pcdBBox);
+        this.redrawRequest();	
+      });
+      execKeyCommand("template_add_sedan", e.originalEvent, () => {	
+        const pcdBBox = this.createBBox({	
+          'x_3d': 0,
+          'y_3d': 0,
+          'z_3d': -1.35,
+          'width_3d': 4.5,
+          'height_3d': 1.7,
+          'length_3d': 1.5,
+          'rotation_y': 0,
+        });	
+        this.addLabelOfBBox(pcdBBox);
+        this.redrawRequest();	
+      });
+      execKeyCommand("template_add_minivan", e.originalEvent, () => {	
+        const pcdBBox = this.createBBox({	
+          'x_3d': 0,
+          'y_3d': 0,
+          'z_3d': -1.35,
+          'width_3d': 4.8,
+          'height_3d': 1.8,
+          'length_3d': 1.8,
+          'rotation_y': 0,
+        });	
+        this.addLabelOfBBox(pcdBBox);
+        this.redrawRequest();	
+      });
+      execKeyCommand("template_add_small_sized_track", e.originalEvent, () => {	
+        const pcdBBox = this.createBBox({	
+          'x_3d': 0,
+          'y_3d': 0,
+          'z_3d': -1.35,
+          'width_3d': 3.4,
+          'height_3d': 1.5,
+          'length_3d': 1.8,
+          'rotation_y': 0,
+        });	
+        this.addLabelOfBBox(pcdBBox);
+        this.redrawRequest();	
+      });
+      execKeyCommand("template_add_middle_sized_track", e.originalEvent, () => {	
+        const pcdBBox = this.createBBox({	
+          'x_3d': 0,
+          'y_3d': 0,
+          'z_3d': -1.35,
+          'width_3d': 4.5,
+          'height_3d': 1.7,
+          'length_3d': 1.8,
+          'rotation_y': 0,
+        });	
+        this.addLabelOfBBox(pcdBBox);
+        this.redrawRequest();	
+      });
+      execKeyCommand("template_add_large_sized_track", e.originalEvent, () => {	
+        const pcdBBox = this.createBBox({	
+          'x_3d': 0,
+          'y_3d': 0,
+          'z_3d': -1.35,
+          'width_3d': 8,
+          'height_3d': 2.2,
+          'length_3d': 3.5,
+          'rotation_y': 0,
+        });	
+        this.addLabelOfBBox(pcdBBox);
+        this.redrawRequest();	
+      });
+      execKeyCommand("template_add_mortorcycle", e.originalEvent, () => {	
+        const pcdBBox = this.createBBox({	
+          'x_3d': 0,
+          'y_3d': 0,
+          'z_3d': -1.35,
+          'width_3d': 2.0,
+          'height_3d': 0.8,
+          'length_3d': 1.5,
+          'rotation_y': 0,
+        });	
+        this.addLabelOfBBox(pcdBBox);
+        this.redrawRequest();	
+      });
     },
     keyup: (e) => {
       execKeyCommand("change_edit_mode", e.originalEvent, () => {
@@ -282,6 +400,13 @@ class PCDLabelTool extends React.Component {
   }
   createBBox(content) {
     return new PCDBBox(this, content);
+  }
+  addLabelOfBBox(pcdBBox) {
+    const addedLabel = this.props.controls.createLabel(	
+      this.props.controls.getTargetKlass(),	
+      {[this.candidateId]: pcdBBox}	
+    );
+    return addedLabel;
   }
   disposeWipeBBox(bbox) {
     bbox.meshFrame.removeFrom(this._wipeScene);
@@ -435,6 +560,8 @@ class PCDLabelTool extends React.Component {
 
     this._camera = camera;
     this._cameraControls = controls;
+    // Save camera parameters for later reset
+    this._cameraControls.saveState();
   }
   _initDom() {
     const wrapper = $(this._wrapperElement.current);
@@ -464,8 +591,6 @@ class PCDLabelTool extends React.Component {
     zPlane.rotation.x = Math.PI / 2;
     zPlane.rotation.order = 'ZXY';
     this._zPlane = zPlane;
-
-
 
     // mouse events
     this._main.contextmenu((e) => {
