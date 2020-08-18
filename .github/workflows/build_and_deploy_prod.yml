@@ -1,0 +1,50 @@
+name: Build, Push and Deploy (Production)
+
+on:
+  push:
+    branches:
+      - master-hdl
+
+jobs:
+  build:
+    runs-on: ubuntu-18.04
+    timeout-minutes: 300
+
+    steps:
+      - uses: actions/checkout@v1
+
+      - name: Build image
+        env:
+          TAG: ${{ github.ref }}
+        shell: bash
+        run: |
+          docker build -t hdwlab/automan-tools:${TAG##*/} .
+
+      - name: Push to DockerHub
+        env:
+          TAG: ${{ github.ref }}
+          DOCKER_USER: ${{ secrets.DOCKER_USER }}
+          DOCKER_PASS: ${{ secrets.DOCKER_PASS }}
+        shell: bash
+        run: |
+          docker login -u ${DOCKER_USER} -p ${DOCKER_PASS} \
+          && docker push hdwlab/automan-tools:${TAG##*/}
+
+  deploy-prod:
+    runs-on: ubuntu-18.04
+    timeout-minutes: 30
+    needs: build
+    steps:
+      - name: Deploy to cluster
+        uses: steebchen/kubectl@master
+        env:
+          KUBE_CONFIG_DATA: ${{ secrets.KUBE_PROD_CONFIG_DATA }}
+        with:
+          args: '"-n automan-tools rollout restart deployment/automan-labeling-app"'
+      - name: Verify deployment
+        uses: steebchen/kubectl@master
+        env:
+          KUBE_CONFIG_DATA: ${{ secrets.KUBE_PROD_CONFIG_DATA }}
+          KUBECTL_VERSION: "1.17"
+        with:
+          args: '"-n automan-tools rollout status deployment/automan-labeling-app"'
