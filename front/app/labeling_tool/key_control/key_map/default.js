@@ -89,6 +89,18 @@ export const keymapDefault = [
     "keys": ["ctrl+KeyV", "meta+KeyV"],
     "command": "bbox_paste",
   },
+  {
+    "keys": ["KeyJ"],
+    "command": "select_next_bbox",
+  },
+  {
+    "keys": ["KeyK"],
+    "command": "select_prev_bbox",
+  },
+  {
+    "keys": ["Escape"],
+    "command": "deselect_bbox",
+  },
 
   // move
   {

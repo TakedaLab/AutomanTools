@@ -189,7 +189,33 @@ class Annotation extends React.Component {
   getTarget() {
     return this.props.targetLabel;
   }
-  setTarget(tgt) {
+  getNthTarget(n){
+    const labels = new Map(this.state.labels)
+    const targetLabel = this.props.targetLabel
+    const idList = Array.from(labels.keys())
+    if(idList.length < 1){
+      return(null)
+    }
+    if(n > 0){
+      var nextLabelIndex = (idList.length + n - 1) % idList.length
+    }else{
+      var nextLabelIndex = (idList.length + n) % idList.length
+    }
+    if(targetLabel){
+      const curLabelIndex = idList.findIndex(x => x === targetLabel.id)
+      nextLabelIndex = (idList.length + curLabelIndex + n) % (idList.length)
+    }
+    return labels.get(idList[nextLabelIndex])
+  }
+  getPrevTarget() {
+    const prevTarget = this.getNthTarget(-1)
+    this.setTarget(prevTarget)
+  }
+  getNextTarget() {
+    const nextTarget = this.getNthTarget(1)
+    this.setTarget(nextTarget)
+  }
+  setTarget(tgt) { /** Label */ 
     let next = this.getLabel(tgt),
       prev = this.props.targetLabel;
     if (prev != null && next != null && next.id === prev.id) {
