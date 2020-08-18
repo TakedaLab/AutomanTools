@@ -295,4 +295,12 @@ class JobSerializer(serializers.ModelSerializer):
     # FIXME: Consider security
     @staticmethod
     def __generate_job_namespace(key=None):
-        return key is not None if key else 'default'
+        if key is not None:
+            return key
+
+        # Get current namespace
+        try:
+            current_namespace = open("/var/run/secrets/kubernetes.io/serviceaccount/namespace").read()
+            return current_namespace
+        except IOError:
+            return 'default'

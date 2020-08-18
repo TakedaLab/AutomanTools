@@ -16,10 +16,18 @@ class BaseJob(object):
         self.batch_client = client.BatchV1Api()
         self.core_client = client.CoreV1Api()
 
+        try:
+            current_namespace = open("/var/run/secrets/kubernetes.io/serviceaccount/namespace").read()
+            self.default_namespace = current_namespace
+        except IOError:
+            self.default_namespace = 'default'
+
     def create(self):
         raise NotImplementedError
 
-    def run(self, namespace='default'):
+    def run(self, namespace=None):
+        if namespace is None:
+            namespace = self.default_namespace
         try:
             resp = self.batch_client.create_namespaced_job(
                 namespace=namespace,
