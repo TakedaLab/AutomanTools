@@ -101,6 +101,15 @@ class DatasetManager(object):
         contents['frame_count'] = dataset.frame_count
         contents['created_at'] = str(dataset.created_at)
         contents['updated_at'] = str(dataset.updated_at)
+
+        # Get candidates
+        dataset_candidates = DatasetDatasetCandidate.objects.filter(dataset=dataset)
+        if dataset_candidates is None:
+            candidates = []
+        else:
+            candidates = [c.dataset_candidate_id for c in dataset_candidates]
+        contents['candidates'] = candidates
+
         return contents
 
     def get_dataset_file_path(self, user_id, dataset_id):

@@ -232,6 +232,7 @@ class LabelTool extends React.Component {
         res => {
           this.originalId = res.original_id;
           this.frameLength = res.frame_count;
+          this.datasetCandidateIds = res.candidates;
           resolve();
         },
         err => {
@@ -246,7 +247,9 @@ class LabelTool extends React.Component {
         this.getURL('candidate_info'),
         null,
         res => {
-          this.candidateInfo = res.records;
+          this.candidateInfo = res.records.filter((item) => {
+            return this.datasetCandidateIds.includes(item.candidate_id);
+          });
 
           resolve();
         },
