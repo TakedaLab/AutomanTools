@@ -95,6 +95,9 @@ class LabelTool extends React.Component {
       case 'dataset':
         ret = DATASET_ROOT;
         break;
+      case 'calibrations':
+        ret = PROJECT_ROOT + 'calibrations/';
+        break;
       case 'candidate_info': {
         const dataType = args[0];
         ret =
@@ -233,6 +236,7 @@ class LabelTool extends React.Component {
           this.originalId = res.original_id;
           this.frameLength = res.frame_count;
           this.datasetCandidateIds = res.candidates;
+          this.candidateCalibrations = res.calibrations;
           resolve();
         },
         err => {
@@ -259,11 +263,27 @@ class LabelTool extends React.Component {
       );
     });
   }
+  initCalibrations() {
+    return new Promise((resolve, reject) => {
+      RequestClient.get(
+        this.getURL('calibrations'),
+        null,
+        res => {
+          this.calibrations = res.records;
+          resolve();
+        },
+        err => {
+          reject(err);
+        }
+      );
+    });
+  }
   initializeBase() {
     return this.initProject()
       .then(() => this.initAnnotation())
       .then(() => this.initDataset())
       .then(() => this.initCandidateInfo())
+      .then(() => this.initCalibrations())
   }
 
   initializeEvent() {

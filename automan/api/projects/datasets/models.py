@@ -3,6 +3,7 @@ from django.db import models
 from django.utils import timezone
 from projects.models import Projects
 from projects.originals.models import DatasetCandidate
+from projects.calibrations.models import Calibration
 
 
 class LabelDataset(models.Model):
@@ -18,3 +19,4 @@ class LabelDataset(models.Model):
 class DatasetDatasetCandidate(models.Model):
     dataset = models.ForeignKey(LabelDataset, on_delete=models.CASCADE)
     dataset_candidate = models.ForeignKey(DatasetCandidate, on_delete=models.CASCADE)
+    candidate_calibration = models.ForeignKey(Calibration, on_delete=models.SET_NULL, null=True, blank=True)
