@@ -49,7 +49,11 @@ class DatasetViewSet(viewsets.ModelViewSet):
         frame_count = int(request.data.get('frame_count'))
         original_id = request.data.get('original_id', None)
         candidates = request.data.get('candidates')
-        dataset_id = dataset_manager.create_dataset(name, file_path, frame_count, original_id, project_id, candidates)
+        calibrations = request.data.get('calibrations', {})
+        calibrations = {int(key): value for key, value in calibrations.items()}
+        dataset_id = dataset_manager.create_dataset(
+            name, file_path, frame_count, original_id, project_id, candidates, calibrations
+        )
 
         contents = dataset_manager.get_dataset(user_id, dataset_id)
         return HttpResponse(status=201,

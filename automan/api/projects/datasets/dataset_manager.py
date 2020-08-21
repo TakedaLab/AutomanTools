@@ -53,7 +53,7 @@ class DatasetManager(object):
         datasets = LabelDataset.objects.filter(project_id=project_id)
         return datasets.count()
 
-    def create_dataset(self, name, file_path, frame_count, original_id, project_id, candidates):
+    def create_dataset(self, name, file_path, frame_count, original_id, project_id, candidates, calibrations):
         new_dataset = LabelDataset(
             name=name,
             file_path=file_path,
@@ -63,9 +63,11 @@ class DatasetManager(object):
         new_dataset.save()
 
         for candidate in candidates:
+            calibration = calibrations[candidate] if candidate in calibrations.keys() else None
             new_candidate = DatasetDatasetCandidate(
                 dataset_id=new_dataset.id,
-                dataset_candidate_id=candidate
+                dataset_candidate_id=candidate,
+                candidate_calibration_id=calibration
             )
             new_candidate.save()
         return new_dataset.id
@@ -102,13 +104,18 @@ class DatasetManager(object):
         contents['created_at'] = str(dataset.created_at)
         contents['updated_at'] = str(dataset.updated_at)
 
-        # Get candidates
+        # Get candidatAus
         dataset_candidates = DatasetDatasetCandidate.objects.filter(dataset=dataset)
         if dataset_candidates is None:
             candidates = []
+            calibrations = {}
         else:
             candidates = [c.dataset_candidate_id for c in dataset_candidates]
+            calibrations = {
+                c.dataset_candidate_id: c.candidate_calibration_id for c in dataset_candidates
+            }
         contents['candidates'] = candidates
+        contents['calibrations'] = calibrations
 
         return contents
 
