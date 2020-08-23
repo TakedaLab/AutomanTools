@@ -37,7 +37,7 @@ class CandidateSelect2D3D extends React.Component {
       `/projects/${this.props.currentProject.id}/originals/${original_id}`;
     let imgUrl = urlBase + '/candidates/?data_type=IMAGE';
     let pcdUrl = urlBase + '/candidates/?data_type=PCD';
-    let calibrationUrl = `/projects/${this.props.currentProject.id}/calibrations/`
+    let calibrationUrl = `/projects/${this.props.currentProject.id}/calibrations/?per_page=100`
     RequestClient.get(
       imgUrl,
       null,
