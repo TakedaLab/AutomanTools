@@ -11,6 +11,7 @@ import { addTool } from './actions/tool_action';
 import BoxFrameObject from './pcd_tool/box_frame_object';
 import PCDBBox from './pcd_tool/pcd_bbox';
 import EditBar from './pcd_tool/edit_bar';
+import ViewController from './pcd_tool/view_controller'
 
 import { execKeyCommand } from './key_control/index'
 
@@ -25,25 +26,39 @@ class PCDLabelTool extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
+      meshMaterialSettings: {
+        size: 0.05,
+      },
+      pointColoringSettings: {
+        axis: "none",
+        controllerMinValue: -10,
+        controllerMaxValue: 10,
+        minValue: -5,
+        maxValue: 5
+      }
     };
     this._wrapperElement = React.createRef();
     this._mainElement = React.createRef();
     this._wipeElement = React.createRef();
-    this._toolButtons = (
-      <Button
-        key={0}
-        onClick={this.setHeight}
-      >
-        Set Height
-      </Button>
-    );
     props.dispatchAddTool(props.idx, this);
   }
   componentDidMount() {
     this.init();
   }
   getButtons() {
-    return this._toolButtons;
+    return (
+      <div>
+        <Button
+          key={0}
+          onClick={this.setHeight}
+        >
+          Set Height
+        </Button>
+        <div style={{marginTop: '1rem'}}>
+          <ViewController candidateId={this.candidateId}/>
+        </div>
+      </div>
+    );
   }
   getEditor() {
     return <EditBar candidateId={this.candidateId}/>
@@ -155,6 +170,36 @@ class PCDLabelTool extends React.Component {
   isLoadedFrame(frame) {
     return this._pointMeshes[frame] != null;
   }
+  updateMeshMaterialSettings(settings, callback=()=>{}) {
+    let newSettings = {
+      ...this.state.meshMaterialSettings,
+      ...settings
+    }
+    this.setState({meshMaterialSettings: newSettings}, () => {
+      this._currentPointMesh.material.setValues(newSettings);
+      if (this._currentWipePointMesh) {
+        this._currentWipePointMesh.material.setValues(newSettings);
+      }
+      this.redrawRequest();
+      callback();
+    });
+  }
+  updatePointColoringSettings(settings, callback=()=>{}) {
+    let newSettings = {
+      ...this.state.pointColoringSettings,
+      ...settings
+    }
+    this.setState({pointColoringSettings: newSettings}, () => {
+      this._currentPointMesh.geometry.colors = this.colorPoints(this._currentPointMesh.geometry.vertices);
+      this._currentPointMesh.geometry.colorsNeedUpdate = true;
+      if (this._currentWipePointMesh) {
+        this._currentWipePointMesh.geometry.colors = this.colorPoints(this._currentWipePointMesh.geometry.vertices);
+        this._currentWipePointMesh.geometry.colorsNeedUpdate = true;
+      }
+      this.redrawRequest();
+      callback();
+    });
+  }
   setVisibleTo(mesh, val) {
     if (mesh != null) {
       mesh.visible = val;
@@ -178,7 +223,16 @@ class PCDLabelTool extends React.Component {
     }
     const url = this.props.labelTool.getURL('frame_blob', this.candidateId, frame);
     return new Promise((resolve, reject) => {
-      this._pcdLoader.load(url, mesh => {
+      this._pcdLoader.load(url, bufferMesh => {
+        const p = bufferMesh.geometry.getAttribute('position');
+        let geometry = new THREE.Geometry();
+        for (let i=0; i<p.array.length; i+=3) {
+          let v = new THREE.Vector3(p.array[i], p.array[i+1], p.array[i+2]);
+          geometry.vertices.push(v);
+        }
+        geometry.colors = this.colorPoints(geometry.vertices);
+        let material = new THREE.PointsMaterial({vertexColors: THREE.VertexColors});
+        let mesh = new THREE.Points(geometry, material);
         const wipeMesh = this.setPointMesh(frame, mesh);
         resolve({
           mesh,
@@ -190,6 +244,47 @@ class PCDLabelTool extends React.Component {
       });
     });
   }
+  colorPoints(points) {
+    let colors = [];
+    for (let i=0; i<points.length; i++) {
+      switch (this.state.pointColoringSettings.axis) {
+        case "x":
+          colors.push(this.getColorFromValue(
+            (points[i].x - this.state.pointColoringSettings.minValue)
+            / (this.state.pointColoringSettings.maxValue - this.state.pointColoringSettings.minValue)
+          ));
+          break;
+        case "y":
+          colors.push(this.getColorFromValue(
+            (points[i].y - this.state.pointColoringSettings.minValue)
+            / (this.state.pointColoringSettings.maxValue - this.state.pointColoringSettings.minValue)
+          ));
+          break;
+        case "z":
+          colors.push(this.getColorFromValue(
+            (points[i].z - this.state.pointColoringSettings.minValue)
+            / (this.state.pointColoringSettings.maxValue - this.state.pointColoringSettings.minValue)
+          ));
+          break;
+        case "distance":
+          let distance = Math.sqrt(Math.pow(points[i].x, 2) + Math.pow(points[i].y, 2) + Math.pow(points[i].z, 2));
+          colors.push(this.getColorFromValue(
+            (distance - this.state.pointColoringSettings.minValue)
+            / (this.state.pointColoringSettings.maxValue - this.state.pointColoringSettings.minValue)
+          ));
+          break;
+        default:
+          colors.push(new THREE.Color(1, 1, 1));
+      }
+    }
+    return colors
+  }
+  getColorFromValue(value) {
+    const r = value < 0.5 ? Math.max(Math.min(1.0, 1.0 - value * 3), 0) : Math.max(Math.min(1.0, (value - 0.6) * 3), 0);
+    const g = value < 0.5 ? Math.max(Math.min(1.0, value * 3), 0) : Math.max(Math.min(1.0, 1.0 - ((value - 0.6) * 3) ), 0);
+    const b = Math.max(Math.min(1.0, (value - 0.3) * 3), 0);
+    return new THREE.Color(r, g, b);
+  }
   loadWipe(frame) {
     this.setVisibleTo(this._currentWipePointMesh, false);
     this._currentWipePointMesh = null;
@@ -200,6 +295,7 @@ class PCDLabelTool extends React.Component {
     return this.pcdLoad(wipeFrame).then(({ wipeMesh }) => {
       this._currentWipePointMesh = wipeMesh;
       wipeMesh.visible = true;
+      wipeMesh.material.setValues(this.state.meshMaterialSettings);
     });
   }
   loadMain(frame) {
@@ -207,6 +303,7 @@ class PCDLabelTool extends React.Component {
     return this.pcdLoad(frame).then(({ mesh }) => {
       this._currentPointMesh = mesh;
       mesh.visible = true;
+      mesh.material.setValues(this.state.meshMaterialSettings);
     });
   }
   load(frame) {
@@ -272,9 +369,9 @@ class PCDLabelTool extends React.Component {
         this.redrawRequest();
       });
 
-      // adding templates	
-      execKeyCommand("template_add_kcar", e.originalEvent, () => {	
-        const pcdBBox = this.createBBox({	
+      // adding templates
+      execKeyCommand("template_add_kcar", e.originalEvent, () => {
+        const pcdBBox = this.createBBox({
           'x_3d': 0,
           'y_3d': 0,
           'z_3d': -1.35,
@@ -282,12 +379,12 @@ class PCDLabelTool extends React.Component {
           'height_3d': 1.5,
           'length_3d': 1.8,
           'rotation_y': 0,
-        });	
+        });
         this.addLabelOfBBox(pcdBBox);
-        this.redrawRequest();	
+        this.redrawRequest();
       });
-      execKeyCommand("template_add_sedan", e.originalEvent, () => {	
-        const pcdBBox = this.createBBox({	
+      execKeyCommand("template_add_sedan", e.originalEvent, () => {
+        const pcdBBox = this.createBBox({
           'x_3d': 0,
           'y_3d': 0,
           'z_3d': -1.35,
@@ -295,12 +392,12 @@ class PCDLabelTool extends React.Component {
           'height_3d': 1.7,
           'length_3d': 1.5,
           'rotation_y': 0,
-        });	
+        });
         this.addLabelOfBBox(pcdBBox);
-        this.redrawRequest();	
+        this.redrawRequest();
       });
-      execKeyCommand("template_add_minivan", e.originalEvent, () => {	
-        const pcdBBox = this.createBBox({	
+      execKeyCommand("template_add_minivan", e.originalEvent, () => {
+        const pcdBBox = this.createBBox({
           'x_3d': 0,
           'y_3d': 0,
           'z_3d': -1.35,
@@ -308,12 +405,12 @@ class PCDLabelTool extends React.Component {
           'height_3d': 1.8,
           'length_3d': 1.8,
           'rotation_y': 0,
-        });	
+        });
         this.addLabelOfBBox(pcdBBox);
-        this.redrawRequest();	
+        this.redrawRequest();
       });
-      execKeyCommand("template_add_small_sized_track", e.originalEvent, () => {	
-        const pcdBBox = this.createBBox({	
+      execKeyCommand("template_add_small_sized_track", e.originalEvent, () => {
+        const pcdBBox = this.createBBox({
           'x_3d': 0,
           'y_3d': 0,
           'z_3d': -1.35,
@@ -321,12 +418,12 @@ class PCDLabelTool extends React.Component {
           'height_3d': 1.5,
           'length_3d': 1.8,
           'rotation_y': 0,
-        });	
+        });
         this.addLabelOfBBox(pcdBBox);
-        this.redrawRequest();	
+        this.redrawRequest();
       });
-      execKeyCommand("template_add_middle_sized_track", e.originalEvent, () => {	
-        const pcdBBox = this.createBBox({	
+      execKeyCommand("template_add_middle_sized_track", e.originalEvent, () => {
+        const pcdBBox = this.createBBox({
           'x_3d': 0,
           'y_3d': 0,
           'z_3d': -1.35,
@@ -334,12 +431,12 @@ class PCDLabelTool extends React.Component {
           'height_3d': 1.7,
           'length_3d': 1.8,
           'rotation_y': 0,
-        });	
+        });
         this.addLabelOfBBox(pcdBBox);
-        this.redrawRequest();	
+        this.redrawRequest();
       });
-      execKeyCommand("template_add_large_sized_track", e.originalEvent, () => {	
-        const pcdBBox = this.createBBox({	
+      execKeyCommand("template_add_large_sized_track", e.originalEvent, () => {
+        const pcdBBox = this.createBBox({
           'x_3d': 0,
           'y_3d': 0,
           'z_3d': -1.35,
@@ -347,12 +444,12 @@ class PCDLabelTool extends React.Component {
           'height_3d': 2.2,
           'length_3d': 3.5,
           'rotation_y': 0,
-        });	
+        });
         this.addLabelOfBBox(pcdBBox);
-        this.redrawRequest();	
+        this.redrawRequest();
       });
-      execKeyCommand("template_add_mortorcycle", e.originalEvent, () => {	
-        const pcdBBox = this.createBBox({	
+      execKeyCommand("template_add_mortorcycle", e.originalEvent, () => {
+        const pcdBBox = this.createBBox({
           'x_3d': 0,
           'y_3d': 0,
           'z_3d': -1.35,
@@ -360,9 +457,9 @@ class PCDLabelTool extends React.Component {
           'height_3d': 0.8,
           'length_3d': 1.5,
           'rotation_y': 0,
-        });	
+        });
         this.addLabelOfBBox(pcdBBox);
-        this.redrawRequest();	
+        this.redrawRequest();
       });
     },
     keyup: (e) => {
@@ -402,9 +499,9 @@ class PCDLabelTool extends React.Component {
     return new PCDBBox(this, content);
   }
   addLabelOfBBox(pcdBBox) {
-    const addedLabel = this.props.controls.createLabel(	
-      this.props.controls.getTargetKlass(),	
-      {[this.candidateId]: pcdBBox}	
+    const addedLabel = this.props.controls.createLabel(
+      this.props.controls.getTargetKlass(),
+      {[this.candidateId]: pcdBBox}
     );
     return addedLabel;
   }
@@ -436,7 +533,7 @@ class PCDLabelTool extends React.Component {
     } else {
       bboxes = Array.from(this.pcdBBoxes);
     }
-    const posArray = this._currentPointMesh.geometry.getAttribute('position').array;
+    const points = this._currentPointMesh.geometry.vertices;
     let changedLabel = null;
     let existIncludePoint = false;
     for (let i=0; i<bboxes.length; ++i) {
@@ -447,14 +544,14 @@ class PCDLabelTool extends React.Component {
             boxsx = bbox.box.size.x,
             boxsy = bbox.box.size.y,
             yaw = bbox.box.yaw;
-      for (let j=0; j<posArray.length; j+=3) {
-        const dx = posArray[j+0] - boxx,
-              dy = posArray[j+1] - boxy;
+      for (let j=0; j<points.length; j++) {
+        const dx = points[j].x - boxx,
+              dy = points[j].y - boxy;
         const x = Math.abs( dx*Math.cos(yaw) + dy*Math.sin(yaw)),
               y = Math.abs(-dx*Math.sin(yaw) + dy*Math.cos(yaw));
         if (2*x < boxsx && 2*y < boxsy) {
           existIncludePoint = true;
-          const z = posArray[j+2];
+          const z = points[j].z;
           maxZ = Math.max(maxZ, z);
           minZ = Math.min(minZ, z);
         }
