@@ -9,7 +9,7 @@ import grey from '@material-ui/core/colors/grey';
 export const appBarHeight = 54;
 // sidebar status
 export const drawerWidth = 160;
-const toolHeight = 450;
+const toolHeight = 700;
 const listHead = 20;
 export const toolStyle = theme => ({
   drawer: {
