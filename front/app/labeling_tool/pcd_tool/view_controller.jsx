@@ -1,6 +1,8 @@
 import React from 'react';
 
 import {
+  Checkbox,
+  FormControlLabel,
   InputLabel,
   MenuItem,
   Select,
@@ -68,6 +70,25 @@ class ViewController extends React.Component {
     return (
      <div style={{width: "100%", display: "block"}}>
       <div style={{margin: "0 16px"}}>
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={this.props.tool.state.visualizeObjectIds}
+              onChange={(event) => {
+                this.props.tool.setState({
+                  visualizeObjectIds: event.target.checked
+                }, () => {
+                  this.props.tool.pcdBBoxes.forEach((item)=>{item.updateText()});
+                  this.props.tool.redrawRequest();
+                  this.forceUpdate();
+                })
+              }}
+              name="show-object-ids"
+              color="primary"
+            />
+          }
+          label="Show Object-ids"
+        />
         <Typography id="view-controller-point-size" gutterBottom>
           Point-size:
         </Typography>

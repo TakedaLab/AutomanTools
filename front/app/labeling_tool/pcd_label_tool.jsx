@@ -35,7 +35,8 @@ class PCDLabelTool extends React.Component {
         controllerMaxValue: 10,
         minValue: -5,
         maxValue: 5
-      }
+      },
+      visualizeObjectIds: false
     };
     this._wrapperElement = React.createRef();
     this._mainElement = React.createRef();
