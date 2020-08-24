@@ -281,13 +281,16 @@ export default class PCDBBox {
   }
   updateText() {
     this.removeText();
-    const newText = this.generateTextMesh();
-    const box = this.box;
-    this.pcdTool._scene.add(newText);
-    newText.position.set(box.pos.x, box.pos.y, box.pos.z);
-    newText.rotation.z = box.yaw - 1.57;
-    newText.updateMatrixWorld();
-    this.cube.text = newText;
+    if (this.pcdTool.state.visualizeObjectIds) {
+      const newText = this.generateTextMesh();
+      const box = this.box;
+      this.pcdTool._scene.add(newText);
+      newText.position.set(box.pos.x, box.pos.y, box.pos.z);
+      newText.scale.set(Math.min(box.size.x, box.size.y) / 2, Math.min(box.size.x, box.size.y) / 2, box.size.z);
+      newText.rotation.z = box.yaw - 1.57;
+      newText.updateMatrixWorld();
+      this.cube.text = newText;
+    }
   }
   setObjectId(id){
     const box = this.box;
