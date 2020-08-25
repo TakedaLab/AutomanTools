@@ -296,7 +296,7 @@ class LabelTool extends React.Component {
 
             // NOTE: THREE.Matrix4.elements contains matrices in column-major order, but not row-major one.
             //       So, we need the transposed matrix to get the elements in row-major order.
-            const cameraExtrinsicMatrixFlipped = flipMatrix.multiply(cameraExtrinsicMatrix);
+            const cameraExtrinsicMatrixFlipped = flipMatrix.premultiply(cameraExtrinsicMatrix);
             const cameraExtrinsicMatrixFlippedT = cameraExtrinsicMatrixFlipped.clone().transpose();
 
             calibrations.push({
