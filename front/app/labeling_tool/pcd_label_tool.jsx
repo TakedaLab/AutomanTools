@@ -867,12 +867,21 @@ class PCDLabelTool extends React.Component {
         // Parse the content of the calibration file
         const calibrationFile = calibrationFiles[0];
         const calibration = JSON.parse(calibrationFile.content);
-        const camera_extrinsic_mat = [
+        const cameraExtrinsicMatrix = new THREE.Matrix4();
+        cameraExtrinsicMatrix.set(
           ...calibration.camera_extrinsic_mat[0],
           ...calibration.camera_extrinsic_mat[1],
           ...calibration.camera_extrinsic_mat[2],
           ...calibration.camera_extrinsic_mat[3],
-        ];
+        );
+
+        // Flip the calibration information along with all axes.
+        const flipMatrix = new THREE.Matrix4();
+        flipMatrix.set(-1, 0, 0, 0, 0, -1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1);
+
+        // NOTE: THREE.Matrix4.elements contains matrices in column-major order, but not row-major one.
+        //       So, we need the transposed matrix to get the elements in row-major order.
+        const flippedMatrixT = flipMatrix.multiply(cameraExtrinsicMatrix).transpose();
 
         // Calculate FOV of the camera
         const imageTool = _this.props.controls.getToolFromCandidateId(candidateId);
@@ -902,8 +911,8 @@ class PCDLabelTool extends React.Component {
 
         // Create a camera-helper
         const distance = _this.state.cameraHelperSettings.distance;
-        let camera = new THREE.PerspectiveCamera(fov, width / height, -1 * distance, -1);
-        camera.matrixWorld.set(...camera_extrinsic_mat);
+        let camera = new THREE.PerspectiveCamera(fov, width / height, 1, distance);
+        camera.matrixWorld.set(...flippedMatrixT.elements);
         let cameraHelper = new THREE.CameraHelper(camera);
         cameraHelper.visible = _this.state.cameraHelperSettings.visible ?
           candidateId === activeCandidateId : false;
