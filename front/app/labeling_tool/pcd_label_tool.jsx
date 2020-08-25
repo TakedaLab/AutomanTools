@@ -864,7 +864,7 @@ class PCDLabelTool extends React.Component {
           continue;
         }
         const cameraMatrixT = calibrationFiles[0].cameraMatrixT;
-        const calibrationFlippedMatrixT = calibrationFiles[0].flippedMatrixT;
+        const cameraExtrinsicMatrixFlippedT = calibrationFiles[0].cameraExtrinsicMatrixFlippedT;
 
         // Calculate FOV of the camera
         const imageTool = _this.props.controls.getToolFromCandidateId(candidateId);
@@ -895,7 +895,7 @@ class PCDLabelTool extends React.Component {
         // Create a camera-helper
         const distance = _this.state.cameraHelperSettings.distance;
         let camera = new THREE.PerspectiveCamera(fov, width / height, 1, distance);
-        camera.matrixWorld.set(...calibrationFlippedMatrixT.elements);
+        camera.matrixWorld.set(...cameraExtrinsicMatrixFlippedT.elements);
         let cameraHelper = new THREE.CameraHelper(camera);
         cameraHelper.visible = _this.state.cameraHelperSettings.visible ?
           candidateId === activeCandidateId : false;
