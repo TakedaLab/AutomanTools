@@ -269,7 +269,49 @@ class LabelTool extends React.Component {
         this.getURL('calibrations'),
         null,
         res => {
-          this.calibrations = res.records;
+          let calibrations = [];
+          res.records.forEach((record) => {
+            // Parse the content of the calibration file
+            const calibration = JSON.parse(record.content);
+            const cameraMatrix = new THREE.Matrix4();
+            cameraMatrix.set(
+              ...calibration.camera_mat[0], 0,
+              ...calibration.camera_mat[1], 0,
+              ...calibration.camera_mat[2], 0,
+              0, 0, 0, 1
+            );
+            const cameraMatrixT = cameraMatrix.clone().transpose();
+            const cameraExtrinsicMatrix = new THREE.Matrix4();
+            cameraExtrinsicMatrix.set(
+              ...calibration.camera_extrinsic_mat[0],
+              ...calibration.camera_extrinsic_mat[1],
+              ...calibration.camera_extrinsic_mat[2],
+              ...calibration.camera_extrinsic_mat[3],
+            );
+            const cameraExtrinsicMatrixT = cameraExtrinsicMatrix.clone().transpose();
+
+            // Flip the calibration information along with all axes.
+            const flipMatrix = new THREE.Matrix4();
+            flipMatrix.set(-1, 0, 0, 0, 0, -1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1);
+
+            // NOTE: THREE.Matrix4.elements contains matrices in column-major order, but not row-major one.
+            //       So, we need the transposed matrix to get the elements in row-major order.
+            const flippedMatrix = flipMatrix.multiply(cameraExtrinsicMatrix);
+            const flippedMatrixT = flippedMatrix.clone().transpose();
+
+            calibrations.push({
+              ...record,
+              calibration: calibration,
+              cameraMatrix: cameraMatrix,
+              cameraMatrixT: cameraMatrixT,
+              cameraExtrinsicMatrix: cameraExtrinsicMatrix,
+              cameraExtrinsicMatrixT: cameraExtrinsicMatrixT,
+              flippedMatrix: flippedMatrix,
+              flippedMatrixT: flippedMatrixT,
+            })
+          }, calibrations);
+
+          this.calibrations = calibrations;
           resolve();
         },
         err => {

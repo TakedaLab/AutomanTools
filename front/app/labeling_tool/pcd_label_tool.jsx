@@ -863,25 +863,8 @@ class PCDLabelTool extends React.Component {
           console.error('Could not find the corresponding calibration file for candidate ' + key);
           continue;
         }
-
-        // Parse the content of the calibration file
-        const calibrationFile = calibrationFiles[0];
-        const calibration = JSON.parse(calibrationFile.content);
-        const cameraExtrinsicMatrix = new THREE.Matrix4();
-        cameraExtrinsicMatrix.set(
-          ...calibration.camera_extrinsic_mat[0],
-          ...calibration.camera_extrinsic_mat[1],
-          ...calibration.camera_extrinsic_mat[2],
-          ...calibration.camera_extrinsic_mat[3],
-        );
-
-        // Flip the calibration information along with all axes.
-        const flipMatrix = new THREE.Matrix4();
-        flipMatrix.set(-1, 0, 0, 0, 0, -1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1);
-
-        // NOTE: THREE.Matrix4.elements contains matrices in column-major order, but not row-major one.
-        //       So, we need the transposed matrix to get the elements in row-major order.
-        const flippedMatrixT = flipMatrix.multiply(cameraExtrinsicMatrix).transpose();
+        const cameraMatrixT = calibrationFiles[0].cameraMatrixT;
+        const calibrationFlippedMatrixT = calibrationFiles[0].flippedMatrixT;
 
         // Calculate FOV of the camera
         const imageTool = _this.props.controls.getToolFromCandidateId(candidateId);
@@ -894,7 +877,7 @@ class PCDLabelTool extends React.Component {
         }
         const width = imageTool._imageSize.width;
         const height = imageTool._imageSize.height;
-        const fx = calibration.camera_mat[0][0];
+        const fx = cameraMatrixT.elements[0];
         const fov = 2 * Math.atan(width / (2 * fx)) / Math.PI * 180;
 
         // Get active image-tool
@@ -912,7 +895,7 @@ class PCDLabelTool extends React.Component {
         // Create a camera-helper
         const distance = _this.state.cameraHelperSettings.distance;
         let camera = new THREE.PerspectiveCamera(fov, width / height, 1, distance);
-        camera.matrixWorld.set(...flippedMatrixT.elements);
+        camera.matrixWorld.set(...calibrationFlippedMatrixT.elements);
         let cameraHelper = new THREE.CameraHelper(camera);
         cameraHelper.visible = _this.state.cameraHelperSettings.visible ?
           candidateId === activeCandidateId : false;
