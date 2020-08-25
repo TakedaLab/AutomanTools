@@ -36,6 +36,12 @@ class ViewController extends React.Component {
     });
   }
 
+  updateCameraHelperSettings = (settings, initCameraHelper=false) => {
+    this.props.tool.updateCameraHelperSettings(settings, initCameraHelper, ()=>{
+      this.forceUpdate();
+    });
+  }
+
   pointColoringControllerMinMax = (axis) => {
     switch (axis) {
       case "x":
@@ -70,6 +76,43 @@ class ViewController extends React.Component {
     return (
      <div style={{width: "100%", display: "block"}}>
       <div style={{margin: "0 16px"}}>
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={this.props.tool.state.cameraHelperSettings.visible}
+              onChange={(event) => {
+                this.updateCameraHelperSettings({
+                  visible: event.target.checked
+                }, true)
+              }}
+              name="show-camera-helper"
+              color="primary"
+            />
+          }
+          label="Show Camera Helper"
+        />
+        <Typography id="view-controller-camera-helper-distance" gutterBottom>
+          Camera Helper - Distance
+        </Typography>
+        <Slider
+          defaultValue={10}
+          getAriaValueText={(value) => {return `${value}m`}}
+          aria-labelledby="view-controller-camera-helper-distance"
+          min={1}
+          max={50}
+          valueLabelDisplay="auto"
+          value={this.props.tool.state.cameraHelperSettings.distance}
+          onChange={(event, value) => {
+            this.updateCameraHelperSettings({
+              distance: value
+            }, false)
+          }}
+          onChangeCommitted={(event, value) => {
+            this.updateCameraHelperSettings({
+              distance: value
+            }, true)
+          }}
+        />
         <FormControlLabel
           control={
             <Checkbox
