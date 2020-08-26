@@ -96,7 +96,7 @@ class LabelTool extends React.Component {
         ret = DATASET_ROOT;
         break;
       case 'calibrations':
-        ret = PROJECT_ROOT + 'calibrations/';
+        ret = PROJECT_ROOT + 'calibrations/?per_page=100';
         break;
       case 'candidate_info': {
         const dataType = args[0];
