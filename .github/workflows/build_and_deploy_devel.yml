@@ -53,7 +53,7 @@ jobs:
         env:
             KUBE_CONFIG_DATA: ${{ secrets.KUBE_DEV_CONFIG_DATA }}
         with:
-            args: 'get deployment automan-labeling-app -o json > kube_output.json'
+            args: 'get service automan-labeling-service -o json > kube_output.json'
       - name: Generate a message
         shell: bash
         run: |
