@@ -54,7 +54,7 @@ jobs:
         env:
           KUBE_CONFIG_DATA: ${{ secrets.KUBE_DEV_CONFIG_DATA }}
         with:
-          args: 'get deployment automan-labeling-app-test -o json > kube_output.json'
+          args: 'get service automan-labeling-test-service -o json > kube_output.json'
       - name: Generate a message
         env:
             URL: ${{ github.event.pull_request.url }}
