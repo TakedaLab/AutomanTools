@@ -1,0 +1,76 @@
+name: Build, Push and Deploy (Test)
+
+on:
+  pull_request:
+    branches:
+      - master-hdl
+      - develop-hdl
+
+jobs:
+  build:
+    runs-on: ubuntu-18.04
+    timeout-minutes: 300
+
+    steps:
+      - uses: actions/checkout@v1
+
+      - name: Build image
+        env:
+          TAG: ${{ github.ref }}
+        shell: bash
+        run: |
+          docker build -t hdwlab/automan-tools:pr .
+
+      - name: Push to DockerHub
+        env:
+          TAG: ${{ github.ref }}
+          DOCKER_USER: ${{ secrets.DOCKER_USER }}
+          DOCKER_PASS: ${{ secrets.DOCKER_PASS }}
+        shell: bash
+        run: |
+          docker login -u ${DOCKER_USER} -p ${DOCKER_PASS} \
+          && docker push hdwlab/automan-tools:pr
+
+  deploy-dev:
+    runs-on: ubuntu-18.04
+    timeout-minutes: 30
+    needs: build
+    steps:
+      - name: Deploy to cluster
+        uses: steebchen/kubectl@master
+        env:
+          KUBE_CONFIG_DATA: ${{ secrets.KUBE_DEV_CONFIG_DATA }}
+        with:
+          args: '"rollout restart deployment/automan-labeling-app-test"'
+      - name: Verify deployment
+        uses: steebchen/kubectl@master
+        env:
+          KUBE_CONFIG_DATA: ${{ secrets.KUBE_DEV_CONFIG_DATA }}
+          KUBECTL_VERSION: "1.17"
+        with:
+          args: '"rollout status deployment/automan-labeling-app-test"'
+      - name: Get deployment information
+        uses: steebchen/kubectl@master
+        env:
+          KUBE_CONFIG_DATA: ${{ secrets.KUBE_DEV_CONFIG_DATA }}
+        with:
+          args: 'get deployment automan-labeling-app-test -o json > kube_output.json'
+      - name: Generate a message
+        env:
+            URL: ${{ github.event.pull_request.url }}
+        shell: bash
+        run: |
+          jq -r '.metadata.annotations["field.cattle.io/publicEndpoints"]' kube_output.json > public_endpoints.json \
+          && address=$(jq -r '.[0].addresses[0]' public_endpoints.json) \
+          && port=$(jq -r '.[0].port' public_endpoints.json) \
+          && echo "::set-env name=SLACK_MESSAGE::<${URL}|The latest PR> has been deployed. You can test it at http://${address}:${port}/"
+      - name: Slack Notification
+        uses: rtCamp/action-slack-notify@master
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_CHANNEL: 'p-meti-tagging'
+          SLACK_ICON: https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png
+          SLACK_COLOR: '#3278BD'
+          SLACK_TITLE: AutomanTools for testing is ready
+          SLACK_USERNAME: CI/CD (GitHub Actions)
+          MSG_MINIMAL: true
