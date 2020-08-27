@@ -48,3 +48,26 @@ jobs:
           KUBECTL_VERSION: "1.17"
         with:
           args: '"-n automan-tools rollout status deployment/automan-labeling-app"'
+      - name: Get deployment information
+        uses: steebchen/kubectl@master
+        env:
+            KUBE_CONFIG_DATA: ${{ secrets.KUBE_PROD_CONFIG_DATA }}
+        with:
+            args: '-n automan-tools get deployment automan-labeling-app -o json > kube_output.json'
+      - name: Generate a message
+        shell: bash
+        run: |
+            jq -r '.metadata.annotations["field.cattle.io/publicEndpoints"]' kube_output.json > public_endpoints.json \
+            && address=$(jq -r '.[0].addresses[0]' public_endpoints.json) \
+            && port=$(jq -r '.[0].port' public_endpoints.json) \
+            && echo "::set-env name=SLACK_MESSAGE::The production deployment has been updated. You can use it at http://${address}:${port}/"
+      - name: Slack Notification
+        uses: rtCamp/action-slack-notify@master
+        env:
+            SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+            SLACK_CHANNEL: 'p-meti-tagging'
+            SLACK_ICON: https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png
+            SLACK_COLOR: '#3278BD'
+            SLACK_TITLE: 'The latest AutomanTools is ready :confetti_ball:'
+            SLACK_USERNAME: CI/CD (GitGub Actions)
+            MSG_MINIMAL: true

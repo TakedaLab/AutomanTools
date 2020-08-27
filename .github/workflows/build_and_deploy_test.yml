@@ -55,7 +55,7 @@ jobs:
           KUBE_CONFIG_DATA: ${{ secrets.KUBE_DEV_CONFIG_DATA }}
         with:
           args: 'get deployment automan-labeling-app-test -o json > kube_output.json'
-      - name: Generate message
+      - name: Generate a message
         shell: bash
         run: |
           jq -r '.metadata.annotations["field.cattle.io/publicEndpoints"]' kube_output.json > public_endpoints.json \
