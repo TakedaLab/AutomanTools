@@ -56,12 +56,15 @@ jobs:
         with:
           args: 'get deployment automan-labeling-app-test -o json > kube_output.json'
       - name: Generate a message
+        env:
+            REF: ${{ github.ref }}
+            URL: ${{ github.event.pull_request.url }}
         shell: bash
         run: |
           jq -r '.metadata.annotations["field.cattle.io/publicEndpoints"]' kube_output.json > public_endpoints.json \
           && address=$(jq -r '.[0].addresses[0]' public_endpoints.json) \
           && port=$(jq -r '.[0].port' public_endpoints.json) \
-          && echo "::set-env name=SLACK_MESSAGE::The latest PR has successfully been deployed. You can test it at http://${address}:${port}/"
+          && echo "::set-env name=SLACK_MESSAGE::<The latest PR from ref '${REF}'|${URL}> has been deployed. You can test it at http://${address}:${port}/"
       - name: Slack Notification
         uses: rtCamp/action-slack-notify@master
         env:
