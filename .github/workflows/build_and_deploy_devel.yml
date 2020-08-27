@@ -69,5 +69,5 @@ jobs:
             SLACK_ICON: https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png
             SLACK_COLOR: '#3278BD'
             SLACK_TITLE: 'The latest AutomanTools for development is ready :+1:'
-            SLACK_USERNAME: CI/CD (GitGub Actions)
+            SLACK_USERNAME: CI/CD (GitHub Actions)
             MSG_MINIMAL: true
