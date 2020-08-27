@@ -95,6 +95,9 @@ class LabelTool extends React.Component {
       case 'dataset':
         ret = DATASET_ROOT;
         break;
+      case 'calibrations':
+        ret = PROJECT_ROOT + 'calibrations/?per_page=100';
+        break;
       case 'candidate_info': {
         const dataType = args[0];
         ret =
@@ -233,6 +236,7 @@ class LabelTool extends React.Component {
           this.originalId = res.original_id;
           this.frameLength = res.frame_count;
           this.datasetCandidateIds = res.candidates;
+          this.candidateCalibrations = res.calibrations;
           resolve();
         },
         err => {
@@ -259,11 +263,69 @@ class LabelTool extends React.Component {
       );
     });
   }
+  initCalibrations() {
+    return new Promise((resolve, reject) => {
+      RequestClient.get(
+        this.getURL('calibrations'),
+        null,
+        res => {
+          let calibrations = [];
+          res.records.forEach((record) => {
+            // Parse the content of the calibration file
+            const calibration = JSON.parse(record.content);
+            const cameraMatrix = new THREE.Matrix4();
+            cameraMatrix.set(
+              ...calibration.camera_mat[0], 0,
+              ...calibration.camera_mat[1], 0,
+              ...calibration.camera_mat[2], 0,
+              0, 0, 0, 1
+            );
+            const cameraMatrixT = cameraMatrix.clone().transpose();
+            const cameraExtrinsicMatrix = new THREE.Matrix4();
+            cameraExtrinsicMatrix.set(
+              ...calibration.camera_extrinsic_mat[0],
+              ...calibration.camera_extrinsic_mat[1],
+              ...calibration.camera_extrinsic_mat[2],
+              ...calibration.camera_extrinsic_mat[3],
+            );
+            const cameraExtrinsicMatrixT = cameraExtrinsicMatrix.clone().transpose();
+
+            // Flip the calibration information along with all axes.
+            const flipMatrix = new THREE.Matrix4();
+            flipMatrix.set(-1, 0, 0, 0, 0, -1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1);
+
+            // NOTE: THREE.Matrix4.elements contains matrices in column-major order, but not row-major one.
+            //       So, we need the transposed matrix to get the elements in row-major order.
+            const cameraExtrinsicMatrixFlipped = flipMatrix.premultiply(cameraExtrinsicMatrix);
+            const cameraExtrinsicMatrixFlippedT = cameraExtrinsicMatrixFlipped.clone().transpose();
+
+            calibrations.push({
+              ...record,
+              calibration: calibration,
+              cameraMatrix: cameraMatrix,
+              cameraMatrixT: cameraMatrixT,
+              cameraExtrinsicMatrix: cameraExtrinsicMatrix,
+              cameraExtrinsicMatrixT: cameraExtrinsicMatrixT,
+              cameraExtrinsicMatrixFlipped: cameraExtrinsicMatrixFlipped,
+              cameraExtrinsicMatrixFlippedT: cameraExtrinsicMatrixFlippedT
+            })
+          }, calibrations);
+
+          this.calibrations = calibrations;
+          resolve();
+        },
+        err => {
+          reject(err);
+        }
+      );
+    });
+  }
   initializeBase() {
     return this.initProject()
       .then(() => this.initAnnotation())
       .then(() => this.initDataset())
       .then(() => this.initCandidateInfo())
+      .then(() => this.initCalibrations())
   }
 
   initializeEvent() {

@@ -1,10 +1,38 @@
 import BoxFrameObject from './box_frame_object';
+import projectBBox from './bbox_projector';
 
 const BBoxParams = {
   geometry: new THREE.CubeGeometry(1.0, 1.0, 1.0),
   material: new THREE.MeshBasicMaterial({
     color: 0x008866,
-  })
+  }),
+  // attrs: {
+  //   rect: {
+  //     'stroke': 'red',
+  //     'stroke-width': 10,
+  //     'fill': '#fff',
+  //     'fill-opacity': 0,
+  //     'cursor': 'all-scroll'
+  //   }
+  // }
+  attrs: {
+    rect: {
+      selected: {
+        'stroke': 'red',
+        'stroke-width': 10,
+        'fill': '#fff',
+        'fill-opacity': 0,
+        'cursor': 'all-scroll'
+      },
+      normal: {
+        'stroke': '#086',
+        'stroke-width': 6,
+        'fill': '#fff',
+        'fill-opacity': 0,
+        'cursor': 'all-scroll'
+      },
+    }
+  }
 };
 const ZERO2 = new THREE.Vector2(0, 0);
 const EDIT_OBJ_SIZE = 0.5;
@@ -20,6 +48,7 @@ export default class PCDBBox {
       yaw: 0,
       objectId: 0,
     };
+    this.projectedRects = {};
     if (content != null) {
       // init parameters
       this.fromContent(content);
@@ -70,6 +99,15 @@ export default class PCDBBox {
     this.cube.meshFrame.setBold(selected);
     const box = this.box;
     this.cube.meshFrame.setParam(box.pos, box.size, box.yaw);
+
+    // Update projected rects
+    Object.values(this.projectedRects).forEach((rect) => {
+      if (selected) {
+        rect.attr(BBoxParams.attrs.rect.selected);
+      }else {
+        rect.attr(BBoxParams.attrs.rect.normal);
+      }
+    });
   }
   hover(isInto) {
     this.cube.meshFrame.setStatus(this.selected, isInto);
@@ -89,6 +127,7 @@ export default class PCDBBox {
     const group = this.cube.editGroup;
     this.pcdTool._scene.remove(group);
     this.removeText();
+    this.removeProjectedRects();
     this.pcdTool.redrawRequest();
     this.pcdTool.pcdBBoxes.delete(this);
   }
@@ -258,6 +297,7 @@ export default class PCDBBox {
     zFace[1].position.set(0, 0, -box.size.z/2-w/2);
     zFace[1].scale.set(box.size.x, box.size.y, w);
     this.updateText();
+    this.update2DBox();
     if ( changed ) {
       this.label.isChanged = true;
     }
@@ -281,13 +321,60 @@ export default class PCDBBox {
   }
   updateText() {
     this.removeText();
-    const newText = this.generateTextMesh();
-    const box = this.box;
-    this.pcdTool._scene.add(newText);
-    newText.position.set(box.pos.x, box.pos.y, box.pos.z);
-    newText.rotation.z = box.yaw - 1.57;
-    newText.updateMatrixWorld();
-    this.cube.text = newText;
+    if (this.pcdTool.state.visualizeObjectIds) {
+      const newText = this.generateTextMesh();
+      const box = this.box;
+      this.pcdTool._scene.add(newText);
+      newText.position.set(box.pos.x, box.pos.y, box.pos.z);
+      newText.scale.set(Math.min(box.size.x, box.size.y) / 2, Math.min(box.size.x, box.size.y) / 2, box.size.z);
+      newText.rotation.z = box.yaw - 1.57;
+      newText.updateMatrixWorld();
+      this.cube.text = newText;
+    }
+  }
+  removeProjectedRects() {
+    Object.values(this.projectedRects).forEach((rect) => {
+      rect.remove();
+    });
+  }
+  update2DBox() {
+    if (!this.pcdTool
+      || !this.pcdTool.props
+      || !this.pcdTool.props.labelTool
+      || !this.pcdTool.props.labelTool.calibrations
+      || !this.pcdTool.props.labelTool.candidateCalibrations
+    ) {
+      return
+    }
+    this.removeProjectedRects();
+    Object.entries(this.pcdTool.props.labelTool.candidateCalibrations).forEach(([key, value]) => {
+      const candidateId = Number(key);
+      const calibrationFiles = this.pcdTool.props.labelTool.calibrations.filter((item) => {
+        return item.id === value
+      })
+      if (calibrationFiles.length !== 1) return;
+
+      // Project the box to the corresponding 2D image
+      const projectedBox = projectBBox(calibrationFiles[0], this.box);
+      if (projectedBox.w < 0) return;
+
+      const imageTool = this.pcdTool.props.controls.getToolFromCandidateId(candidateId);
+      const width = projectedBox.u_max - projectedBox.u_min;
+      const height = projectedBox.v_max - projectedBox.v_min;
+      const rect = imageTool._paper.rect(
+        projectedBox.u_min, projectedBox.v_min,
+        width, height
+      );
+
+      if (this.selected) {
+        rect.attr(BBoxParams.attrs.rect.selected);
+      }
+      else {
+        rect.attr(BBoxParams.attrs.rect.normal);
+      }
+
+      this.projectedRects[key] = rect;
+    }, this);
   }
   setObjectId(id){
     const box = this.box;

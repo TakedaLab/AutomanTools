@@ -126,6 +126,8 @@ class KlassSet extends React.Component {
       <Tabs
         value={this.state.targetIndex}
         onChange={this.handleTabChange}
+        variant="scrollable"
+        scrollButtons="auto"
       >
         {this.renderTabs(classes)}
       </Tabs>

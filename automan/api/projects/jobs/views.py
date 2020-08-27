@@ -33,7 +33,8 @@ class JobViewSet(viewsets.ModelViewSet):
             job_config = request.data['job_config']
             original_id = int(job_config['original_id'])
             candidates = job_config['candidates']
-            JobSerializer.extract(user_id, project_id, original_id, candidates)
+            calibrations = job_config['calibrations'] if 'calibrations' in job_config else {}
+            JobSerializer.extract(user_id, project_id, original_id, candidates, calibrations)
         elif job_type == 'ARCHIVER':
             if not Permission.hasPermission(user_id, 'get_original', project_id):
                 raise PermissionDenied

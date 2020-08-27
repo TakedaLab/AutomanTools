@@ -154,7 +154,7 @@ class JobSerializer(serializers.ModelSerializer):
 
     @classmethod
     @transaction.atomic
-    def extract(cls, user_id, project_id, original_id, candidates):
+    def extract(cls, user_id, project_id, original_id, candidates, calibrations):
         original = OriginalManager().get_original(project_id, original_id, status='analyzed')
         storage = StorageSerializer().get_storage(project_id, original['storage_id'])
         storage_config = copy.deepcopy(storage['storage_config'])
@@ -170,7 +170,7 @@ class JobSerializer(serializers.ModelSerializer):
         automan_config.update({
             'path': '/projects/' + project_id + '/datasets/',
             'presigned': '/projects/' + project_id + '/storages/post_s3/'})
-        raw_data_config = cls.__get_raw_data_config(project_id, original_id, candidates)
+        raw_data_config = cls.__get_raw_data_config(project_id, original_id, candidates, calibrations)
         job_config = {
             'storage_type': storage['storage_type'],
             'storage_config': storage_config,
@@ -241,7 +241,7 @@ class JobSerializer(serializers.ModelSerializer):
         return automan_config
 
     @staticmethod
-    def __get_raw_data_config(project_id, original_id, candidates):
+    def __get_raw_data_config(project_id, original_id, candidates, calibrations):
         records = {}
         for candidate_id in candidates:
             original_manager = OriginalManager()
@@ -253,6 +253,7 @@ class JobSerializer(serializers.ModelSerializer):
             'project_id': int(project_id),
             'original_id': original_id,
             'candidates': candidates,
+            'calibrations': calibrations,
             'records': records,
         }
         return raw_data_config

@@ -56,7 +56,11 @@ class ExtractorForm extends React.Component {
   };
   handleGetJobConfig = key => {
     if (this.state.jobConfig[key] == null) {
-      return [];
+      if (['calibrations'].includes(key)) {
+        return {};
+      }else {
+        return [];
+      }
     }
     return this.state.jobConfig[key];
   };
