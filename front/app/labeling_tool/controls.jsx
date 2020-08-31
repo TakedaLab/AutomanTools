@@ -27,12 +27,10 @@ import LoadingProgress from 'automan/labeling_tool/base_tool/loading_progress';
 import ImageLabelTool from 'automan/labeling_tool/image_label_tool';
 import PCDLabelTool from 'automan/labeling_tool/pcd_label_tool';
 
-
 import {toolStyle, appBarHeight, drawerWidth} from 'automan/labeling_tool/tool-style';
 
-import RequestClient from 'automan/services/request-client'
-import { addKeyCommand, execKeyCommand } from './key_control/index'
-
+import RequestClient from 'automan/services/request-client';
+import { execKeyCommand } from './key_control/index';
 
 class Controls extends React.Component {
   // progress
@@ -210,6 +208,11 @@ class Controls extends React.Component {
         })
         execKeyCommand("deselect_bbox", e.originalEvent, () => {
           this.props.annotation.setTarget(null)
+        })
+        execKeyCommand("change_tool_mode", e.originalEvent, () => {
+          this.setPCDActive(
+            !this.state.isActivePCD
+          )
         })
 
         this.getTool().handles.keydown(e);
