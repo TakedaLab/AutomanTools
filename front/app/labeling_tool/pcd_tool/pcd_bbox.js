@@ -275,14 +275,14 @@ export default class PCDBBox {
       + `size_x: ${this.box.size.x.toFixed(2)}\n`
       + `size_y: ${this.box.size.y.toFixed(2)}\n`
       + `size_z: ${this.box.size.z.toFixed(2)}`;
-    const shapes = this.pcdTool._font.generateShapes(message, 1);
+    const shapes = this.pcdTool._font.generateShapes(message, 0.7);
     const geometry = new THREE.ShapeBufferGeometry(shapes);
     geometry.computeBoundingBox();
     geometry.translate(0, 0, 1.0);
     let text = new THREE.Mesh(geometry, matDark);
     text.visible = true;
     text.rotation.z = -1.57;
-    text.scale.set(0.1, 0.1, 0.1);
+    text.scale.set(1, 1, 1);
     return text;
   }
   updateCube(changed) {
@@ -381,8 +381,7 @@ export default class PCDBBox {
       const newboxInfoText = this.generateBoxInfoTextMesh();
       const box = this.box;
       this.pcdTool._scene.add(newboxInfoText);
-      newboxInfoText.position.set(box.pos.x, box.pos.y, box.pos.z);
-      newboxInfoText.scale.set(Math.min(box.size.x, box.size.y) / 2, Math.min(box.size.x, box.size.y) / 2, box.size.z);
+      newboxInfoText.position.set(box.pos.x + box.size.x / 2, box.pos.y - box.size.y / 2 - 0.2, box.pos.z);
       newboxInfoText.rotation.z = - 1.57;
       newboxInfoText.updateMatrixWorld();
       this.cube.boxInfoText = newboxInfoText;
