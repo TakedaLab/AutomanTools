@@ -381,7 +381,7 @@ export default class PCDBBox {
       const newboxInfoText = this.generateBoxInfoTextMesh();
       const box = this.box;
       this.pcdTool._scene.add(newboxInfoText);
-      newboxInfoText.position.set(box.pos.x + box.size.x / 2, box.pos.y - box.size.y / 2 - 0.2, box.pos.z);
+      newboxInfoText.position.set(box.pos.x + box.size.x / 2 - 0.4, box.pos.y - box.size.y / 2 - 0.6, box.pos.z);
       newboxInfoText.rotation.z = - 1.57;
       newboxInfoText.updateMatrixWorld();
       this.cube.boxInfoText = newboxInfoText;
