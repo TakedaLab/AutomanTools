@@ -132,6 +132,25 @@ class ViewController extends React.Component {
           }
           label="Show Object-ids"
         />
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={this.props.tool.state.visualizeBoxInfo}
+              onChange={(event) => {
+                this.props.tool.setState({
+                  visualizeBoxInfo: event.target.checked
+                }, () => {
+                  this.props.tool.pcdBBoxes.forEach((item)=>{item.updateBoxInfoTextMesh()});
+                  this.props.tool.redrawRequest();
+                  this.forceUpdate();
+                })
+              }}
+              name="show-box-info"
+              color="primary"
+            />
+          }
+          label="Show Box Info"
+        />
         <Typography id="view-controller-point-size" gutterBottom>
           Point-size:
         </Typography>

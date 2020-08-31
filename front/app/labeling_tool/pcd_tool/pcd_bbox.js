@@ -377,7 +377,7 @@ export default class PCDBBox {
   updateBoxInfoTextMesh () {
     this.removeBoxInfoTextMesh();
 
-    if (this.selected) {
+    if (this.selected && this.pcdTool.state.visualizeBoxInfo) {
       const newboxInfoText = this.generateBoxInfoTextMesh();
       const box = this.box;
       this.pcdTool._scene.add(newboxInfoText);
