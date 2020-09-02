@@ -516,6 +516,18 @@ THREE.OrbitControls = function ( object, domElement ) {
 
 			dollyIn( getZoomScale() );
 
+		} else {  // For mouse scroll on Mac OS
+
+			if (event.deltaX < 0) {
+
+				dollyOut( getZoomScale() );
+
+			} else if (event.deltaX > 0) {
+
+				dollyIn( getZoomScale() );
+
+			}
+
 		}
 
 		scope.update();
