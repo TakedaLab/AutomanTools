@@ -12,7 +12,7 @@ import PCDBBox from './pcd_tool/pcd_bbox';
 import EditBar from './pcd_tool/edit_bar';
 import ViewController from './pcd_tool/view_controller'
 
-import {execKeyCommand} from './key_control/index'
+import { execKeyCommand } from './key_control/index';
 
 // 3d eidt arrow
 const arrowColors = [0xff0000, 0x00ff00, 0x0000ff],
@@ -499,6 +499,9 @@ class PCDLabelTool extends React.Component {
         this.addLabelOfBBox(pcdBBox);
         this.redrawRequest();
       });
+      execKeyCommand("bbox_set_height", e.originalEvent, () => {
+        this.setHeight();
+      })
     },
     keyup: (e) => {
       execKeyCommand("change_edit_mode", e.originalEvent, () => {
