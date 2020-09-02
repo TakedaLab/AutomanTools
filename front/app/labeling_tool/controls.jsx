@@ -227,6 +227,15 @@ class Controls extends React.Component {
     window.addEventListener('resize', () => {
       this.resize();
     });
+
+    // Prompt if there's unsaved changes
+    window.addEventListener("beforeunload", (e) => {
+      if (this.props.annotation.isChanged()) {
+        const confirmationMessage = '保存されていない変更がありますが閉じますか？';
+        (e || window.event).returnValue = confirmationMessage;
+        return confirmationMessage;
+      }
+    });
   }
 
   selectKlass(kls) {
