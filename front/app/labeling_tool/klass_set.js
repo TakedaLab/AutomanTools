@@ -2,7 +2,10 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import { withStyles } from '@material-ui/core/styles';
 
-import Tabs from '@material-ui/core/Tabs';
+import MenuItem from '@material-ui/core/MenuItem';
+import Select from '@material-ui/core/Select';
+import FormControl from '@material-ui/core/FormControl';
+import InputLabel from '@material-ui/core/InputLabel';
 import Tab from '@material-ui/core/Tab';
 import { compose } from 'redux';
 import { connect } from 'react-redux';
@@ -10,14 +13,6 @@ import { connect } from 'react-redux';
 import classNames from 'classnames';
 
 import { setKlassSet } from './actions/tool_action';
-
-const KlassTab = withStyles(theme => ({
-  root: {
-    '&:hover': {
-      backgroundColor: 'rgba(0, 0, 0, 0.1)',
-    },
-  }
-}))(props => <Tab {...props}/>);
 
 class KlassSet extends React.Component {
   // data
@@ -30,7 +25,7 @@ class KlassSet extends React.Component {
     super(props);
     this.state = {
       targetKlass: null,
-      targetIndex: -1
+      targetIndex: '',
     };
     props.dispatchSetKlassSet(this);
   }
@@ -95,59 +90,41 @@ class KlassSet extends React.Component {
     }
     return null;
   }
-  renderTabs(classes) {
+  renderItems(classes) {
     let list = [];
     for (let klass of this._klassList) {
-      const isSelected = klass.id === this.state.targetIndex;
       list.push(
-        <KlassTab
-          key={klass.id}
-          icon={(
-            <div>
-              <div
-                className={classes.colorPane}
-                style={{ backgroundColor: klass.color, margin: 'auto' }}
-              />
-              {klass.name}
-            </div>
-          )}
-        />
+        <MenuItem key={klass.id} value={klass.id}>
+          <div
+            className={classes.colorIcon}
+            style={{ backgroundColor: klass.color }}
+          />
+          {klass.name}
+        </MenuItem>
       );
     }
     return list;
   }
-  handleTabChange = (e, newVal) => {
+  handleSelectChange = (e) => {
+    const newVal = e.target.value;
     this.props.controls.selectKlass(this._klassList[newVal]);
     this.setState({ targetIndex: newVal });
   };
   render() {
     const classes = this.props.classes;
     return (
-      <Tabs
-        value={this.state.targetIndex}
-        onChange={this.handleTabChange}
-        variant="scrollable"
-        scrollButtons="auto"
-      >
-        {this.renderTabs(classes)}
-      </Tabs>
+      <FormControl style={{fontColor: 'white'}}>
+        <InputLabel>Class</InputLabel>
+        <Select
+          labelId="demo-simple-select-label"
+          id="demo-simple-select"
+          value={this.state.targetIndex}
+          onChange={this.handleSelectChange}
+        >
+          {this.renderItems(classes)}
+        </Select>
+      </FormControl>
     );
-    /*
-    return (
-      <List
-        className={classes.list}
-        subheader={
-          <ListSubheader
-            className={classes.listHead}
-          >
-            Class Set
-          </ListSubheader>
-        }
-      >
-        {this.renderList(classes)}
-      </List>
-    );
-    */
   }
 };
 const mapStateToProps = state => ({
