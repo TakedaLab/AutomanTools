@@ -77,6 +77,10 @@ export const toolStyle = theme => ({
     textAlign: 'center',
     margin: 'auto',
   },
+  ClassSelect: {
+    fontSize: '2rem',
+    color: 'white',
+  },
   colorIcon: {
     width: 18,
     height: 18,

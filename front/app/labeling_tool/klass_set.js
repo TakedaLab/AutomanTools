@@ -5,8 +5,6 @@ import { withStyles } from '@material-ui/core/styles';
 import MenuItem from '@material-ui/core/MenuItem';
 import Select from '@material-ui/core/Select';
 import FormControl from '@material-ui/core/FormControl';
-import InputLabel from '@material-ui/core/InputLabel';
-import Tab from '@material-ui/core/Tab';
 import { compose } from 'redux';
 import { connect } from 'react-redux';
 
@@ -113,11 +111,9 @@ class KlassSet extends React.Component {
   render() {
     const classes = this.props.classes;
     return (
-      <FormControl style={{fontColor: 'white'}}>
-        <InputLabel>Class</InputLabel>
+      <FormControl>
         <Select
-          labelId="demo-simple-select-label"
-          id="demo-simple-select"
+          className={classes.ClassSelect}
           value={this.state.targetIndex}
           onChange={this.handleSelectChange}
         >
