@@ -77,10 +77,16 @@ export const toolStyle = theme => ({
     textAlign: 'center',
     margin: 'auto',
   },
-  colorPane: {
+  ClassSelect: {
+    fontSize: '2rem',
+    color: 'white',
+  },
+  colorIcon: {
     width: 18,
     height: 18,
-    borderRadius: 2
+    borderRadius: 2,
+    marginRight: '1rem',
+    display: 'inline-block',
   },
   content: {
     marginLeft: drawerWidth,
