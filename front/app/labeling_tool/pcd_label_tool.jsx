@@ -37,6 +37,7 @@ class PCDLabelTool extends React.Component {
       },
       visualizeObjectIds: false,
       visualizeBoxInfo: true,
+      visualizeProjectedRects: true,
       cameraHelperSettings: {
         isUpdating: false,
         visible: true,

@@ -402,6 +402,8 @@ export default class PCDBBox {
       return
     }
     this.removeProjectedRects();
+    if (!this.pcdTool.state.visualizeProjectedRects) return;
+
     Object.entries(this.pcdTool.props.labelTool.candidateCalibrations).forEach(([key, value]) => {
       const candidateId = Number(key);
       const calibrationFiles = this.pcdTool.props.labelTool.calibrations.filter((item) => {
