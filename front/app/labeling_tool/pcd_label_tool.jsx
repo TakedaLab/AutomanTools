@@ -379,9 +379,10 @@ class PCDLabelTool extends React.Component {
       this._redrawFlag = true;
     },
     keydown: (e) => {
-      execKeyCommand("change_edit_mode", e.originalEvent, () => {
-        this.modeChangeRequest('view');
-      })
+      if (!this.props.controls.state.isMouseOnTool) {
+        return
+      }
+
       execKeyCommand("reset_camera", e.originalEvent, () => {
         // Reset camera potision to when saveState called
         this._cameraControls.reset();
@@ -517,13 +518,6 @@ class PCDLabelTool extends React.Component {
         this.setHeight();
       })
     },
-    keyup: (e) => {
-      execKeyCommand("change_edit_mode", e.originalEvent, () => {
-        if (this._modeStatus.mode === 'view') {
-          this.modeChangeRequest('edit');
-        }
-      })
-    }
   };
 
   setActive(isActive) {
@@ -1102,14 +1096,25 @@ function createModeMethods(pcdTool) {
       mode: null,
       startParam: null,
       animate: function () {
+        if (pcdTool._cameraControls.enabled) {
+          pcdTool.redrawRequest();
+          pcdTool._cameraControls.update();
+        }
       },
       mouseDown: function (e) {
+        // Enable orbit control
+        pcdTool._cameraControls.enabled = true;
+
         let pos = pcdTool.getIntersectPos(e);
         if (this.prevHover !== null && this.prevHover.type === 'top') {
           pos = pcdTool.getZPos(e, this.prevHover.bbox.box.pos);
         }
 
+        // Move the selected box
         if (pos != null && this.prevHover !== null) {
+          // Disable orbit control
+          pcdTool._cameraControls.enabled = false;
+
           this.mode = 'move';
           const startParam = {
             size: this.prevHover.bbox.box.size.clone(),
@@ -1146,8 +1151,12 @@ function createModeMethods(pcdTool) {
           return;
         }
 
+        // Select a box or create a new box
         if (pos != null) {
           if (pcdTool.props.controls.state.isCreationKeyPressed) {
+            // Disable orbit control
+            pcdTool._cameraControls.enabled = false;
+
             pcdTool._creatingBBox.startPos = pos;
             pcdTool._modeStatus.busy = true;
             this.mode = 'create';
@@ -1511,6 +1520,9 @@ function createModeMethods(pcdTool) {
         const mode = this.mode;
         this.mode = null;
 
+        // Enable orbit control
+        pcdTool._cameraControls.enabled = true;
+
         if (mode === 'move') {
           const box = this.prevHover.bbox.box;
           if (!this.startParam.size.equals(box.size) ||
@@ -1558,8 +1570,10 @@ function createModeMethods(pcdTool) {
         }
       },
       changeFrom: function () {
+        pcdTool._cameraControls.enabled = false;
       },
       changeTo: function () {
+        pcdTool._cameraControls.enabled = true;
         //pcdTool._main.css('cursor', 'crosshair');
       },
     },
