@@ -341,6 +341,10 @@ class ImageLabelTool extends React.Component {
   _creatingRect = null;
   _creatingBox = null;
   _imageDragMove = (dx, dy) => {
+    if (!this.props.controls.state.isCreationKeyPressed) {
+      return
+    }
+
     const klass = this.props.controls.getTargetKlass();
     const mainScale = this.state.scale * MAIN_SCREEN_SCALE;
     dx = dx / mainScale | 0;

@@ -46,7 +46,9 @@ class Controls extends React.Component {
       skipFrameCount: 1,
       activeTool: 0,
       isLoading: false,
-      isActivePCD: false
+      isActivePCD: false,
+      isCreationKeyPressed: false,
+      isMouseOnTool: false,
     };
 
     this.frameLength = props.labelTool.frameLength;
@@ -133,54 +135,98 @@ class Controls extends React.Component {
           return;
         }
 
-        const targetLabel = this.props.annotation.getTarget()
-        if(targetLabel){
-          if(targetLabel.bbox){
-            Object.keys(targetLabel.bbox).forEach((bkey) => {
-              // loop bbox object
-              const bbox = targetLabel.bbox[bkey]
-              if(bbox){
-                const shiftBboxParams = (bbox, box_d) => {
-                  bbox.shiftBboxParams(box_d);
-                  var changedLabel = bbox.label.createHistory(null)
-                  changedLabel.addHistory()
-                }
-                ["x", "y", "z"].forEach(axis => {
-                  ["pos", "size"].forEach(param => {
-                    [
-                      "increment", "increment_big",
-                      "decrement", "decrement_big"
-                    ].forEach(action => {
-                      const command = "bbox_"+axis+"_"+param+"_"+action
-                      const box_d = {
-                        pos: { x: 0, y: 0, z: 0 },
-                        size: { x: 0, y: 0, z: 0 },
-                        yaw: 0,
-                      }
-                      switch(action){
-                        case "increment":
-                          box_d[param][axis] = 0.05
-                          break
-                        case "decrement":
-                          box_d[param][axis] = -0.05
-                          break
-                        case "increment_big":
-                          box_d[param][axis] = 0.5
-                          break
-                        case "decrement_big":
-                          box_d[param][axis] = -0.5
-                          break
-                      }
-                      execKeyCommand(command, e.originalEvent, () => {
-                        shiftBboxParams(bbox, box_d)
+        // Enable box-creation mode with key 'alt'
+        if (e.key === "Alt") {
+          this.setState({"isCreationKeyPressed": true});
+        }
+
+        // Tool-specific commands
+        if (this.state.isMouseOnTool) {
+          // Remove browser's default event-handlers
+          if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key)) {
+            e.preventDefault();
+            e.returnValue = '';
+          }
+
+          // Box controls
+          const targetLabel = this.props.annotation.getTarget()
+          if(targetLabel){
+            if(targetLabel.bbox){
+              Object.keys(targetLabel.bbox).forEach((bkey) => {
+                // loop bbox object
+                const bbox = targetLabel.bbox[bkey]
+                if(bbox){
+                  const shiftBboxParams = (bbox, box_d) => {
+                    bbox.shiftBboxParams(box_d);
+                    var changedLabel = bbox.label.createHistory(null)
+                    changedLabel.addHistory()
+                  }
+                  ["x", "y", "z"].forEach(axis => {
+                    ["pos", "size"].forEach(param => {
+                      [
+                        "increment", "increment_big",
+                        "decrement", "decrement_big"
+                      ].forEach(action => {
+                        const command = "bbox_"+axis+"_"+param+"_"+action
+                        const box_d = {
+                          pos: { x: 0, y: 0, z: 0 },
+                          size: { x: 0, y: 0, z: 0 },
+                          yaw: 0,
+                        }
+                        switch(action){
+                          case "increment":
+                            box_d[param][axis] = 0.01
+                            break
+                          case "decrement":
+                            box_d[param][axis] = -0.01
+                            break
+                          case "increment_big":
+                            box_d[param][axis] = 0.1
+                            break
+                          case "decrement_big":
+                            box_d[param][axis] = -0.1
+                            break
+                        }
+                        execKeyCommand(command, e.originalEvent, () => {
+                          shiftBboxParams(bbox, box_d)
+                        })
                       })
                     })
                   })
-                })
-              }
-            })
+                }
+              })
+            }
           }
+
+          // bbox
+          execKeyCommand("bbox_remove", e.originalEvent, () => {
+            const label = this.getTargetLabel();
+            if (label != null) {
+              this.removeLabel(label);
+            }
+          })
+          execKeyCommand("bbox_copy", e.originalEvent, () => this.props.clipboard.copy(null))
+          execKeyCommand("bbox_paste", e.originalEvent, () => this.props.clipboard.paste())
+
+          execKeyCommand("select_next_bbox", e.originalEvent, () => {
+            this.props.annotation.getNextTarget()
+          })
+          execKeyCommand("select_prev_bbox", e.originalEvent, () => {
+            this.props.annotation.getPrevTarget()
+          })
+          execKeyCommand("deselect_bbox", e.originalEvent, () => {
+            this.props.annotation.setTarget(null)
+          })
+          execKeyCommand("change_tool_mode", e.originalEvent, () => {
+            this.setPCDActive(
+              !this.state.isActivePCD
+            )
+          })
         }
+
+
+        // save
+        execKeyCommand("save_frame", e.originalEvent, () => this.saveFrame())
 
         // history
         execKeyCommand("history_undo", e.originalEvent, () => this.props.history.undo())
@@ -190,37 +236,18 @@ class Controls extends React.Component {
         execKeyCommand("frame_next", e.originalEvent, () => this.nextFrame())
         execKeyCommand("frame_prev", e.originalEvent, () => this.previousFrame())
 
-        // bbox
-        execKeyCommand("bbox_remove", e.originalEvent, () => {
-          const label = this.getTargetLabel();
-          if (label != null) {
-            this.removeLabel(label);
-          }
-        })
-        execKeyCommand("bbox_copy", e.originalEvent, () => this.props.clipboard.copy(null))
-        execKeyCommand("bbox_paste", e.originalEvent, () => this.props.clipboard.paste())
-
-        execKeyCommand("select_next_bbox", e.originalEvent, () => {
-          this.props.annotation.getNextTarget()
-        })
-        execKeyCommand("select_prev_bbox", e.originalEvent, () => {
-          this.props.annotation.getPrevTarget()
-        })
-        execKeyCommand("deselect_bbox", e.originalEvent, () => {
-          this.props.annotation.setTarget(null)
-        })
-        execKeyCommand("change_tool_mode", e.originalEvent, () => {
-          this.setPCDActive(
-            !this.state.isActivePCD
-          )
-        })
-
         this.getTool().handles.keydown(e);
       })
       .keyup(e => {
         if (this.state.isLoading) {
           return;
         }
+
+        // Disable box-creation mode with key 'alt'
+        if (e.key === "Alt") {
+          this.setState({"isCreationKeyPressed": false});
+        }
+
         this.getTool().handles.keyup(e);
       });
 
@@ -520,7 +547,7 @@ class Controls extends React.Component {
       this.props.controls == null &&
       this.props.toolsCnt == this.toolComponents.length;
   }
-  componentDidMount() { }
+  componentDidMount() {}
   componentDidUpdate(prevProps, prevState) {
     if (this.isToolReady()) {
       if (this.props.labelTool.candidateInfo.length !== this.getTools().length) {
@@ -545,6 +572,13 @@ class Controls extends React.Component {
             tool.candidateId = info.candidate_id;
             this.props.labelTool.filenames[tool.candidateId] = [];
             this.toolNames[toolIndex] = analyzedInfo['topic_name'];
+
+            // Add event handler of mouseenter and mouseleave
+            tool._wrapper.mouseenter(() => {
+              this.setState({'isMouseOnTool': true});
+            }).mouseleave(() => {
+              this.setState({'isMouseOnTool': false});
+            });
           }
         }, analyzedInfo);
       });

@@ -1,5 +1,17 @@
 import { keymap } from './key_map/index'
 
+// Disable browser's default key-commands
+window.addEventListener('keydown', event => {
+  if (event.ctrlKey && 'cvsuz'.indexOf(event.key) !== -1) {
+    event.preventDefault();
+    event.returnValue = '';
+  }
+  if (event.metaKey && 'cvsuz'.indexOf(event.key) !== -1) {
+    event.preventDefault();
+    event.returnValue = '';
+  }
+})
+
 const modifiers = {
   altKey: "alt",
   ctrlKey: "ctrl",
@@ -11,7 +23,7 @@ export const execKeyCommand = (command, e, callback) => {
   // exec key command
   keymap.forEach((objBind) => {
     if(objBind.command !== command){
-      
+
     }else{
       objBind.keys.forEach((objKey) => {
         const lits = objKey.split("+")

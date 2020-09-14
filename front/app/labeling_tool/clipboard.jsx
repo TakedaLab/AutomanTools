@@ -34,7 +34,16 @@ class Clipboard extends React.Component {
   }
   paste() {
     const copy = this.state.copy;
-    this.props.annotation.pasteLabels(copy);
+    if (copy !== null) {
+      if (copy.length === 1) {
+        this.props.annotation.pasteLabels(copy);
+      } else {
+        let TEXT = '複数のラベルを貼り付けます';
+        if (window.confirm(TEXT)) {
+          this.props.annotation.pasteLabels(copy);
+        }
+      }
+    }
   }
 
   render() {

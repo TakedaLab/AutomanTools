@@ -1,12 +1,14 @@
 export const keymapDefault = [
-  //view
+  // generic interface
+  {
+    "keys": ["ctrl+KeyS", "meta+KeyS"],
+    "command": "save_frame"
+  },
+
+  // view
   {
     "keys": ["KeyM"],
     "command": "change_tool_mode"
-  },
-  {
-    "keys": ["shift+ShiftLeft", "shift+ShiftRight", "ShiftLeft", "ShiftRight", "Space"],
-    "command": "change_edit_mode"
   },
   {
     "keys": ["Digit0"],
@@ -29,34 +31,38 @@ export const keymapDefault = [
     "command": "rotate_camera_right",
   },
 
-  // templates	
-  {	
-    "keys": ["alt+Digit1"],	
-    "command": "template_add_kcar",	
+  // templates
+  {
+    "keys": ["alt+Digit1"],
+    "command": "template_add_kcar",
   },
-  {	
-    "keys": ["alt+Digit2"],	
-    "command": "template_add_sedan",	
+  {
+    "keys": ["alt+Digit2"],
+    "command": "template_add_sedan",
   },
-  {	
-    "keys": ["alt+Digit3"],	
-    "command": "template_add_minivan",	
+  {
+    "keys": ["alt+Digit3"],
+    "command": "template_add_minivan",
   },
-  {	
-    "keys": ["alt+Digit4"],	
-    "command": "template_add_small_sized_track",	
+  {
+    "keys": ["alt+Digit4"],
+    "command": "template_add_small_sized_track",
   },
-  {	
-    "keys": ["alt+Digit5"],	
-    "command": "template_add_middle_sized_track",	
+  {
+    "keys": ["alt+Digit5"],
+    "command": "template_add_middle_sized_track",
   },
-  {	
-    "keys": ["alt+Digit6"],	
-    "command": "template_add_large_sized_track",	
+  {
+    "keys": ["alt+Digit6"],
+    "command": "template_add_large_sized_track",
   },
-  {	
-    "keys": ["alt+Digit7"],	
-    "command": "template_add_mortorcycle",	
+  {
+    "keys": ["alt+Digit7"],
+    "command": "template_add_mortorcycle",
+  },
+  {
+    "keys": ["alt+Digit8"],
+    "command": "template_add_pedestrian",
   },
 
   // history
