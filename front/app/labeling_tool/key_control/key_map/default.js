@@ -206,5 +206,9 @@ export const keymapDefault = [
     "keys": [],
     "command": "bbox_z_size_decrement_big",
   },
+  {
+    "keys": ["shift+KeyH"],
+    "command": "bbox_set_height",
+  },
 ]
 

@@ -151,6 +151,25 @@ class ViewController extends React.Component {
           }
           label="Show Box Info"
         />
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={this.props.tool.state.visualizeProjectedRects}
+              onChange={(event) => {
+                this.props.tool.setState({
+                  visualizeProjectedRects: event.target.checked
+                }, () => {
+                  this.props.tool.pcdBBoxes.forEach((item)=>{item.update2DBox()});
+                  this.props.tool.redrawRequest();
+                  this.forceUpdate();
+                })
+              }}
+              name="show-projected-rects"
+              color="primary"
+            />
+          }
+          label="Show Projected Rects"
+        />
         <Typography id="view-controller-point-size" gutterBottom>
           Point-size:
         </Typography>
