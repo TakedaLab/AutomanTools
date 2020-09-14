@@ -19,7 +19,7 @@ const BBoxParams = {
     rect: {
       selected: {
         'stroke': 'red',
-        'stroke-width': 10,
+        'stroke-width': 6,
         'fill': '#fff',
         'fill-opacity': 0,
         'cursor': 'all-scroll'
