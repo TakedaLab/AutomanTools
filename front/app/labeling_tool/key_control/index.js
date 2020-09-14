@@ -2,11 +2,11 @@ import { keymap } from './key_map/index'
 
 // Disable browser's default key-commands
 window.addEventListener('keydown', event => {
-  if (event.ctrlKey && 'cvxspwuaz'.indexOf(event.key) !== -1) {
+  if (event.ctrlKey && 'cvsuz'.indexOf(event.key) !== -1) {
     event.preventDefault();
     event.returnValue = '';
   }
-  if (event.metaKey && 'cvxspwuaz'.indexOf(event.key) !== -1) {
+  if (event.metaKey && 'cvsuz'.indexOf(event.key) !== -1) {
     event.preventDefault();
     event.returnValue = '';
   }
