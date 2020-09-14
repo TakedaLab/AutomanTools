@@ -19,7 +19,7 @@ const BBoxParams = {
     rect: {
       selected: {
         'stroke': 'red',
-        'stroke-width': 10,
+        'stroke-width': 6,
         'fill': '#fff',
         'fill-opacity': 0,
         'cursor': 'all-scroll'
@@ -96,7 +96,7 @@ export default class PCDBBox {
   updateSelected(selected) {
     this.selected = selected;
     this.cube.meshFrame.setStatus(selected, false);
-    this.cube.meshFrame.setBold(selected);
+    // this.cube.meshFrame.setBold(selected);
     const box = this.box;
     this.cube.meshFrame.setParam(box.pos, box.size, box.yaw);
     // Update mesh
