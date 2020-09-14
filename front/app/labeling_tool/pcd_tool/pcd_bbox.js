@@ -96,7 +96,7 @@ export default class PCDBBox {
   updateSelected(selected) {
     this.selected = selected;
     this.cube.meshFrame.setStatus(selected, false);
-    this.cube.meshFrame.setBold(selected);
+    // this.cube.meshFrame.setBold(selected);
     const box = this.box;
     this.cube.meshFrame.setParam(box.pos, box.size, box.yaw);
     // Update mesh
