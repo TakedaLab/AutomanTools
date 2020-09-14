@@ -46,7 +46,8 @@ class Controls extends React.Component {
       skipFrameCount: 1,
       activeTool: 0,
       isLoading: false,
-      isActivePCD: false
+      isActivePCD: false,
+      isCreationKeyPressed: false,
     };
 
     this.frameLength = props.labelTool.frameLength;
@@ -131,6 +132,11 @@ class Controls extends React.Component {
       .keydown(e => {
         if (this.state.isLoading) {
           return;
+        }
+
+        // Enable box-creation mode with key 'alt'
+        if (e.key === "Alt") {
+          this.setState({"isCreationKeyPressed": true});
         }
 
         const targetLabel = this.props.annotation.getTarget()
@@ -224,6 +230,12 @@ class Controls extends React.Component {
         if (this.state.isLoading) {
           return;
         }
+
+        // Disable box-creation mode with key 'alt'
+        if (e.key === "Alt") {
+          this.setState({"isCreationKeyPressed": false});
+        }
+
         this.getTool().handles.keyup(e);
       });
 
