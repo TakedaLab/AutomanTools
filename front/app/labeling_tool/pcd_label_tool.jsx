@@ -413,7 +413,7 @@ class PCDLabelTool extends React.Component {
         const pcdBBox = this.createBBox({
           'x_3d': 0,
           'y_3d': 0,
-          'z_3d': -1.35,
+          'z_3d': 0,
           'width_3d': 3.4,
           'height_3d': 1.5,
           'length_3d': 1.8,
@@ -426,7 +426,7 @@ class PCDLabelTool extends React.Component {
         const pcdBBox = this.createBBox({
           'x_3d': 0,
           'y_3d': 0,
-          'z_3d': -1.35,
+          'z_3d': 0,
           'width_3d': 4.5,
           'height_3d': 1.7,
           'length_3d': 1.5,
@@ -439,7 +439,7 @@ class PCDLabelTool extends React.Component {
         const pcdBBox = this.createBBox({
           'x_3d': 0,
           'y_3d': 0,
-          'z_3d': -1.35,
+          'z_3d': 0,
           'width_3d': 4.8,
           'height_3d': 1.8,
           'length_3d': 1.8,
@@ -452,7 +452,7 @@ class PCDLabelTool extends React.Component {
         const pcdBBox = this.createBBox({
           'x_3d': 0,
           'y_3d': 0,
-          'z_3d': -1.35,
+          'z_3d': 0,
           'width_3d': 3.4,
           'height_3d': 1.5,
           'length_3d': 1.8,
@@ -465,7 +465,7 @@ class PCDLabelTool extends React.Component {
         const pcdBBox = this.createBBox({
           'x_3d': 0,
           'y_3d': 0,
-          'z_3d': -1.35,
+          'z_3d': 0,
           'width_3d': 4.5,
           'height_3d': 1.7,
           'length_3d': 1.8,
@@ -478,7 +478,7 @@ class PCDLabelTool extends React.Component {
         const pcdBBox = this.createBBox({
           'x_3d': 0,
           'y_3d': 0,
-          'z_3d': -1.35,
+          'z_3d': 1.0,
           'width_3d': 8,
           'height_3d': 2.2,
           'length_3d': 3.5,
@@ -491,10 +491,23 @@ class PCDLabelTool extends React.Component {
         const pcdBBox = this.createBBox({
           'x_3d': 0,
           'y_3d': 0,
-          'z_3d': -1.35,
+          'z_3d': 0,
           'width_3d': 2.0,
           'height_3d': 0.8,
           'length_3d': 1.5,
+          'rotation_y': 0,
+        });
+        this.addLabelOfBBox(pcdBBox);
+        this.redrawRequest();
+      });
+      execKeyCommand("template_add_pedestrian", e.originalEvent, () => {
+        const pcdBBox = this.createBBox({
+          'x_3d': 0,
+          'y_3d': 0,
+          'z_3d': 0,
+          'width_3d': 0.5,
+          'height_3d': 0.5,
+          'length_3d': 1.67,
           'rotation_y': 0,
         });
         this.addLabelOfBBox(pcdBBox);

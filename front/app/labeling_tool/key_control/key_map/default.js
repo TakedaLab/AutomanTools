@@ -64,6 +64,10 @@ export const keymapDefault = [
     "keys": ["alt+Digit7"],
     "command": "template_add_mortorcycle",
   },
+  {
+    "keys": ["alt+Digit8"],
+    "command": "template_add_pedestrian",
+  },
 
   // history
   {
