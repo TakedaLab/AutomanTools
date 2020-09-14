@@ -1147,9 +1147,11 @@ function createModeMethods(pcdTool) {
         }
 
         if (pos != null) {
-          pcdTool._creatingBBox.startPos = pos;
-          pcdTool._modeStatus.busy = true;
-          this.mode = 'create';
+          if (pcdTool.props.controls.state.isCreationKeyPressed) {
+            pcdTool._creatingBBox.startPos = pos;
+            pcdTool._modeStatus.busy = true;
+            this.mode = 'create';
+          }
           pcdTool.props.controls.selectLabel(null);
           return;
         }
