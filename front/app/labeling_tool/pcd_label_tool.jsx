@@ -518,6 +518,9 @@ class PCDLabelTool extends React.Component {
         this.setHeight();
       })
     },
+    keyup: ((e) => {
+
+    }),
   };
 
   setActive(isActive) {
