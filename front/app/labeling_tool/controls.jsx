@@ -159,16 +159,16 @@ class Controls extends React.Component {
                       }
                       switch(action){
                         case "increment":
-                          box_d[param][axis] = 0.05
+                          box_d[param][axis] = 0.01
                           break
                         case "decrement":
-                          box_d[param][axis] = -0.05
+                          box_d[param][axis] = -0.01
                           break
                         case "increment_big":
-                          box_d[param][axis] = 0.5
+                          box_d[param][axis] = 0.1
                           break
                         case "decrement_big":
-                          box_d[param][axis] = -0.5
+                          box_d[param][axis] = -0.1
                           break
                       }
                       execKeyCommand(command, e.originalEvent, () => {
