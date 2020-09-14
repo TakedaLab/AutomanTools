@@ -182,6 +182,9 @@ class Controls extends React.Component {
           }
         }
 
+        // save
+        execKeyCommand("save_frame", e.originalEvent, () => this.saveFrame())
+
         // history
         execKeyCommand("history_undo", e.originalEvent, () => this.props.history.undo())
         execKeyCommand("history_redo", e.originalEvent, () => this.props.history.redo())
