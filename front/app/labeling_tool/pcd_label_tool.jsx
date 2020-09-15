@@ -409,110 +409,56 @@ class PCDLabelTool extends React.Component {
         this.redrawRequest();
       });
 
+      const handleTemplate = (bboxSize) => {
+        const tgt = this.props.controls.getTargetLabel();
+        if(tgt){
+          const bbox = tgt.bbox[this.candidateId];
+          bbox.setBboxParams({
+            'pos': bbox.box.pos,
+            'size': bboxSize,
+            'yaw': bbox.box.yaw,
+            });
+          var changedLabel = bbox.label.createHistory(null)
+          changedLabel.addHistory()
+        }else{
+          const pcdBBox = this.createBBox({
+            'x_3d': 0,
+            'y_3d': 0,
+            'z_3d': 0,
+            'width_3d': bboxSize.x,
+            'height_3d': bboxSize.y,
+            'length_3d': bboxSize.z,
+            'rotation_y': 0,
+          });
+          this.addLabelOfBBox(pcdBBox);
+          this.redrawRequest();
+        }
+      }
+
       // adding templates
       execKeyCommand("template_add_kcar", e.originalEvent, () => {
-        const pcdBBox = this.createBBox({
-          'x_3d': 0,
-          'y_3d': 0,
-          'z_3d': 0,
-          'width_3d': 3.4,
-          'height_3d': 1.5,
-          'length_3d': 1.8,
-          'rotation_y': 0,
-        });
-        this.addLabelOfBBox(pcdBBox);
-        this.redrawRequest();
+        handleTemplate({ 'x': 3.4, 'y': 1.5, 'z': 1.8 })
       });
       execKeyCommand("template_add_sedan", e.originalEvent, () => {
-        const pcdBBox = this.createBBox({
-          'x_3d': 0,
-          'y_3d': 0,
-          'z_3d': 0,
-          'width_3d': 4.5,
-          'height_3d': 1.7,
-          'length_3d': 1.5,
-          'rotation_y': 0,
-        });
-        this.addLabelOfBBox(pcdBBox);
-        this.redrawRequest();
+        handleTemplate({ 'x': 4.5, 'y': 1.7, 'z': 1.5 })
       });
       execKeyCommand("template_add_minivan", e.originalEvent, () => {
-        const pcdBBox = this.createBBox({
-          'x_3d': 0,
-          'y_3d': 0,
-          'z_3d': 0,
-          'width_3d': 4.8,
-          'height_3d': 1.8,
-          'length_3d': 1.8,
-          'rotation_y': 0,
-        });
-        this.addLabelOfBBox(pcdBBox);
-        this.redrawRequest();
+        handleTemplate({ 'x': 4.8, 'y': 1.8, 'z': 1.8 })
       });
       execKeyCommand("template_add_small_sized_track", e.originalEvent, () => {
-        const pcdBBox = this.createBBox({
-          'x_3d': 0,
-          'y_3d': 0,
-          'z_3d': 0,
-          'width_3d': 3.4,
-          'height_3d': 1.5,
-          'length_3d': 1.8,
-          'rotation_y': 0,
-        });
-        this.addLabelOfBBox(pcdBBox);
-        this.redrawRequest();
+        handleTemplate({ 'x': 3.4, 'y': 1.5, 'z': 1.8 })
       });
       execKeyCommand("template_add_middle_sized_track", e.originalEvent, () => {
-        const pcdBBox = this.createBBox({
-          'x_3d': 0,
-          'y_3d': 0,
-          'z_3d': 0,
-          'width_3d': 4.5,
-          'height_3d': 1.7,
-          'length_3d': 1.8,
-          'rotation_y': 0,
-        });
-        this.addLabelOfBBox(pcdBBox);
-        this.redrawRequest();
+        handleTemplate({ 'x': 4.5, 'y': 1.7, 'z': 1.8 })
       });
       execKeyCommand("template_add_large_sized_track", e.originalEvent, () => {
-        const pcdBBox = this.createBBox({
-          'x_3d': 0,
-          'y_3d': 0,
-          'z_3d': 1.0,
-          'width_3d': 8,
-          'height_3d': 2.2,
-          'length_3d': 3.5,
-          'rotation_y': 0,
-        });
-        this.addLabelOfBBox(pcdBBox);
-        this.redrawRequest();
+        handleTemplate({ 'x': 8.0, 'y': 2.2, 'z': 3.5 })
       });
       execKeyCommand("template_add_mortorcycle", e.originalEvent, () => {
-        const pcdBBox = this.createBBox({
-          'x_3d': 0,
-          'y_3d': 0,
-          'z_3d': 0,
-          'width_3d': 2.0,
-          'height_3d': 0.8,
-          'length_3d': 1.5,
-          'rotation_y': 0,
-        });
-        this.addLabelOfBBox(pcdBBox);
-        this.redrawRequest();
+        handleTemplate({ 'x': 2.0, 'y': 0.8, 'z': 1.5 })
       });
       execKeyCommand("template_add_pedestrian", e.originalEvent, () => {
-        const pcdBBox = this.createBBox({
-          'x_3d': 0,
-          'y_3d': 0,
-          'z_3d': 0,
-          'width_3d': 0.5,
-          'height_3d': 0.5,
-          'length_3d': 1.67,
-          'rotation_y': 0,
-        });
-        this.addLabelOfBBox(pcdBBox);
-        this.redrawRequest();
+        handleTemplate({ 'x': 0.5, 'y': 0.5, 'z': 1.67 })
       });
       execKeyCommand("bbox_set_height", e.originalEvent, () => {
         this.setHeight();
