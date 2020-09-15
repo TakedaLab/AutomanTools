@@ -34,6 +34,9 @@ export const toolStyle = theme => ({
   selectedListItem: {
     backgroundColor: '#eee',
   },
+  listItemText: {
+    whiteSpace: 'nowrap',
+  },
   appBar: {
     width: '100%',
     height: appBarHeight
