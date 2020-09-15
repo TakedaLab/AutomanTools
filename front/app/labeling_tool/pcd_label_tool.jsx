@@ -600,7 +600,11 @@ class PCDLabelTool extends React.Component {
     if (tgt !== null) {
       bboxes = [tgt.bbox[this.candidateId]];
     } else {
-      bboxes = Array.from(this.pcdBBoxes);
+      if ( window.confirm("すべてのボックスの高さを自動修正しますか？") ) {
+        bboxes = Array.from(this.pcdBBoxes);
+      }else {
+        bboxes = []
+      }
     }
     const points = this._currentPointMesh.geometry.vertices;
     let changedLabel = null;
