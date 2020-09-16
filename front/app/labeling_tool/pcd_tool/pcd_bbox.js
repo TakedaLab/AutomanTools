@@ -438,34 +438,34 @@ export default class PCDBBox {
     box.objectId = id
     this.updateParam();
   }
-  shiftBboxParams(box_d){
+  shiftBboxParams(bboxParamsD){
     const box = this.box;
     box.size.set(
-      box.size.x + box_d.size.x,
-      box.size.y + box_d.size.y,
-      box.size.z + box_d.size.z,
+      box.size.x + bboxParamsD.size.x,
+      box.size.y + bboxParamsD.size.y,
+      box.size.z + bboxParamsD.size.z,
     )
     box.pos.set(
-      box.pos.x + box_d.pos.x,
-      box.pos.y + box_d.pos.y,
-      box.pos.z + box_d.pos.z,
+      box.pos.x + bboxParamsD.pos.x,
+      box.pos.y + bboxParamsD.pos.y,
+      box.pos.z + bboxParamsD.pos.z,
     )
-    box.yaw = box.yaw + box_d.yaw
+    box.yaw = box.yaw + bboxParamsD.yaw
     this.updateParam();
   }
-  setBboxParams(new_box){
+  setBboxParams(boxParams){
     const box = this.box;
     box.size.set(
-      new_box.size.x,
-      new_box.size.y,
-      new_box.size.z,
+      boxParams.size.x,
+      boxParams.size.y,
+      boxParams.size.z,
     )
     box.pos.set(
-      new_box.pos.x,
-      new_box.pos.y,
-      new_box.pos.z,
+      boxParams.pos.x,
+      boxParams.pos.y,
+      boxParams.pos.z,
     )
-    box.yaw = new_box.yaw
+    box.yaw = boxParams.yaw
     this.updateParam();
   }
   rotateFront(n) {
