@@ -656,15 +656,12 @@ class Controls extends React.Component {
   // Auto save timer
   initializeAutoSaveTimer() {
     // Initialize timer for autosave (every 1 hour)
-    console.log('setup autosave timer')
     this.timerForAutoSave = setInterval(() => {
-      console.log('autosave');
       this.saveFrame();
     }, 1000 * 60 * 60);
   }
   clearAutoSaveTimer() {
     // Clear timer for autosave
-    console.log('clear autosave timer')
     clearInterval(this.timerForAutoSave);
   }
 
