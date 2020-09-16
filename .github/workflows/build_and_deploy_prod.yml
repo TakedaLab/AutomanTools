@@ -61,7 +61,7 @@ jobs:
             && address=$(jq -r '.[0].addresses[0]' public_endpoints.json) \
             && port=$(jq -r '.[0].port' public_endpoints.json) \
             && echo "::set-env name=SLACK_MESSAGE::The production deployment has been updated. You can use it at http://${address}:${port}/"
-      - name: Slack Notification
+      - name: Slack Notification (p-meti-tagging)
         uses: rtCamp/action-slack-notify@master
         env:
             SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
@@ -70,4 +70,15 @@ jobs:
             SLACK_COLOR: '#3278BD'
             SLACK_TITLE: 'The latest AutomanTools is ready :confetti_ball:'
             SLACK_USERNAME: CI/CD (GitHub Actions)
+            MSG_MINIMAL: true
+      - name: Slack Notification (tagging-member)
+        uses: rtCamp/action-slack-notify@master
+        env:
+            SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+            SLACK_CHANNEL: 'tagging-member'
+            SLACK_ICON: https://www.hdwlab.co.jp/images/favicon.png
+            SLACK_COLOR: '#3278BD'
+            SLACK_TITLE: 'ラベリングツールがアップデートされました！ :confetti_ball:'
+            SLACK_MESSAGE: 'アップデート内容についてはマニュアルをご参照下さい'
+            SLACK_USERNAME: HDL
             MSG_MINIMAL: true
