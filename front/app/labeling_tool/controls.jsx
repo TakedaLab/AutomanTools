@@ -525,6 +525,10 @@ class Controls extends React.Component {
       .then(() => {
         this.setState({ isLoading: false });
         this.setState({frameNumber: num});
+
+        // Set timer for auto save
+        this.clearAutoSaveTimer();
+        this.initializeAutoSaveTimer();
       });
   }
   getFrameNumber() {
@@ -546,17 +550,6 @@ class Controls extends React.Component {
     return !this.toolInitialized &&
       this.props.controls == null &&
       this.props.toolsCnt == this.toolComponents.length;
-  }
-  componentDidMount() {
-    // Initialize timer for autosave (every 1 hour)
-    this.timerForAutoSave = setInterval(() => {
-      console.log('autosave')
-      this.saveFrame();
-    }, 1000 * 60 * 60); 
-  }
-  componentWillUnmount() {
-    // Clear timer for autosave
-    clearInterval(this.timerForAutoSave);
   }
   componentDidUpdate(prevProps, prevState) {
     if (this.isToolReady()) {
@@ -659,6 +652,21 @@ class Controls extends React.Component {
     }
     this.setState({ skipFrameCount: value });
   };
+
+  // Auto save timer
+  initializeAutoSaveTimer() {
+    // Initialize timer for autosave (every 1 hour)
+    console.log('setup autosave timer')
+    this.timerForAutoSave = setInterval(() => {
+      console.log('autosave');
+      this.saveFrame();
+    }, 1000 * 60 * 60);
+  }
+  clearAutoSaveTimer() {
+    // Clear timer for autosave
+    console.log('clear autosave timer')
+    clearInterval(this.timerForAutoSave);
+  }
 
   renderKlassSet(classes) {
     return (
