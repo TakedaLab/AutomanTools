@@ -589,7 +589,7 @@ class LabelItem extends React.Component {
           className={classes.colorPane}
           style={{ backgroundColor: this.state.color }}
         />
-        <ListItemText primary={label.toString()} />
+        <ListItemText primary={label.toString()} className={classes.listItemText} />
       </ListItem>
     );
   }
