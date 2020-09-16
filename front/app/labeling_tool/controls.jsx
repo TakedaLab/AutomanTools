@@ -547,7 +547,17 @@ class Controls extends React.Component {
       this.props.controls == null &&
       this.props.toolsCnt == this.toolComponents.length;
   }
-  componentDidMount() {}
+  componentDidMount() {
+    // Initialize timer for autosave (every 1 hour)
+    this.timerForAutoSave = setInterval(() => {
+      console.log('autosave')
+      this.saveFrame();
+    }, 1000 * 60 * 60); 
+  }
+  componentWillUnmount() {
+    // Clear timer for autosave
+    clearInterval(this.timerForAutoSave);
+  }
   componentDidUpdate(prevProps, prevState) {
     if (this.isToolReady()) {
       if (this.props.labelTool.candidateInfo.length !== this.getTools().length) {
