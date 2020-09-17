@@ -71,7 +71,8 @@ class ImageLabelTool extends React.Component {
   render() {
     const classes = this.props.classes;
     const mainScale = this.state.scale * MAIN_SCREEN_SCALE;
-    const wipeScale = this.state.isWipeZoomed ? 
+    // Zoom wipe only when pcd tool is active
+    const wipeScale = this.state.isWipeZoomed && this.props.controls.getPCDActive() ? 
       this.state.scale * WIPE_SCREEN_SCALE * WIPE_ZOOM_RATE : 
       this.state.scale * WIPE_SCREEN_SCALE;
     const mainMargin = this._wrapperSize.width - this._imageSize.width * mainScale;
