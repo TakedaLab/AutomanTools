@@ -45,12 +45,14 @@ const imageToolStyle = {
 
 const MAIN_SCREEN_SCALE = 0.68;
 const WIPE_SCREEN_SCALE = 1 - MAIN_SCREEN_SCALE;
+const WIPE_ZOOM_RATE = 2;
 class ImageLabelTool extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
       scale: 1.0,
-      isWipe: false
+      isWipe: false,
+      isWipeZoomed: false,
     };
     this._element = React.createRef();
     this._wipeElement = React.createRef();
@@ -69,7 +71,10 @@ class ImageLabelTool extends React.Component {
   render() {
     const classes = this.props.classes;
     const mainScale = this.state.scale * MAIN_SCREEN_SCALE;
-    const wipeScale = this.state.scale * WIPE_SCREEN_SCALE;
+    // Zoom wipe only when pcd tool is active
+    const wipeScale = this.state.isWipeZoomed && this.props.controls.getPCDActive() ? 
+      this.state.scale * WIPE_SCREEN_SCALE * WIPE_ZOOM_RATE : 
+      this.state.scale * WIPE_SCREEN_SCALE;
     const mainMargin = this._wrapperSize.width - this._imageSize.width * mainScale;
     const wipeWidth = this._imageSize.width * wipeScale;
     const ml = Math.min(mainMargin, wipeWidth);
@@ -112,6 +117,7 @@ class ImageLabelTool extends React.Component {
           ref={this._element}
           className={classes.main}
           style={mainStyle}
+          onClick={() => this.toggleZoom()}
         />
         <div
           ref={this._wipeElement}
@@ -129,6 +135,7 @@ class ImageLabelTool extends React.Component {
         <div
           className={classes.guard}
           style={guardStyle}
+          onClick={() => this.toggleZoom()}
         />
       </div>
     );
@@ -161,6 +168,13 @@ class ImageLabelTool extends React.Component {
   dataType = 'IMAGE';
   candidateId = -1;
 
+  toggleZoom() {
+    if (this.state.isWipeZoomed) {
+      this.setState({isWipeZoomed: false});
+    } else {
+      this.setState({isWipeZoomed: true});
+    }
+  }
   isLoaded() {
     return this._loaded;
   }

@@ -347,6 +347,9 @@ class Controls extends React.Component {
   getTools() {
     return this.props.tools;
   }
+  getPCDActive() {
+    return this.state.isActivePCD;
+  }
   setPCDActive(isActive) {
     const prevState = this.state.isActivePCD;
     const pcdIndex = this.pcdToolIndex;
