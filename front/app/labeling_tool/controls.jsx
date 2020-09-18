@@ -347,6 +347,9 @@ class Controls extends React.Component {
   getTools() {
     return this.props.tools;
   }
+  getPCDActive() {
+    return this.state.isActivePCD;
+  }
   setPCDActive(isActive) {
     const prevState = this.state.isActivePCD;
     const pcdIndex = this.pcdToolIndex;
@@ -525,6 +528,10 @@ class Controls extends React.Component {
       .then(() => {
         this.setState({ isLoading: false });
         this.setState({frameNumber: num});
+
+        // Set timer for auto save
+        this.clearAutoSaveTimer();
+        this.initializeAutoSaveTimer();
       });
   }
   getFrameNumber() {
@@ -547,7 +554,6 @@ class Controls extends React.Component {
       this.props.controls == null &&
       this.props.toolsCnt == this.toolComponents.length;
   }
-  componentDidMount() {}
   componentDidUpdate(prevProps, prevState) {
     if (this.isToolReady()) {
       if (this.props.labelTool.candidateInfo.length !== this.getTools().length) {
@@ -649,6 +655,18 @@ class Controls extends React.Component {
     }
     this.setState({ skipFrameCount: value });
   };
+
+  // Auto save timer
+  initializeAutoSaveTimer() {
+    // Initialize timer for autosave (every 1 hour)
+    this.timerForAutoSave = setInterval(() => {
+      this.saveFrame();
+    }, 1000 * 60 * 60);
+  }
+  clearAutoSaveTimer() {
+    // Clear timer for autosave
+    clearInterval(this.timerForAutoSave);
+  }
 
   renderKlassSet(classes) {
     return (

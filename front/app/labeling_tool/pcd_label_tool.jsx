@@ -249,6 +249,10 @@ class PCDLabelTool extends React.Component {
 
   pcdLoad(frame) {
     if (this.isLoadedFrame(frame)) {
+      this._pointMeshes[frame].geometry.colors = this.colorPoints(this._pointMeshes[frame].geometry.vertices);
+      this._pointMeshes[frame].geometry.colorsNeedUpdate = true;
+      this._wipePointMeshes[frame].geometry.colors = this.colorPoints(this._wipePointMeshes[frame].geometry.vertices);
+      this._wipePointMeshes[frame].geometry.colorsNeedUpdate = true;
       return Promise.resolve({
         mesh: this._pointMeshes[frame],
         wipeMesh: this._wipePointMeshes[frame]
@@ -264,6 +268,7 @@ class PCDLabelTool extends React.Component {
           geometry.vertices.push(v);
         }
         geometry.colors = this.colorPoints(geometry.vertices);
+        geometry.colorsNeedUpdate = true;
         let material = new THREE.PointsMaterial({vertexColors: THREE.VertexColors});
         let mesh = new THREE.Points(geometry, material);
         const wipeMesh = this.setPointMesh(frame, mesh);
