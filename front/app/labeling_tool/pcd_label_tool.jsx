@@ -268,6 +268,7 @@ class PCDLabelTool extends React.Component {
           geometry.vertices.push(v);
         }
         geometry.colors = this.colorPoints(geometry.vertices);
+        geometry.colorsNeedUpdate = true;
         let material = new THREE.PointsMaterial({vertexColors: THREE.VertexColors});
         let mesh = new THREE.Points(geometry, material);
         const wipeMesh = this.setPointMesh(frame, mesh);
