@@ -434,6 +434,7 @@ class Annotation extends React.Component {
     return target.map(label => label.toObject());
   }
   pasteLabels(data) {
+    const pastePosition = { x: -1, y: -1, z: 0 };
     const labels = new Map(this.state.labels);
     let pastedLabels = [];
 
@@ -447,7 +448,11 @@ class Annotation extends React.Component {
       this.getTools().forEach(tool => {
         const id = tool.candidateId;
         if (obj.content[id] != null) {
-          bboxes[id] = tool.createBBox(obj.content[id]);
+          var objCandidateContent = obj.content[id];
+          objCandidateContent.x_3d += pastePosition.x;
+          objCandidateContent.y_3d += pastePosition.y;
+          objCandidateContent.z_3d += pastePosition.z;
+          bboxes[id] = tool.createBBox(objCandidateContent);
         }
       });
       let label = new Label(this, this._nextId--, instanceId, klass, bboxes);
