@@ -100,6 +100,10 @@ export const keymapDefault = [
     "command": "bbox_paste",
   },
   {
+    "keys": ["ctrl+shift+KeyV", "meta+shift+KeyV"],
+    "command": "bbox_paste_in_place",
+  },
+  {
     "keys": ["KeyJ"],
     "command": "select_next_bbox",
   },

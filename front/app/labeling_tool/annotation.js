@@ -216,7 +216,7 @@ class Annotation extends React.Component {
     const nextTarget = this.getNthTarget(1)
     this.setTarget(nextTarget)
   }
-  setTarget(tgt) { /** Label */ 
+  setTarget(tgt) { /** Label */
     let next = this.getLabel(tgt),
       prev = this.props.targetLabel;
     if (prev != null && next != null && next.id === prev.id) {
@@ -433,7 +433,11 @@ class Annotation extends React.Component {
     }
     return target.map(label => label.toObject());
   }
-  pasteLabels(data) {
+  pasteLabels(data, inPlace = false) {
+    const pastePosition = inPlace
+      ? { x: 0, y: 0, z: 0 }
+      : { x: -1, y: -1, z: 0 };
+
     const labels = new Map(this.state.labels);
     let pastedLabels = [];
 
@@ -447,13 +451,40 @@ class Annotation extends React.Component {
       this.getTools().forEach(tool => {
         const id = tool.candidateId;
         if (obj.content[id] != null) {
-          bboxes[id] = tool.createBBox(obj.content[id]);
+          var objCandidateContent = obj.content[id];
+
+          // Check the existence of boxes with the same content in the frame
+          let existingContents = [];
+          for (var key of labels.keys()) {
+            var label = labels.get(key).toObject();
+            if (Object.keys(label.content)[0] === String(id)) {
+              existingContents.push(Object.values(label.content)[0]);
+            }
+          }
+          let isContentExists = existingContents.some((candidateContent) => {
+            return JSON.stringify(candidateContent) === JSON.stringify(objCandidateContent)
+          });
+
+          // Add offsets if the box is overlapped
+          if (isContentExists) {
+            objCandidateContent.x_3d += pastePosition.x;
+            objCandidateContent.y_3d += pastePosition.y;
+            objCandidateContent.z_3d += pastePosition.z;
+          }
+
+          // Register the box
+          bboxes[id] = tool.createBBox(objCandidateContent);
         }
       });
       let label = new Label(this, this._nextId--, instanceId, klass, bboxes);
       labels.set(label.id, label);
       pastedLabels.push(label);
     });
+
+    // Select the label
+    if (pastedLabels.length > 0) {
+      this.props.controls.selectLabel(pastedLabels.slice(-1)[0]);
+    }
 
     this.props.history.addHistory(pastedLabels, 'create');
     this.setState(state => {

@@ -206,7 +206,8 @@ class Controls extends React.Component {
             }
           })
           execKeyCommand("bbox_copy", e.originalEvent, () => this.props.clipboard.copy(null))
-          execKeyCommand("bbox_paste", e.originalEvent, () => this.props.clipboard.paste())
+          execKeyCommand("bbox_paste", e.originalEvent, () => this.props.clipboard.paste(false))
+          execKeyCommand("bbox_paste_in_place", e.originalEvent, () => this.props.clipboard.paste(true))
 
           execKeyCommand("select_next_bbox", e.originalEvent, () => {
             this.props.annotation.getNextTarget()
