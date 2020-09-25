@@ -58,6 +58,7 @@ export default class BasePCDEditBar extends React.Component {
   render() {
     const {
       setObjectId,
+      rotateFront,
       objectId
     } = this.props;
     return (
@@ -65,7 +66,29 @@ export default class BasePCDEditBar extends React.Component {
         <Typography component="h3" variant="body1">
           Bounding Box
         </Typography>
-        <div style={{width: "100%"}}>
+        <div style={{width: "100%", paddingTop: "10px"}}>
+          <div style={{marginBottom: "10px"}}>
+            <Typography component="h4" variant="body2">
+              Rotate Front
+            </Typography>
+
+            <Grid container>
+              <Grid item xs={6}>
+                <Button
+                  onClick={() => rotateFront(1)}
+                >
+                  <RotateLeft />
+                </Button>
+              </Grid>
+              <Grid item xs={6}>
+                <Button
+                  onClick={() => rotateFront(-1)}
+                >
+                  <RotateRight />
+                </Button>
+              </Grid>
+            </Grid>
+          </div>
           <div style={{marginBottom: "32px"}}>
             <Typography component="h4" variant="body2">
               Position
