@@ -111,6 +111,14 @@ export const keymapDefault = [
     "keys": ["Escape"],
     "command": "deselect_bbox",
   },
+  {
+    "keys": ["KeyR"],
+    "command": "rotate_front_clockwise",
+  },
+  {
+    "keys": ["shift+KeyR"],
+    "command": "rotate_front_counterclockwise",
+  },
 
   // move
   {

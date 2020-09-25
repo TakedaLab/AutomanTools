@@ -468,6 +468,20 @@ class PCDLabelTool extends React.Component {
       execKeyCommand("bbox_set_height", e.originalEvent, () => {
         this.setHeight();
       })
+      execKeyCommand("rotate_front_clockwise", e.originalEvent, () => {
+        const tgt = this.props.controls.getTargetLabel();
+        if(tgt){
+          const bbox = tgt.bbox[this.candidateId];
+          bbox.rotateFront(-1);
+        }
+      })
+      execKeyCommand("rotate_front_counterclockwise", e.originalEvent, () => {
+        const tgt = this.props.controls.getTargetLabel();
+        if(tgt){
+          const bbox = tgt.bbox[this.candidateId];
+          bbox.rotateFront(1);
+        }
+      })
     },
     keyup: ((e) => {
 
