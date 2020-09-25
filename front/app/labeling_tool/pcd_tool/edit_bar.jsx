@@ -33,6 +33,10 @@ class PCDEditBar extends React.Component {
     changedLabel.addHistory()
     this.forceUpdate() // necessary to update input value
   }
+  rotateFront = (direction) => {  // Rotate left if direction = 1, or right if direction = -1
+    const bbox = this.props.bbox;
+    bbox.rotateFront(direction)
+  }
   render() {
     const bbox = this.props.bbox;
     if(bbox == null){
@@ -45,6 +49,7 @@ class PCDEditBar extends React.Component {
           box={bbox.box}
           setBboxParams={this.setBboxParams}
           setObjectId={this.setObjectId}
+          rotateFront={this.rotateFront}
           objectId={bbox.box.objectId}
         />
       </div>
