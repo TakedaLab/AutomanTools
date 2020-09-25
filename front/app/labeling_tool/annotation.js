@@ -433,8 +433,11 @@ class Annotation extends React.Component {
     }
     return target.map(label => label.toObject());
   }
-  pasteLabels(data) {
-    const pastePosition = { x: -1, y: -1, z: 0 };
+  pasteLabels(data, inPlace = false) {
+    const pastePosition = inPlace
+      ? { x: 0, y: 0, z: 0 }
+      : { x: -1, y: -1, z: 0 };
+
     const labels = new Map(this.state.labels);
     let pastedLabels = [];
 

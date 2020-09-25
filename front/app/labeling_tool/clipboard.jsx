@@ -32,15 +32,15 @@ class Clipboard extends React.Component {
     }
     this.setState({ copy: copy });
   }
-  paste() {
+  paste(inPlace = false) {
     const copy = this.state.copy;
     if (copy !== null) {
       if (copy.length === 1) {
-        this.props.annotation.pasteLabels(copy);
+        this.props.annotation.pasteLabels(copy, inPlace);
       } else {
         let TEXT = '複数のラベルを貼り付けます';
         if (window.confirm(TEXT)) {
-          this.props.annotation.pasteLabels(copy);
+          this.props.annotation.pasteLabels(copy, inPlace);
         }
       }
     }
@@ -51,7 +51,12 @@ class Clipboard extends React.Component {
       <Grid item xs={12}>
         <Button onClick={() => this.copy(false)}>Copy</Button>
         <Button onClick={() => this.copy(true)}>Copy ALL</Button>
-        <Button onClick={() => this.paste()} disabled={!this.hasCopy()}>Paste</Button>
+        <Button onClick={() => this.paste(false)} disabled={!this.hasCopy()}>
+          Paste
+        </Button>
+        <Button onClick={() => this.paste(true)} disabled={!this.hasCopy()}>
+          Paste in Place
+        </Button>
       </Grid>
     );
   }
