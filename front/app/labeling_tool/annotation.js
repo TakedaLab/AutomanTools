@@ -481,6 +481,11 @@ class Annotation extends React.Component {
       pastedLabels.push(label);
     });
 
+    // Select the label
+    if (pastedLabels.length > 0) {
+      this.props.controls.selectLabel(pastedLabels.slice(-1)[0]);
+    }
+
     this.props.history.addHistory(pastedLabels, 'create');
     this.setState(state => {
       const labels = new Map(state.labels);
