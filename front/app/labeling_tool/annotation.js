@@ -216,7 +216,7 @@ class Annotation extends React.Component {
     const nextTarget = this.getNthTarget(1)
     this.setTarget(nextTarget)
   }
-  setTarget(tgt) { /** Label */ 
+  setTarget(tgt) { /** Label */
     let next = this.getLabel(tgt),
       prev = this.props.targetLabel;
     if (prev != null && next != null && next.id === prev.id) {
@@ -452,9 +452,27 @@ class Annotation extends React.Component {
         const id = tool.candidateId;
         if (obj.content[id] != null) {
           var objCandidateContent = obj.content[id];
-          objCandidateContent.x_3d += pastePosition.x;
-          objCandidateContent.y_3d += pastePosition.y;
-          objCandidateContent.z_3d += pastePosition.z;
+
+          // Check the existence of boxes with the same content in the frame
+          let existingContents = [];
+          for (var key of labels.keys()) {
+            var label = labels.get(key).toObject();
+            if (Object.keys(label.content)[0] === String(id)) {
+              existingContents.push(Object.values(label.content)[0]);
+            }
+          }
+          let isContentExists = existingContents.some((candidateContent) => {
+            return JSON.stringify(candidateContent) === JSON.stringify(objCandidateContent)
+          });
+
+          // Add offsets if the box is overlapped
+          if (isContentExists) {
+            objCandidateContent.x_3d += pastePosition.x;
+            objCandidateContent.y_3d += pastePosition.y;
+            objCandidateContent.z_3d += pastePosition.z;
+          }
+
+          // Register the box
           bboxes[id] = tool.createBBox(objCandidateContent);
         }
       });
