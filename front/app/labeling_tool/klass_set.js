@@ -103,7 +103,7 @@ class KlassSet extends React.Component {
     }
     return list;
   }
-  handleSelectChange = (e) => {
+  handleSelectChange = e => {
     const newVal = e.target.value;
     this.props.controls.selectKlass(this._klassList[newVal]);
     this.setState({ targetIndex: newVal });
@@ -116,6 +116,9 @@ class KlassSet extends React.Component {
           className={classes.ClassSelect}
           value={this.state.targetIndex}
           onChange={this.handleSelectChange}
+          onClose={
+            () => setTimeout(() => { document.activeElement.blur() }, 0)
+          }
         >
           {this.renderItems(classes)}
         </Select>
