@@ -281,7 +281,6 @@ export default class PCDBBox {
     geometry.translate(0, 0, 1.0);
     let text = new THREE.Mesh(geometry, matDark);
     text.visible = true;
-    text.rotation.z = -1.57;
     text.scale.set(1, 1, 1);
     return text;
   }
