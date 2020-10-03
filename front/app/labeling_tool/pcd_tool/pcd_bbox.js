@@ -281,7 +281,6 @@ export default class PCDBBox {
     geometry.translate(0, 0, 1.0);
     let text = new THREE.Mesh(geometry, matDark);
     text.visible = true;
-    text.rotation.z = -1.57;
     text.scale.set(1, 1, 1);
     return text;
   }
@@ -382,7 +381,8 @@ export default class PCDBBox {
       const box = this.box;
       this.pcdTool._scene.add(newboxInfoText);
       newboxInfoText.position.set(box.pos.x + box.size.x / 2 - 0.4, box.pos.y - box.size.y / 2 - 0.6, box.pos.z);
-      newboxInfoText.rotation.z = - 1.57;
+      // Face to the camera
+      newboxInfoText.quaternion.copy(this.pcdTool._camera.quaternion);
       newboxInfoText.updateMatrixWorld();
       this.cube.boxInfoText = newboxInfoText;
     }

@@ -472,14 +472,20 @@ class PCDLabelTool extends React.Component {
         const tgt = this.props.controls.getTargetLabel();
         if(tgt){
           const bbox = tgt.bbox[this.candidateId];
+          var changedLabel = bbox.label.createHistory(null)
+          changedLabel.addHistory()
           bbox.rotateFront(-1);
+          bbox.updateSelected(true)
         }
       })
       execKeyCommand("rotate_front_counterclockwise", e.originalEvent, () => {
         const tgt = this.props.controls.getTargetLabel();
         if(tgt){
           const bbox = tgt.bbox[this.candidateId];
+          var changedLabel = bbox.label.createHistory(null)
+          changedLabel.addHistory()
           bbox.rotateFront(1);
+          bbox.updateSelected(true)
         }
       })
     },
@@ -701,6 +707,16 @@ class PCDLabelTool extends React.Component {
 
     this._camera = camera;
     this._cameraControls = controls;
+    // Add callback when camera changed
+    this._cameraControls.addEventListener( 'change', () => {
+      const tgt = this.props.controls.getTargetLabel();
+      if(tgt){
+        const bbox = tgt.bbox[this.candidateId];
+
+        // Update text mesh
+        bbox.updateBoxInfoTextMesh();
+      }
+    } );
     // Save camera parameters for later reset
     this._cameraControls.saveState();
   }
