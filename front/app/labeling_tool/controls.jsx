@@ -157,9 +157,9 @@ class Controls extends React.Component {
                 const bbox = targetLabel.bbox[bkey]
                 if(bbox){
                   const shiftBboxParams = (bbox, box_d) => {
-                    bbox.shiftBboxParams(box_d);
                     var changedLabel = bbox.label.createHistory(null)
                     changedLabel.addHistory()
+                    bbox.shiftBboxParams(box_d);
                   }
                   ["x", "y", "z"].forEach(axis => {
                     ["pos", "size"].forEach(param => {

@@ -472,20 +472,20 @@ class PCDLabelTool extends React.Component {
         const tgt = this.props.controls.getTargetLabel();
         if(tgt){
           const bbox = tgt.bbox[this.candidateId];
-          bbox.rotateFront(-1);
-          bbox.updateSelected(true)
           var changedLabel = bbox.label.createHistory(null)
           changedLabel.addHistory()
+          bbox.rotateFront(-1);
+          bbox.updateSelected(true)
         }
       })
       execKeyCommand("rotate_front_counterclockwise", e.originalEvent, () => {
         const tgt = this.props.controls.getTargetLabel();
         if(tgt){
           const bbox = tgt.bbox[this.candidateId];
-          bbox.rotateFront(1);
-          bbox.updateSelected(true)
           var changedLabel = bbox.label.createHistory(null)
           changedLabel.addHistory()
+          bbox.rotateFront(1);
+          bbox.updateSelected(true)
         }
       })
     },
