@@ -1,11 +1,17 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+import {
+  List,
+  ListItem,
+  ListItemText,
+  ListSubheader,
+  Menu,
+  MenuItem,
+  ListItemSecondaryAction,
+  IconButton
+} from '@material-ui/core';
+import MoreVertIcon from '@material-ui/icons/MoreVert';
 
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListItemText from '@material-ui/core/ListItemText';
-import ListSubheader from '@material-ui/core/ListSubheader';
 import { compose } from 'redux';
 import { connect } from 'react-redux';
 
@@ -28,7 +34,9 @@ class Annotation extends React.Component {
     this.state = {
       prevInstanceIds: null,
       instanceIds: null,
-      labels: null
+      labels: null,
+      anchorEl: null,
+      menuIndex: 'Bounding Box'
     };
     props.dispatchSetAnnotation(this);
   }
@@ -551,21 +559,81 @@ class Annotation extends React.Component {
     }
     return list;
   }
+  renderLabelCount(classes) {
+    if (this.state.labels === null) {
+      return [];
+    }
+    let klassCount = {};
+    for (let [_, label] of this.state.labels) {
+      let labelKlass = label.klass.name;
+      // console.log(labelKlass, Object.keys(klassCount))
+      if (klassCount.hasOwnProperty(labelKlass)) {
+        klassCount[labelKlass] = klassCount[labelKlass] + 1;
+      } else {
+        klassCount[labelKlass] = 1;
+      }
+    }
+    return (
+      <React.Fragment>
+        {Object.keys(klassCount).map((v, k) => (
+          <ListItem key={k} className={classes.listItem}>
+            <ListItemText>
+              {v}: {klassCount[v]}
+            </ListItemText>
+          </ListItem>
+        ))}
+      </React.Fragment>
+    );
+  }
+
+  handleClickListHeader = e => {
+    this.setState({ anchorEl: e.currentTarget });
+  };
+
+  handleMenuItemClick = (e, index) => {
+    this.setState({
+      anchorEl: null,
+      menuIndex: index
+    });
+  };
+
   render() {
     const classes = this.props.classes;
     return (
-      <List
-        className={classes.list}
-        subheader={
-          <ListSubheader
-            className={classes.listHead}
-          >
+      <React.Fragment>
+        <List
+          className={classes.list}
+          subheader={
+            <ListSubheader className={classes.listHead}>
+              {this.state.menuIndex}
+              <ListItemSecondaryAction>
+                <IconButton
+                  edge="end"
+                  aria-label="delete"
+                  onClick={this.handleClickListHeader}
+                >
+                  <MoreVertIcon />
+                </IconButton>
+              </ListItemSecondaryAction>
+            </ListSubheader>
+          }
+        >
+          {this.state.menuIndex === 'Bounding Box' && this.renderList(classes)}
+          {this.state.menuIndex === 'Label Count' &&
+            this.renderLabelCount(classes)}
+        </List>
+        <Menu
+          anchorEl={this.state.anchorEl}
+          open={Boolean(this.state.anchorEl)}
+        >
+          <MenuItem onClick={e => this.handleMenuItemClick(e, 'Bounding Box')}>
             Bounding Box
-          </ListSubheader>
-        }
-      >
-        {this.renderList(classes)}
-      </List>
+          </MenuItem>
+          <MenuItem onClick={e => this.handleMenuItemClick(e, 'Label Count')}>
+            Label Count
+          </MenuItem>
+        </Menu>
+      </React.Fragment>
     );
   }
 }
@@ -574,7 +642,7 @@ const mapStateToProps = state => ({
   labelTool: state.tool.labelTool,
   controls: state.tool.controls,
   klassSet: state.tool.klassSet,
-  history: state.tool.history,
+  history: state.tool.history
 });
 const mapDispatchToProps = dispatch => ({
   dispatchSetTargetLabel: target => dispatch(setTargetLabel(target)),
