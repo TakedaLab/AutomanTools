@@ -557,7 +557,11 @@ class Annotation extends React.Component {
         />
       );
     }
-    return list;
+    if (list.length > 0) {
+      return list;
+    } else {
+      return <ListItem>No bounding boxes in this frame</ListItem>;
+    }
   }
   renderLabelCount(classes) {
     if (this.state.labels === null) {
@@ -573,17 +577,21 @@ class Annotation extends React.Component {
         klassCount[labelKlass] = 1;
       }
     }
-    return (
-      <React.Fragment>
-        {Object.keys(klassCount).map((v, k) => (
-          <ListItem key={k} className={classes.listItem}>
-            <ListItemText>
-              {v}: {klassCount[v]}
-            </ListItemText>
-          </ListItem>
-        ))}
-      </React.Fragment>
-    );
+    if (Object.keys(klassCount).length > 0) {
+      return (
+        <React.Fragment>
+          {Object.keys(klassCount).map((v, k) => (
+            <ListItem key={k} className={classes.listItem}>
+              <ListItemText>
+                {v}: {klassCount[v]}
+              </ListItemText>
+            </ListItem>
+          ))}
+        </React.Fragment>
+      );
+    } else {
+      return <ListItem>No bounding boxes in this frame</ListItem>;
+    }
   }
 
   handleClickListHeader = e => {
