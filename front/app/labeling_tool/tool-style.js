@@ -39,7 +39,14 @@ export const toolStyle = theme => ({
   },
   appBar: {
     width: '100%',
-    height: appBarHeight
+    height: appBarHeight,
+  },
+  appBarLeft: {
+    display: 'flex',
+    alignItems: 'center'
+  },
+  appBarRight: {
+    textAlign: 'right'
   },
   gridContainer: {
     height: appBarHeight,
