@@ -837,13 +837,13 @@ class Controls extends React.Component {
           alignItems="center"
           className={classes.gridContainer}
         >
-          <Grid item xs={3} className={classes.gridItem}>
+          <Grid item xs={6} className={classes.appBarLeft}>
             {frameNumberForm}
-          </Grid>
-          <Grid item xs={8}>
             {this.renderKlassSet(classes)}
           </Grid>
-          <Grid item xs={1}>
+          <Grid item xs={6} className={classes.appBarRight}>
+            {this.props.labelTool.annotationName}&nbsp;
+            (#{this.props.labelTool.datasetId})&nbsp;
             <IconButton
               onClick={this.onClickLogout}
               style={{backgroundColor: '#fff'}}
