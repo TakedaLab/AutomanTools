@@ -25,6 +25,7 @@ class LabelTool extends React.Component {
   // file status
   filenames = {};
   frameLength = -1;
+  loadedFileSet = new Set();
   // error
   errorMessage = null;
 
@@ -37,6 +38,39 @@ class LabelTool extends React.Component {
   getProjectInfo() {
     return this.projectInfo;
   }
+  prefetchManage(num) {
+    const len = this.PREFETCH_LEN;
+    const start = Math.max(num - len, 0),
+          end = Math.min(num + len, this.frameLength - 1);
+    const prefetchNum = [];
+    for (let i=start; i<=end; ++i) {
+      prefetchNum.push(i);
+    }
+    const loaded = this.loadedFileSet;
+    for (let it of prefetchNum) {
+      if (!loaded.delete(it)) {
+        this.loadBlobURL(it);
+      }
+    }
+    for (let it of loaded) {
+      this.unloadBlobURL(it);
+    }
+    this.loadedFileSet = new Set(prefetchNum);
+  }
+  unloadBlobURL(num) {
+    this.controls.getTools().forEach(
+      tool => {
+        const candidateId = tool.candidateId;
+        const fname = this.filenames[candidateId][num];
+        if (typeof fname === 'string') {
+          tool.unload(num);
+        } else if (fname instanceof Promise) {
+          fname.then();
+        }
+        this.filenames[candidateId][num] = null;
+      }
+    );
+  }
   loadBlobURL(num) {
     // load something (image, pcd) by URL
     return Promise.all(
@@ -46,8 +80,10 @@ class LabelTool extends React.Component {
           const fname = this.filenames[candidateId][num];
           if (typeof fname === 'string') {
             return Promise.resolve();
+          } else if (fname instanceof Promise) {
+            return fname;
           }
-          return (new Promise((resolve, reject) => {
+          const ret = (new Promise((resolve, reject) => {
             RequestClient.get(
               this.getURL('image_url', candidateId, num),
               null,
@@ -71,7 +107,9 @@ class LabelTool extends React.Component {
                 }
               );
             });
-          })
+          });
+          this.filenames[candidateId][num] = ret;
+          return ret;
         }
       )
     );
@@ -98,7 +136,7 @@ class LabelTool extends React.Component {
       case 'candidate_info': {
         const dataType = args[0];
         ret =
-          PROJECT_ROOT + 'originals/' + this.originalId + '/candidates/';
+          PROJECT_ROOT + 'datasets/' + this.datasetId + '/candidates/';
         if (dataType != null) {
           ret += '?data_type=' + dataType;
         }
@@ -120,6 +158,7 @@ class LabelTool extends React.Component {
         const candidateId = args[0];
         const frameNumber = args[1] + 1;
         ret = this.filenames[candidateId][frameNumber-1];
+        // TODO: string check
         break;
       }
       case 'unlock':
@@ -143,7 +182,8 @@ class LabelTool extends React.Component {
     this.state = {
       isLoaded: false,
       isInitialized: false,
-      loadingState: 0,
+      loadingState: -1,
+      loadingCnt: 0,
     };
 
     props.dispatchSetLabelTool(this);
@@ -173,15 +213,25 @@ class LabelTool extends React.Component {
         // ******
       });
   }
+  PREFETCH_LEN = 5;
   prefetchBlobs() {
+    const len = Math.min(
+      this.PREFETCH_LEN,
+      this.frameLength
+    );
     const requests = [];
-    for(let i=0; i<this.frameLength; ++i) {
-      const req = this.loadBlobURL(i).then(() => {
-        this.setState(state => ({
-          loadingState: state.loadingState + 1
-        }));
-      });
-      requests.push(req);
+    this.setState({
+      loadingState: 0,
+      loadingCnt: this.frameLength,
+    });
+    for(let i=0; i<=len; ++i) {
+      requests.push(
+        this.loadBlobURL(i).then(() => {
+          this.setState(state => ({
+            loadingState: state.loadingState + 1
+          }));
+        })
+      );
     }
     return Promise.all(requests).then(() => {
       this.setState({
@@ -233,6 +283,7 @@ class LabelTool extends React.Component {
         res => {
           this.originalId = res.original_id;
           this.frameLength = res.frame_count;
+          this.candidateInfo = res.candidates;
           resolve();
         },
         err => {
@@ -247,7 +298,7 @@ class LabelTool extends React.Component {
         this.getURL('candidate_info'),
         null,
         res => {
-          this.candidateInfo = res.records;
+          this.candidateInfo = res.candidates;
           
           resolve();
         },
@@ -261,7 +312,7 @@ class LabelTool extends React.Component {
     return this.initProject()
       .then(() => this.initAnnotation())
       .then(() => this.initDataset())
-      .then(() => this.initCandidateInfo())
+      // .then(() => this.initCandidateInfo())
   }
   
   initializeEvent() {
@@ -298,7 +349,7 @@ class LabelTool extends React.Component {
       <Controls
         labelTool={this}
         onload={this.controlsDidMount}
-        loadingState={this.state.loadingState / this.frameLength}
+        loadingState={this.state.loadingState / this.state.loadingCnt}
       />
     );
   }
