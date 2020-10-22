@@ -29,7 +29,7 @@ class PCDLabelTool extends React.Component {
         size: 0.05,
       },
       pointColoringSettings: {
-        axis: "none",
+        axis: "z",
         controllerMinValue: -10,
         controllerMaxValue: 10,
         minValue: -1,
