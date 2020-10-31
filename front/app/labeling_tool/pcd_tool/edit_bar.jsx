@@ -37,6 +37,9 @@ class PCDEditBar extends React.Component {
       bbox.box[type][axis] = val;
     }
     bbox.updateParam();
+    let changedLabel = bbox.label.createHistory(null);
+    console.log(changedLabel);
+    changedLabel.addHistory();
   }
   render() {
     const label = this.props.targetLabel;
@@ -48,6 +51,7 @@ class PCDEditBar extends React.Component {
       return null;
     }
     const handleValueChange = (type, axis) => (e, val) => {
+      console.log(type);
       this.setValue(val, type, axis);
     };
     const changeGrid = (type, axis) => {
@@ -67,6 +71,7 @@ class PCDEditBar extends React.Component {
             />
           </Grid>
           <Grid item xs={3}>
+          {type}
             {type === 'yaw' ?
             ((this.getValue(type, axis) | 0) + '°') :
             ('' + this.getValue(type, axis)).slice(0, 5)}
